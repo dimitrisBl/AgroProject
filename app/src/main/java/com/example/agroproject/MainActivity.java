@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     // Location permission request code
     private static final int LOCATION_PERMISSION_CODE = 1;
 
-    // FusedLocationProviderClient
+    // Google's API for location service
     private FusedLocationProviderClient fusedLocationProviderClient;
 
     // Location callback

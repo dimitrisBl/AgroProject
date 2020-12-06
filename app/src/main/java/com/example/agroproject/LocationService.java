@@ -15,10 +15,6 @@ import com.google.android.gms.location.LocationServices;
 
 public class LocationService extends Service {
 
-    public static final int DEFAULT_UPDATE_INTERNAL = 30;
-
-    public static final int FAST_UPDATE_INTERNAL = 5;
-
     // Google's API for location service
     private FusedLocationProviderClient fusedLocationProviderClient;
 
@@ -64,11 +60,10 @@ public class LocationService extends Service {
 
         // For high accuracy location
         locationRequest.setInterval(1000);
-
-
-        //PRIORITY_HIGH_ACCURACY using from the gps
+        locationRequest.setFastestInterval(1000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
+        //performs request location updates
         fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
     }
 }

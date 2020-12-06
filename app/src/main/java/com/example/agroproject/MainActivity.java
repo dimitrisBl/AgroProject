@@ -34,13 +34,10 @@ public class MainActivity extends AppCompatActivity {
 
     // Location request
     private LocationRequest locationRequest;
-
     //-------------------------------------------
-
 
     // current view
     private View currentView;
-    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,13 +77,11 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]
                     {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_CODE);
 
-
            }else{
                fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
                //Start the location service
                //startLocationService();
            }
-
 
         }else{
 
@@ -94,17 +89,13 @@ public class MainActivity extends AppCompatActivity {
 
             //Start the location service
             //startLocationService();
-
         }
-
     }
 
     public void startLocationService(){
         Intent locationServiceIntent = new Intent(this, LocationService.class);
         startService(locationServiceIntent);
     }
-
-
 
 
     @SuppressLint("MissingPermission")
@@ -114,14 +105,12 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == LOCATION_PERMISSION_CODE){
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
 
-            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+                fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
 
             }else{
                 Snackbar.make(currentView, "Permission is not accepted", Snackbar.LENGTH_LONG).show();
             }
         }
-
-
     }
 
     /*

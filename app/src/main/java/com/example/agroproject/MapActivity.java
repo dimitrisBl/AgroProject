@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -33,12 +34,16 @@ import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.example.agroproject.databinding.ActivityMapsBinding;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -71,6 +76,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     private double latitude;
     private double longitude;
 
+    // For line
+    private Polyline polyline;
+    private List<LatLng> polylinePoints;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,6 +89,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
         // Current view
         currentView = findViewById(android.R.id.content);
+
+        // Initialize polylinePoints arrayList
+        polylinePoints = new ArrayList<>();
 
         // Initialize FusedLocationProviderClient object
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -165,8 +177,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+    @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap) {
+
+        googleMap.setMyLocationEnabled(true);
 
         // Enable visibility for zoom controls buttons
         googleMap.getUiSettings().setZoomControlsEnabled(true);
@@ -177,11 +192,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         // Setup satellite map
         mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
 
-    }
-
-    @Override
-    public void onPointerCaptureChanged(boolean hasCapture) {
-            Toast.makeText(this,"over here", Toast.LENGTH_SHORT).show();
     }
 
     /*
@@ -219,8 +229,27 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                     e.printStackTrace();
                 }
 
+                //for line after tracking
+                polylinePoints.add(currentLocation);
+
+                if(polyline != null){
+
+                    polyline.setPoints(polylinePoints);
+
+                }else{
+
+                    polyline = mMap.addPolyline(new PolylineOptions()
+                            .addAll(polylinePoints).color(Color.MAGENTA).jointType(JointType.ROUND).width(3.0f));
+                }
+
             }
         };
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+    }
 }

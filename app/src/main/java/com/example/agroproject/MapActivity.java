@@ -1,25 +1,16 @@
 package com.example.agroproject;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
-import android.widget.Toast;
-
-import com.example.agroproject.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -32,10 +23,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.example.agroproject.databinding.ActivityMapsBinding;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.material.snackbar.Snackbar;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -125,7 +112,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @SuppressLint("MissingPermission")
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull  String[] permissions, @NonNull int[] grantResults) {
@@ -133,11 +119,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         if(requestCode == LOCATION_PERMISSION_CODE){
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
 
-                //start location service
+                // Start location service
                 fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
 
             }else{
-
+                // Location permission not granted
                 Intent intent = new Intent();
                 setResult(RESULT_OK, intent);
                 finish();

@@ -43,8 +43,6 @@ public class ActivityMain extends AppCompatActivity {
         s1.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s1.length(), 0);
         item1.setTitle(s1);
 
-
-
         return true;
     }
 

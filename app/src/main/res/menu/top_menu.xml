@@ -12,7 +12,7 @@
 
         <item
             android:id="@+id/yourMap_item"
-            android:title="Your Map"/>
+            android:title="Open Map"/>
 
         <item
             android:id="@+id/subItem1"

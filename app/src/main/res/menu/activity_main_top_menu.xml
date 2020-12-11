@@ -14,9 +14,6 @@
             android:id="@+id/yourMap_item"
             android:title="Open Map"/>
 
-        <item
-            android:id="@+id/subItem1"
-            android:title="Draw polygon"/>
 
 
     </item>

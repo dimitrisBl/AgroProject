@@ -1,74 +1,64 @@
 package com.example.agroproject;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
-import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.Toast;
 
 public class ActivityMain extends AppCompatActivity {
 
-    // Location permission request code
-    private static final int LOCATION_PERMISSION_CODE = 1;
+    private static final int MAP_ACTIVITY_REQUEST_CODE = 1;
 
-    private Button button;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //Location permission check
-       // permissionRequestForLocation();
-
-        button = findViewById(R.id.map_btn);
-        button.setOnClickListener(onButtonClickListener);
-
-
-
     }
 
 
-    private void permissionRequestForLocation() {
-
-        if (Build.VERSION.SDK_INT >= 23) {
-
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-
-                //permission question
-                ActivityCompat.requestPermissions(this, new String[]
-                        {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_CODE);
-
-            }
-        }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.top_menu, menu);
+        return true;
     }
 
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.yourMap_item:
 
-
-    private View.OnClickListener onButtonClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            Button currentButton = (Button) view;
-
-            if(currentButton.getText().equals("Open Map")){
                 Intent intent = new Intent(ActivityMain.this, MapActivity.class);
-                startActivity(intent);
+                ActivityMain.this.startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
+
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /*
+        This method  called after the thread return from the intent service
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+
+        if(requestCode == 1){
+
+            if(resultCode == RESULT_CANCELED){
+
+                Toast.makeText(ActivityMain.this, "Accept this permission for use map and other services",Toast.LENGTH_LONG).show();
             }
         }
-    };
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 }

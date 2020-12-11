@@ -1,15 +1,25 @@
 package com.example.agroproject;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
+import android.text.Layout;
+import android.text.SpannableString;
+import android.text.style.AlignmentSpan;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -25,7 +35,7 @@ import com.example.agroproject.databinding.ActivityMapsBinding;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     // Location permission request code
     private static final int LOCATION_PERMISSION_CODE = 1;
@@ -156,11 +166,37 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
     }
 
-    /*
-      This method handle the requestLocationUpdates.
-      Used for receiving notifications from the FusedLocationProviderApi
-      when the device location has changed or can no longer be determined.
-      */
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Initiating Menu XML file (activity_map_menu.xml)
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.activity_map_menu, menu);
+
+        // set title alignment for each item is center
+        int positionOfMenuItem0 = 0; //or any other postion
+        MenuItem item = menu.getItem(positionOfMenuItem0);
+        SpannableString s = new SpannableString(item.getTitle());
+        s.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s.length(), 0);
+        item.setTitle(s);
+
+        int positionOfMenuItem1 = 1; //or any other postion
+        MenuItem item1 = menu.getItem(positionOfMenuItem1);
+        SpannableString s1 = new SpannableString(item1.getTitle());
+        s1.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s1.length(), 0);
+        item1.setTitle(s1);
+
+
+        // Calling super after populating the menu is necessary here to ensure that the
+        // action bar helpers have a chance to handle this event.
+        return true;
+    }
+
+    /**
+     This method handle the requestLocationUpdates.
+     Used for receiving notifications from the FusedLocationProviderApi
+     when the device location has changed or can no longer be determined.
+     */
     private void locationCallBackExecute(){
         locationCallback = new LocationCallback() {
             @Override
@@ -177,7 +213,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                     //instantiate the class LatLng
                     LatLng currentLocation = new LatLng(latitude,longitude);
 
-
                     // Add a marker in current location and move the camera
                     mMap.addMarker(new MarkerOptions().position(currentLocation).title("Your location: "+latitude+"  "+longitude));
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18f));
@@ -186,11 +221,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             }
         };
     }
-
+    
     @Override
     protected void onStop() {
         super.onStop();
         //stop requestLocationUpdates method from FusedLocationProviderClient service
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
+
+
 }

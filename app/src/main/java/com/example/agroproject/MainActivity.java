@@ -11,23 +11,30 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-public class ActivityMain extends AppCompatActivity {
+import com.example.agroproject.databinding.ActivityMainBinding;
+import com.example.agroproject.databinding.ActivityMapsBinding;
+
+public class MainActivity extends AppCompatActivity {
 
     private static final int MAP_ACTIVITY_REQUEST_CODE = 1;
 
+    private ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-    }
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
+    }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
+        // Initiating Menu XML file (activity_main_top_menu.xml)
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.top_menu, menu);
+        inflater.inflate(R.menu.activity_main_top_menu, menu);
 
         // set title alignment for each item is center
         int positionOfMenuItem0 = 0; //or any other postion
@@ -36,26 +43,23 @@ public class ActivityMain extends AppCompatActivity {
         s.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s.length(), 0);
         item.setTitle(s);
 
-
-        int positionOfMenuItem1 = 1; //or any other postion
-        MenuItem item1 = menu.getItem(positionOfMenuItem1);
-        SpannableString s1 = new SpannableString(item1.getTitle());
-        s1.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s1.length(), 0);
-        item1.setTitle(s1);
-
+        // Calling super after populating the menu is necessary here to ensure that the
+        // action bar helpers have a chance to handle this event.
         return true;
     }
 
-
-
+    /**
+     * Event Handling for Individual menu item selected
+     * Identify single menu item by it's id
+     * */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.yourMap_item:
 
-                Intent intent = new Intent(ActivityMain.this, MapActivity.class);
-                ActivityMain.this.startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
+                Intent intent = new Intent(MainActivity.this, MapActivity.class);
+                MainActivity.this.startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
 
                 return true;
 
@@ -64,7 +68,7 @@ public class ActivityMain extends AppCompatActivity {
         }
     }
 
-    /*
+    /**
         This method  called after the thread return from the intent service
      */
     @Override
@@ -74,7 +78,7 @@ public class ActivityMain extends AppCompatActivity {
         if(requestCode == MAP_ACTIVITY_REQUEST_CODE){
             // If location permission is not granted
             if(resultCode == RESULT_OK){
-                Toast.makeText(ActivityMain.this, "Accept this permission for use map and other services",Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "Accept this permission for use map and other services",Toast.LENGTH_LONG).show();
             }
         }
     }

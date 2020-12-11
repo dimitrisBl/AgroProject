@@ -1,9 +1,11 @@
 package com.example.agroproject;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Layout;
+import android.text.SpannableString;
+import android.text.style.AlignmentSpan;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -21,12 +23,31 @@ public class ActivityMain extends AppCompatActivity {
     }
 
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.top_menu, menu);
+
+        // set title alignment for each item is center
+        int positionOfMenuItem0 = 0; //or any other postion
+        MenuItem item = menu.getItem(positionOfMenuItem0);
+        SpannableString s = new SpannableString(item.getTitle());
+        s.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s.length(), 0);
+        item.setTitle(s);
+
+
+        int positionOfMenuItem1 = 1; //or any other postion
+        MenuItem item1 = menu.getItem(positionOfMenuItem1);
+        SpannableString s1 = new SpannableString(item1.getTitle());
+        s1.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s1.length(), 0);
+        item1.setTitle(s1);
+
+
+
         return true;
     }
+
 
 
     @Override
@@ -50,15 +71,13 @@ public class ActivityMain extends AppCompatActivity {
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-
-        if(requestCode == 1){
-
-            if(resultCode == RESULT_CANCELED){
-
+        if(requestCode == MAP_ACTIVITY_REQUEST_CODE){
+            // If location permission is not granted
+            if(resultCode == RESULT_OK){
                 Toast.makeText(ActivityMain.this, "Accept this permission for use map and other services",Toast.LENGTH_LONG).show();
             }
         }
-        super.onActivityResult(requestCode, resultCode, data);
     }
 }

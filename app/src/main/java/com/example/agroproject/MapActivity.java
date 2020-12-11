@@ -139,7 +139,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             }else{
 
                 Intent intent = new Intent();
-                setResult(RESULT_CANCELED, intent);
+                setResult(RESULT_OK, intent);
                 finish();
             }
         }

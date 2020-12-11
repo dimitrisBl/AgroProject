@@ -14,6 +14,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
@@ -115,23 +116,25 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     }
 
     public void checkLocationPermissions() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
 
-            //permission question
-            ActivityCompat.requestPermissions(this, new String[]
-                    {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_CODE);
+                //permission question
+                ActivityCompat.requestPermissions(this, new String[]
+                        {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_CODE);
 
-        } else {
-            //start the location service
-            requestLocation();
+            } else {
+                //start the location service
+                requestLocation();
+            }
         }
     }
 
@@ -185,7 +188,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         This method handle the requestLocationUpdates.
         Used for receiving notifications from the FusedLocationProviderApi
         when the device location has changed or can no longer be determined.
-        */
+    */
     private void locationCallBackExecute(){
         locationCallback = new LocationCallback() {
             @Override
@@ -200,7 +203,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
                 // Instantiate the class LatLng
                 currentLocation = new LatLng(latitude,longitude);
-                
+
                 //instantiate the class Geocoder
                 Geocoder geocoder = new Geocoder(MapActivity.this.getApplicationContext());
 

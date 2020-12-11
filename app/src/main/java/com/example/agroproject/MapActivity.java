@@ -126,6 +126,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
             }else{
                 Snackbar.make(currentView, "Permission is not accepted", Snackbar.LENGTH_LONG).show();
+                finish();
             }
         }
     }
@@ -175,7 +176,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                     //instantiate the class Geocoder
                     Geocoder geocoder = new Geocoder(MapActivity.this.getApplicationContext());
 
-                    mMap.clear();
 
                     try {
                         List<Address> addressList = geocoder.getFromLocation(latitude, longitude, 1);

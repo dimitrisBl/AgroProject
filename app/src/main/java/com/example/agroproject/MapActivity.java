@@ -157,7 +157,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Enable visibility for zoom controls buttons
         googleMap.getUiSettings().setZoomControlsEnabled(true);
 
-
         // Initialize map
         mMap = googleMap;
 
@@ -185,7 +184,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         SpannableString s1 = new SpannableString(item1.getTitle());
         s1.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s1.length(), 0);
         item1.setTitle(s1);
-
 
         // Calling super after populating the menu is necessary here to ensure that the
         // action bar helpers have a chance to handle this event.
@@ -228,6 +226,4 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         //stop requestLocationUpdates method from FusedLocationProviderClient service
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
-
-
 }

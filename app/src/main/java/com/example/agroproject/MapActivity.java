@@ -103,13 +103,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         // Initialize a location request
         locationRequest = new LocationRequest();
 
-        //PRIORITY_HIGH_ACCURACY using from the gps
-        locationRequest.setInterval(5000);
+        // Location request setup
+        locationRequest.setInterval(5000); //5 seconds
         locationRequest.setFastestInterval(5000);
-        //locationRequest.setSmallestDisplacement(1); //1 metro
-        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        locationRequest.setSmallestDisplacement(1); //1 metro
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        //performs location request
+        // Performs the location request
         fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
 
     }
@@ -167,7 +167,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
         // Enable visibility for zoom controls buttons
         googleMap.getUiSettings().setZoomControlsEnabled(true);
-        
+
         // Initialize map
         mMap = googleMap;
 
@@ -200,8 +200,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
                 // Instantiate the class LatLng
                 currentLocation = new LatLng(latitude,longitude);
-
-
+                
                 //instantiate the class Geocoder
                 Geocoder geocoder = new Geocoder(MapActivity.this.getApplicationContext());
 

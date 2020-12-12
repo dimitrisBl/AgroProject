@@ -17,6 +17,7 @@ import android.os.Looper;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.style.AlignmentSpan;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -33,12 +34,15 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.example.agroproject.databinding.ActivityMapsBinding;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    private final String TAG = "MapActivity";
+
     // Location permission request code
-    private static final int LOCATION_PERMISSION_CODE = 1;
+    private final int LOCATION_PERMISSION_CODE = 1;
 
     // Google's API for location service
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -50,10 +54,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private LocationRequest locationRequest;
     //-------------------------------------------
 
-    //Google Map
+    // Google Map
     private GoogleMap mMap;
 
-    //Binding
+    // Binding
     private ActivityMapsBinding binding;
 
     // current view
@@ -62,6 +66,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     // Device coordinates
     private double latitude;
     private double longitude;
+    private LatLng currentLocation;
 
 
     @Override
@@ -96,7 +101,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
     }
 
 
@@ -116,11 +120,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_CODE);
 
         } else {
-            //start location service
-            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+            // Start location service
+            getLocation();
         }
     }
-
 
     @SuppressLint("MissingPermission")
     @Override
@@ -128,9 +131,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         if(requestCode == LOCATION_PERMISSION_CODE){
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-
+                Log.d(TAG, "location permission granted!");
                 // Start location service
-                fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+                getLocation();
 
             }else{
                 // Location permission not granted
@@ -140,7 +143,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         }
     }
-
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -163,7 +165,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Setup satellite map
         mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
 
+        // Create LatLng
+        currentLocation = new LatLng(latitude, longitude);
+
+        // Add a marker in current location and move the camera
+        mMap.addMarker(new MarkerOptions().position(currentLocation).title("Your location: "+latitude+"  "+longitude));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18f));
     }
+
 
 
     @Override
@@ -190,6 +199,35 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         return true;
     }
 
+
+    @SuppressLint("MissingPermission")
+    public void getLocation(){
+        Log.d(TAG, "Location service is performed");
+        fusedLocationProviderClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @SuppressLint("MissingPermission")
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+
+                            // Get the latitude
+                            latitude = location.getLatitude();
+
+                            // Get the longitude
+                            longitude = location.getLongitude();
+
+                            // Refresh map for this location
+                            onMapReady(mMap);
+
+                        }else{
+                            //performs location request if the last location is null
+                            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+                        }
+                    }
+                });
+    }
+
     /**
      This method handle the requestLocationUpdates.
      Used for receiving notifications from the FusedLocationProviderApi
@@ -202,20 +240,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 for (Location location : locationResult.getLocations()) {
 
-                    //get the latitude
+                    // Get the latitude
                     latitude = location.getLatitude();
 
-                    //get the longitude
+                    // Get the longitude
                     longitude = location.getLongitude();
 
-                    //instantiate the class LatLng
-                    LatLng currentLocation = new LatLng(latitude,longitude);
-
-                    // Add a marker in current location and move the camera
-                    mMap.addMarker(new MarkerOptions().position(currentLocation).title("Your location: "+latitude+"  "+longitude));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18f));
-
                 }
+                // Refresh map for this location
+                onMapReady(mMap);
             }
         };
     }

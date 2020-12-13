@@ -30,10 +30,6 @@ public class LocationService extends Service {
     private LocationRequest locationRequest;
 
 
-    private double latitude;
-    private double longitude;
-
-
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -51,10 +47,7 @@ public class LocationService extends Service {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
-
-                latitude = locationResult.getLastLocation().getLatitude();
-                longitude = locationResult.getLastLocation().getLongitude();
-
+                
                 // Send message
                 sendMessageToActivity(locationResult," ");
 

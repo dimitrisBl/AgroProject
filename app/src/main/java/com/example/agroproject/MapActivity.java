@@ -5,15 +5,21 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.Parcelable;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.style.AlignmentSpan;
@@ -76,6 +82,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // Receive this Broadcast GPSLocationUpdates message from LocationService
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                mMessageReceiver, new IntentFilter("GPSLocationUpdates"));
+
         // Current view
         currentView = findViewById(android.R.id.content);
 
@@ -92,7 +102,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         // Location callBack method
-        locationCallBackExecute();
+        //locationCallBackExecute();
 
         // Permission check service
         checkPermissions();
@@ -121,7 +131,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         } else {
             // Start location service
-            getLocation();
+            //getLocation();
+
+            //Start the location service
+            startLocationService();
         }
     }
 
@@ -133,7 +146,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                 Log.d(TAG, "location permission granted!");
                 // Start location service
-                getLocation();
+                //getLocation();
+
+                //Start the location service
+                startLocationService();
 
             }else{
                 // Location permission not granted
@@ -143,6 +159,35 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         }
     }
+
+    /**
+     *  TODO description
+     */
+    public void startLocationService(){
+        Intent locationServiceIntent = new Intent(this, LocationService.class);
+        startService(locationServiceIntent);
+    }
+
+    /**
+     *  Our handler for received Intents. This will be called whenever an Intent
+     *  with an action named "GPSLocation" is broadcasted.
+     */
+    private BroadcastReceiver mMessageReceiver  = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            // Get extra data included in the Intent
+            // Get extra data included in the Intent
+            latitude = intent.getDoubleExtra("latitude",0.0);
+            longitude = intent.getDoubleExtra("longitude",0.0);
+
+            Log.d("Message from receiver", "Got latitude: " + latitude);
+
+            // Refresh map
+            onMapReady(mMap);
+        }
+    };
+
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -200,58 +245,58 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
 
-    @SuppressLint("MissingPermission")
-    public void getLocation(){
-        Log.d(TAG, "Location service is performed");
-        fusedLocationProviderClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                    @SuppressLint("MissingPermission")
-                    @Override
-                    public void onSuccess(Location location) {
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
+//    @SuppressLint("MissingPermission")
+//    public void getLocation(){
+//        Log.d(TAG, "Location service is performed");
+//        fusedLocationProviderClient.getLastLocation()
+//                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+//                    @SuppressLint("MissingPermission")
+//                    @Override
+//                    public void onSuccess(Location location) {
+//                        // Got last known location. In some rare situations this can be null.
+//                        if (location != null) {
+//
+//                            // Get the latitude
+//                            latitude = location.getLatitude();
+//
+//                            // Get the longitude
+//                            longitude = location.getLongitude();
+//
+//                            // Refresh map for this location
+//                            onMapReady(mMap);
+//
+//                        }else{
+//                            //performs location request if the last location is null
+//                            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+//                        }
+//                    }
+//                });
+//    }
 
-                            // Get the latitude
-                            latitude = location.getLatitude();
-
-                            // Get the longitude
-                            longitude = location.getLongitude();
-
-                            // Refresh map for this location
-                            onMapReady(mMap);
-
-                        }else{
-                            //performs location request if the last location is null
-                            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
-                        }
-                    }
-                });
-    }
-
-    /**
-     This method handle the requestLocationUpdates.
-     Used for receiving notifications from the FusedLocationProviderApi
-     when the device location has changed or can no longer be determined.
-     */
-    private void locationCallBackExecute(){
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-
-                for (Location location : locationResult.getLocations()) {
-
-                    // Get the latitude
-                    latitude = location.getLatitude();
-
-                    // Get the longitude
-                    longitude = location.getLongitude();
-
-                }
-                // Refresh map for this location
-                onMapReady(mMap);
-            }
-        };
-    }
+//    /**
+//     This method handle the requestLocationUpdates.
+//     Used for receiving notifications from the FusedLocationProviderApi
+//     when the device location has changed or can no longer be determined.
+//     */
+//    private void locationCallBackExecute(){
+//        locationCallback = new LocationCallback() {
+//            @Override
+//            public void onLocationResult(LocationResult locationResult) {
+//
+//                for (Location location : locationResult.getLocations()) {
+//
+//                    // Get the latitude
+//                    latitude = location.getLatitude();
+//
+//                    // Get the longitude
+//                    longitude = location.getLongitude();
+//
+//                }
+//                // Refresh map for this location
+//                onMapReady(mMap);
+//            }
+//        };
+//    }
     
     @Override
     protected void onStop() {

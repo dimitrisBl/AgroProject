@@ -3,9 +3,14 @@ package com.example.agroproject;
 import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
+import android.location.Location;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
+
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -25,6 +30,10 @@ public class LocationService extends Service {
     private LocationRequest locationRequest;
 
 
+    private double latitude;
+    private double longitude;
+
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -42,7 +51,15 @@ public class LocationService extends Service {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
+
+                latitude = locationResult.getLastLocation().getLatitude();
+                longitude = locationResult.getLastLocation().getLongitude();
+
+                // Send message
+                sendMessageToActivity(locationResult," ");
+
                 Log.i("latitude: ", " "+locationResult.getLastLocation().getLatitude());
+
             }
         };
     }
@@ -66,4 +83,25 @@ public class LocationService extends Service {
         //performs request location updates
         fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
     }
+
+
+
+    private  void sendMessageToActivity(LocationResult locationResult, String msg) {
+        Intent intent = new Intent("GPSLocationUpdates");
+        // You can also include some extra data.
+        intent.putExtra("Status", msg);
+
+        // Set coordinates in activity
+        intent.putExtra("latitude", locationResult.getLastLocation().getLatitude());
+        intent.putExtra("longitude", locationResult.getLastLocation().getLongitude());
+
+//        Bundle b = new Bundle();
+//        b.putParcelable("Location", locationResult);
+//        intent.putExtra("Location", b);
+
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+
 }

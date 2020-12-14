@@ -1,19 +1,19 @@
-package com.example.agroproject;
+package com.example.agroproject.services;
 
+/**
+ *  TODO CLASS DESCRIPTION
+ *
+ */
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
-import android.icu.text.UnicodeSetSpanner;
 import android.location.Location;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
-
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -23,9 +23,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.concurrent.Executor;
 
-public class LocationService extends Service {
+public class LocationService extends Service implements Executor{
 
-    private final String TAG ="LocationService";
+    private final String TAG = "LocationService";
 
     // Google's API for location service
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -36,6 +36,7 @@ public class LocationService extends Service {
     // Location request
     private LocationRequest locationRequest;
 
+    // Coordinates
     private double latitude;
     private double longitude;
 
@@ -45,53 +46,52 @@ public class LocationService extends Service {
         return null;
     }
 
-
     @Override
-    public void onCreate() {
-        super.onCreate();
-        // Initialize FusedLocationProviderClient object
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
-        // Location callBack method
-        locationCallBackExecute();
+    public void execute(Runnable runnable) {
+        runnable.run();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
         // Start request for location
         requestLocation();
         return super.onStartCommand(intent, flags, startId);
     }
 
+    /**
+     * TODO DESCRIPTION
+     */
     @SuppressLint("MissingPermission")
     private void requestLocation(){
+
+        // Initialize FusedLocationProviderClient object
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+        // Location callBack method
+        locationCallBackExecute();
+
         // Initialize a location request
         locationRequest = new LocationRequest();
 
         //PRIORITY_HIGH_ACCURACY using from the gps
         locationRequest.setInterval(1000);
         locationRequest.setFastestInterval(1000);
-        locationRequest.setSmallestDisplacement(05); //0.5 metro
+        locationRequest.setSmallestDisplacement(05); //0.5 metres
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
+
         // Start location service
-        Executor executor = new Executor() {
-            @Override
-            public void execute(Runnable runnable) {
-                getLocation();
-            }
-        };
+        getLocation();
     }
 
-
-
-
+    /**
+     *  TODO DESCRIPTION
+     */
     @SuppressLint("MissingPermission")
     public void getLocation(){
         Log.d(TAG, "Location service is performed");
         fusedLocationProviderClient.getLastLocation()
-                .addOnSuccessListener( (Executor) this, new OnSuccessListener<Location>() {
+                .addOnSuccessListener( this, new OnSuccessListener<Location>() {
                     @SuppressLint("MissingPermission")
                     @Override
                     public void onSuccess(Location location) {
@@ -109,33 +109,11 @@ public class LocationService extends Service {
                             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
                         }
 
-                        // Send message on activity
+                        // Send coordinates in MapActivity
                         sendMessageToActivity(latitude,longitude);
                     }
+
                 });
-    }
-
-    /**
-     This method handle the requestLocationUpdates.
-     Used for receiving notifications from the FusedLocationProviderApi
-     when the device location has changed or can no longer be determined.
-     */
-    private void locationCallBackExecute(){
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-
-                for (Location location : locationResult.getLocations()) {
-
-                    // Get the latitude
-                    latitude = location.getLatitude();
-
-                    // Get the longitude
-                    longitude = location.getLongitude();
-
-                }
-            }
-        };
     }
 
     /**
@@ -152,20 +130,42 @@ public class LocationService extends Service {
         intent.putExtra("latitude", latitude);
         intent.putExtra("longitude", longitude);
 
-
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
+    /**
+     This method handle the requestLocationUpdates.
+     Used for receiving notifications from the FusedLocationProviderApi
+     when the device location has changed or can no longer be determined.
+     */
+    private void locationCallBackExecute(){
+        Log.d(TAG, "Location CallBack service is performed");
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
 
+                for (Location location : locationResult.getLocations()) {
+
+                    // Get the latitude
+                    latitude = location.getLatitude();
+
+                    // Get the longitude
+                    longitude = location.getLongitude();
+                }
+            }
+        };
+    }
+
+    @Override
+    public void onRebind(Intent intent) {
+        super.onRebind(intent);
+        Toast.makeText(this," on rebind calll", Toast.LENGTH_LONG).show();
+    }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Toast.makeText(this,"over hereee", Toast.LENGTH_LONG).show();
-        /**
-         * TODO unregister fusedLocationProviderCLient location service
-         */
+        //stop requestLocationUpdates method from FusedLocationProviderClient service
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
-
-
 }

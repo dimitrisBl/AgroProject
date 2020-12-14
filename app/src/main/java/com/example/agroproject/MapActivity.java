@@ -1,10 +1,8 @@
 package com.example.agroproject;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.FragmentActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.Manifest;
@@ -14,12 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.location.Location;
 import android.os.Bundle;
-import android.os.Looper;
-import android.os.Parcelable;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.style.AlignmentSpan;
@@ -28,11 +21,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
+
+import com.example.agroproject.services.LocationService;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -40,7 +30,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.example.agroproject.databinding.ActivityMapsBinding;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -49,16 +38,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     // Location permission request code
     private final int LOCATION_PERMISSION_CODE = 1;
-
-    // Google's API for location service
-    private FusedLocationProviderClient fusedLocationProviderClient;
-
-    // Location callback
-    private LocationCallback locationCallback;
-
-    // Location request
-    private LocationRequest locationRequest;
-    //-------------------------------------------
 
     // Google Map
     private GoogleMap mMap;
@@ -82,27 +61,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Receive this Broadcast GPSLocationUpdates message from LocationService
+        // Receive this Broadcast GPSLocation message from LocationService class.
         LocalBroadcastManager.getInstance(this).registerReceiver(
-                mMessageReceiver, new IntentFilter("GPSLocationUpdates"));
+                gpsLocationReceiver, new IntentFilter("GPSLocation"));
 
         // Current view
         currentView = findViewById(android.R.id.content);
-
-        // Initialize FusedLocationProviderClient object
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
-        // Initialize a location request
-        locationRequest = new LocationRequest();
-
-        //PRIORITY_HIGH_ACCURACY using from the gps
-        locationRequest.setInterval(1000);
-        locationRequest.setFastestInterval(1000);
-        locationRequest.setSmallestDisplacement(05); //0.5 metro
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        // Location callBack method
-        //locationCallBackExecute();
 
         // Permission check service
         checkPermissions();
@@ -113,7 +77,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
     }
 
-
+    /**
+     *  TODO DESCRIPTION
+     */
     public void checkPermissions(){
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -130,8 +96,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_CODE);
 
         } else {
-            // Start location service
-            //getLocation();
 
             //Start the location service
             startLocationService();
@@ -144,9 +108,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         if(requestCode == LOCATION_PERMISSION_CODE){
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "location permission granted!");
-                // Start location service
-                //getLocation();
+                Log.d(TAG, "Location permission granted!");
 
                 //Start the location service
                 startLocationService();
@@ -164,26 +126,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      *  TODO description
      */
     public void startLocationService(){
-        Intent locationServiceIntent = new Intent(this, LocationService.class);
-        startService(locationServiceIntent);
+        Intent locationService = new Intent(this, LocationService.class);
+        startService(locationService);
     }
 
     /**
      *  Our handler for received Intents. This will be called whenever an Intent
-     *  with an action named "GPSLocation" is broadcasted.
+     *  with an action named "GPSLocation".
      */
-    private BroadcastReceiver mMessageReceiver  = new BroadcastReceiver() {
+    private BroadcastReceiver gpsLocationReceiver  = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
 
             // Get extra data included in the Intent
-            // Get extra data included in the Intent
             latitude = intent.getDoubleExtra("latitude",0.0);
             longitude = intent.getDoubleExtra("longitude",0.0);
 
-            Log.d("Message from receiver", "Got latitude: " + latitude);
-
-            // Refresh map
+            // Refresh Map
             onMapReady(mMap);
         }
     };
@@ -219,7 +178,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Initiating Menu XML file (activity_map_menu.xml)
@@ -244,64 +202,4 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         return true;
     }
 
-
-//    @SuppressLint("MissingPermission")
-//    public void getLocation(){
-//        Log.d(TAG, "Location service is performed");
-//        fusedLocationProviderClient.getLastLocation()
-//                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-//                    @SuppressLint("MissingPermission")
-//                    @Override
-//                    public void onSuccess(Location location) {
-//                        // Got last known location. In some rare situations this can be null.
-//                        if (location != null) {
-//
-//                            // Get the latitude
-//                            latitude = location.getLatitude();
-//
-//                            // Get the longitude
-//                            longitude = location.getLongitude();
-//
-//                            // Refresh map for this location
-//                            onMapReady(mMap);
-//
-//                        }else{
-//                            //performs location request if the last location is null
-//                            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
-//                        }
-//                    }
-//                });
-//    }
-
-//    /**
-//     This method handle the requestLocationUpdates.
-//     Used for receiving notifications from the FusedLocationProviderApi
-//     when the device location has changed or can no longer be determined.
-//     */
-//    private void locationCallBackExecute(){
-//        locationCallback = new LocationCallback() {
-//            @Override
-//            public void onLocationResult(LocationResult locationResult) {
-//
-//                for (Location location : locationResult.getLocations()) {
-//
-//                    // Get the latitude
-//                    latitude = location.getLatitude();
-//
-//                    // Get the longitude
-//                    longitude = location.getLongitude();
-//
-//                }
-//                // Refresh map for this location
-//                onMapReady(mMap);
-//            }
-//        };
-//    }
-    
-    @Override
-    protected void onStop() {
-        super.onStop();
-        //stop requestLocationUpdates method from FusedLocationProviderClient service
-        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-    }
 }

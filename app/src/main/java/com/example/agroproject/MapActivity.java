@@ -1,19 +1,23 @@
 package com.example.agroproject;
 
+/**
+ *  TODO CLASS DESCRIPTION
+ *
+ */
+
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.FragmentActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.location.Location;
 import android.os.Bundle;
-import android.os.Looper;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.style.AlignmentSpan;
@@ -22,11 +26,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
+
+import com.example.agroproject.services.LocationService;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -34,8 +35,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.example.agroproject.databinding.ActivityMapsBinding;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
-
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -43,16 +42,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     // Location permission request code
     private final int LOCATION_PERMISSION_CODE = 1;
-
-    // Google's API for location service
-    private FusedLocationProviderClient fusedLocationProviderClient;
-
-    // Location callback
-    private LocationCallback locationCallback;
-
-    // Location request
-    private LocationRequest locationRequest;
-    //-------------------------------------------
 
     // Google Map
     private GoogleMap mMap;
@@ -76,23 +65,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // Receive messages about current location.
+        // We are registering an observer (gpsLocationReceiver) to receive Intents with actions named "GPSLocation".
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                gpsLocationReceiver, new IntentFilter("GPSLocation"));
+
         // Current view
         currentView = findViewById(android.R.id.content);
-
-        // Initialize FusedLocationProviderClient object
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
-        // Initialize a location request
-        locationRequest = new LocationRequest();
-
-        //PRIORITY_HIGH_ACCURACY using from the gps
-        locationRequest.setInterval(1000);
-        locationRequest.setFastestInterval(1000);
-        locationRequest.setSmallestDisplacement(05); //0.5 metro
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        // Location callBack method
-        locationCallBackExecute();
 
         // Permission check service
         checkPermissions();
@@ -103,27 +82,38 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
     }
 
-
-    public void checkPermissions(){
+    /**
+     *  This method check if location permission granted.
+     *  If the permission has been granted calls the startLocationService method to start a location service.
+     *  If the permission has not been granted displays a request for the missing permissions and asks the permission.
+     */
+    private void checkPermissions(){
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            // public void onRequestPermissionsResult(int requestCode, String[] permissions,
             //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+            // to handle the case where the user grants the permission.
 
             //permission question
             ActivityCompat.requestPermissions(this, new String[]
                     {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_CODE);
 
         } else {
-            // Start location service
-            getLocation();
+
+            //Start the location service
+            startLocationService();
         }
     }
+
+    /**
+     * TODO DESCRIPTION
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
 
     @SuppressLint("MissingPermission")
     @Override
@@ -131,9 +121,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         if(requestCode == LOCATION_PERMISSION_CODE){
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "location permission granted!");
-                // Start location service
-                getLocation();
+                Log.d(TAG, "Location permission granted!");
+
+                //Start the location service
+                startLocationService();
 
             }else{
                 // Location permission not granted
@@ -143,14 +134,37 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         }
     }
+
+    /**
+     *  This method starts an intent service
+     *  in LocationService class
+     */
+    private void startLocationService(){
+        Intent locationService = new Intent(this, LocationService.class);
+        startService(locationService);
+    }
+
+    /**
+     *  Our handler for received Intents. This will be called whenever an Intent
+     *  with an action named "GPSLocation".
+     */
+    private BroadcastReceiver gpsLocationReceiver  = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            // Get extra data included in the Intent
+            latitude = intent.getDoubleExtra("latitude",0.0);
+            longitude = intent.getDoubleExtra("longitude",0.0);
+
+            // Refresh Map
+            onMapReady(mMap);
+        }
+    };
+
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
+     * This method Adds a marker in current location, sets zoom in the camera and defines the satellite map type.
      */
     @SuppressLint("MissingPermission")
     @Override
@@ -172,7 +186,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(currentLocation).title("Your location: "+latitude+"  "+longitude));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18f));
     }
-
 
 
     @Override
@@ -199,64 +212,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         return true;
     }
 
-
-    @SuppressLint("MissingPermission")
-    public void getLocation(){
-        Log.d(TAG, "Location service is performed");
-        fusedLocationProviderClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                    @SuppressLint("MissingPermission")
-                    @Override
-                    public void onSuccess(Location location) {
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-
-                            // Get the latitude
-                            latitude = location.getLatitude();
-
-                            // Get the longitude
-                            longitude = location.getLongitude();
-
-                            // Refresh map for this location
-                            onMapReady(mMap);
-
-                        }else{
-                            //performs location request if the last location is null
-                            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
-                        }
-                    }
-                });
-    }
-
-    /**
-     This method handle the requestLocationUpdates.
-     Used for receiving notifications from the FusedLocationProviderApi
-     when the device location has changed or can no longer be determined.
-     */
-    private void locationCallBackExecute(){
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-
-                for (Location location : locationResult.getLocations()) {
-
-                    // Get the latitude
-                    latitude = location.getLatitude();
-
-                    // Get the longitude
-                    longitude = location.getLongitude();
-
-                }
-                // Refresh map for this location
-                onMapReady(mMap);
-            }
-        };
-    }
-    
     @Override
-    protected void onStop() {
-        super.onStop();
-        //stop requestLocationUpdates method from FusedLocationProviderClient service
-        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+    protected void onDestroy() {
+        // Unregister since the activity is about to be closed.
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(gpsLocationReceiver);
+        super.onDestroy();
     }
 }

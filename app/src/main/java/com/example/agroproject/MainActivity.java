@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.example.agroproject.databinding.ActivityMainBinding;
+import com.example.agroproject.map.MapActivity;
 
 public class MainActivity extends AppCompatActivity {
 

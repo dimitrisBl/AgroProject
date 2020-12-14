@@ -125,6 +125,7 @@ public class LocationService extends Service implements Executor {
      * @param longitude takes the current device longitude
      */
     private  void sendMessageToActivity(double latitude, double longitude) {
+        Log.d(TAG, "sending message to MapActivity");
 
         // Instantiate an intent
         Intent intent = new Intent("LocationService");

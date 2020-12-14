@@ -1,5 +1,10 @@
 package com.example.agroproject;
 
+/**
+ *  TODO CLASS DESCRIPTION
+ *
+ */
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -30,7 +35,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.example.agroproject.databinding.ActivityMapsBinding;
 import com.google.android.gms.maps.model.MarkerOptions;
-
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -79,18 +83,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     /**
-     *  TODO DESCRIPTION
+     *  This method check if location permission granted.
+     *  If the permission has been granted calls the startLocationService method to start a location service.
+     *  If the permission has not been granted displays a request for the missing permissions and asks the permission.
      */
-    public void checkPermissions(){
+    private void checkPermissions(){
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            // public void onRequestPermissionsResult(int requestCode, String[] permissions,
             //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+            // to handle the case where the user grants the permission.
 
             //permission question
             ActivityCompat.requestPermissions(this, new String[]
@@ -102,6 +107,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             startLocationService();
         }
     }
+
+    /**
+     * TODO DESCRIPTION
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
 
     @SuppressLint("MissingPermission")
     @Override
@@ -124,9 +136,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     /**
-     *  TODO description
+     *  This method starts an intent service
+     *  in LocationService class
      */
-    public void startLocationService(){
+    private void startLocationService(){
         Intent locationService = new Intent(this, LocationService.class);
         startService(locationService);
     }
@@ -151,11 +164,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
+     * This method Adds a marker in current location, sets zoom in the camera and defines the satellite map type.
      */
     @SuppressLint("MissingPermission")
     @Override

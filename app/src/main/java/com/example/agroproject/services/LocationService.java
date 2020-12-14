@@ -2,8 +2,8 @@ package com.example.agroproject.services;
 
 /**
  *  TODO CLASS DESCRIPTION
- *
  */
+
 import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
@@ -11,7 +11,6 @@ import android.location.Location;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -59,14 +58,14 @@ public class LocationService extends Service implements Executor{
     }
 
     /**
-     * This method instantiate  a location request using the GPS
-     * with FusedLocationProviderClient Google API.
-     *
+     * This method initialize a location request using the GPS,
+     * then calls the getCurrentLocation method
+     * to starts a location service.
      */
     @SuppressLint("MissingPermission")
     private void requestLocation(){
 
-        // Initialize FusedLocationProviderClient object
+        // Instantiate  FusedLocationProviderClient object
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         // Location callBack method
@@ -75,7 +74,7 @@ public class LocationService extends Service implements Executor{
         // Initialize a location request
         locationRequest = new LocationRequest();
 
-        //PRIORITY_HIGH_ACCURACY using from the gps
+        //PRIORITY_HIGH_ACCURACY uses the gps
         locationRequest.setInterval(5000); // 5 seconds
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
@@ -84,7 +83,8 @@ public class LocationService extends Service implements Executor{
     }
 
     /**
-     *  TODO DESCRIPTION
+     *  This method get current location with with FusedLocationProviderClient Google API.
+     *  If last location is null performs a request location updates to gets the current location.
      */
     @SuppressLint("MissingPermission")
     public void getCurrentLocation(){
@@ -116,8 +116,8 @@ public class LocationService extends Service implements Executor{
     }
 
     /**
-     * This method send and intent with an action "GPSLocation".
-     * The intent sent should be received by the MapActivity.
+     * This method send an intent with an action "GPSLocation".
+     * The intent sent is received by the MapActivity.
      *
      * @param latitude takes the current device latitude
      * @param longitude takes the current device longitude
@@ -135,7 +135,8 @@ public class LocationService extends Service implements Executor{
     }
 
     /**
-     * This method handle the requestLocationUpdates.
+     * This callback method handle the location Update request, is triggered
+     * when called the method requestLocationUpdates of FusedLocationProviderApi.
      * Used for receiving notifications from the FusedLocationProviderApi
      * when the device location has changed or can no longer be determined.
      */

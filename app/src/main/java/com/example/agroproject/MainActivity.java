@@ -16,7 +16,7 @@ import com.example.agroproject.databinding.ActivityMapsBinding;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int MAP_ACTIVITY_REQUEST_CODE = 1;
+    private static final int MAP_ACTIVITY_INTENT_CODE = 1;
 
     private ActivityMainBinding binding;
 
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Event Handling for Individual menu item selected
      * Identify single menu item by it's id
-     * */
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
@@ -58,9 +58,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.yourMap_item:
 
                 Intent intent = new Intent(MainActivity.this, MapActivity.class);
-                MainActivity.this.startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
+                MainActivity.this.startActivityForResult(intent, MAP_ACTIVITY_INTENT_CODE);
 
-                return true;
+            return true;
 
             default:
                 return super.onOptionsItemSelected(item);
@@ -68,13 +68,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-        This method  called after the thread return from the intent service
+     * This method  called after the thread return from the intent service.
+     * @param requestCode
+     * @param resultCode
+     * @param data
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == MAP_ACTIVITY_REQUEST_CODE){
+        if(requestCode == MAP_ACTIVITY_INTENT_CODE){
             // If location permission is not granted
             if(resultCode == RESULT_OK){
                 Toast.makeText(MainActivity.this, "Accept this permission for use map and other services",Toast.LENGTH_LONG).show();

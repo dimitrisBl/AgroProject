@@ -166,4 +166,5 @@ public class LocationService extends Service implements Executor {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
         super.onDestroy();
     }
+
 }

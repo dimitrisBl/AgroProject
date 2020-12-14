@@ -116,7 +116,7 @@ public class LocationService extends Service implements Executor{
     }
 
     /**
-     * This method send an intent with an action "GPSLocation".
+     * This method send an intent with an action "LocationService".
      * The intent sent is received by the MapActivity.
      *
      * @param latitude takes the current device latitude
@@ -125,7 +125,7 @@ public class LocationService extends Service implements Executor{
     private  void sendMessageToActivity(double latitude, double longitude) {
 
         // Instantiate an intent
-        Intent intent = new Intent("GPSLocation");
+        Intent intent = new Intent("LocationService");
 
         // Include extra data
         intent.putExtra("latitude", latitude);

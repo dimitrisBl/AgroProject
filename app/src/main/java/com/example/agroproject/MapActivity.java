@@ -66,9 +66,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         setContentView(binding.getRoot());
 
         // Receive messages about current location.
-        // We are registering an observer (gpsLocationReceiver) to receive Intents with actions named "GPSLocation".
+        // We are registering an observer (gpsLocationReceiver) to receive Intents with actions named "LocationService".
         LocalBroadcastManager.getInstance(this).registerReceiver(
-                gpsLocationReceiver, new IntentFilter("GPSLocation"));
+                locationReceiver, new IntentFilter("LocationService"));
 
         // Current view
         currentView = findViewById(android.R.id.content);
@@ -146,9 +146,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     /**
      *  Our handler for received Intents. This will be called whenever an Intent
-     *  with an action named "GPSLocation".
+     *  with an action named "LocationService".
      */
-    private BroadcastReceiver gpsLocationReceiver  = new BroadcastReceiver() {
+    private BroadcastReceiver locationReceiver  = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
 
@@ -215,7 +215,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     protected void onDestroy() {
         // Unregister since the activity is about to be closed.
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(gpsLocationReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationReceiver);
         super.onDestroy();
     }
 }

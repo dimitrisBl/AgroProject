@@ -231,6 +231,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
+    
     @Override
     protected void onDestroy() {
         // Unregister since the activity is about to be closed.

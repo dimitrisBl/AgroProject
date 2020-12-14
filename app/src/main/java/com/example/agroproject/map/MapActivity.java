@@ -1,11 +1,9 @@
-package com.example.agroproject;
+package com.example.agroproject.map;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.FragmentActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -22,7 +20,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-
+import com.example.agroproject.R;
 import com.example.agroproject.services.LocationService;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;

@@ -6,7 +6,7 @@
         tools:ignore="AppCompatResource"
         android:orderInCategory="50"
         android:icon="@android:drawable/ic_menu_search"
-        android:title="create area"
+        android:title="Create Area"
         tools:showAsAction="ifRoom"/>
 
 

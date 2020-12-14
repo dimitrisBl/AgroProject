@@ -169,6 +169,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Enable visibility for zoom controls buttons
         googleMap.getUiSettings().setZoomControlsEnabled(true);
 
+
+        // auta tha mpoun otan kanw ton location live tracker
+        //googleMap.setMyLocationEnabled(true);
+        //googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+//        mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+//            @Override
+//            public boolean onMyLocationButtonClick() {
+//                Toast.makeText(MapActivity.this, " im over heree", Toast.LENGTH_LONG).show();
+//                return true;
+//            }
+//        });
+
         // Initialize map
         mMap = googleMap;
 
@@ -199,6 +211,26 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Calling super after populating the menu is necessary here to ensure that the
         // action bar helpers have a chance to handle this event.
         return true;
+    }
+
+    /**
+     * Event Handling for Individual menu item selected
+     * Identify single menu item by it's id
+     * */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.create_area:
+             
+                return true;
+
+
+
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 
     @Override

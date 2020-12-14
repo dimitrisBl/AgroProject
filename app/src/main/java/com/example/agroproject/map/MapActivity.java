@@ -27,6 +27,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.agroproject.databinding.ActivityMapBinding;
 
@@ -44,6 +45,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     // Google Map
     private GoogleMap mMap;
+
+    // Marker
+    private Marker marker;
 
     // Binding
     private ActivityMapBinding binding;
@@ -97,9 +101,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             //permission question
             ActivityCompat.requestPermissions(this, new String[]
                     {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_CODE);
-
         } else {
-
             //Start the location service
             startLocationService();
         }
@@ -143,17 +145,30 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /**
      *  Our handler for received Intents. This will be called whenever an Intent
      *  with an action named "LocationService".
+     *  TODO MORE DESCRIPTION
      */
     private BroadcastReceiver locationReceiver  = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.d(TAG,"receive latitude: "+latitude+" and longitude: "
+                    +longitude+" from location service");
 
             // Get extra data included in the Intent
             latitude = intent.getDoubleExtra("latitude",0.0);
             longitude = intent.getDoubleExtra("longitude",0.0);
 
-            // Refresh Map
-            onMapReady(mMap);
+            // Create LatLng
+            currentLocation = new LatLng(latitude, longitude);
+
+            // Create MarkerOption for current location
+            MarkerOptions markerOptions = new MarkerOptions()
+                    .position(currentLocation).title("Your location: "+latitude+"  "+longitude);
+
+            // Add Marker in the map
+            marker = mMap.addMarker(markerOptions);
+
+            // Move the camera in current location
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18f));
         }
     };
     /**
@@ -185,12 +200,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Setup satellite map
         mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
 
-        // Create LatLng
-        currentLocation = new LatLng(latitude, longitude);
 
-        // Add a marker in current location and move the camera
-        mMap.addMarker(new MarkerOptions().position(currentLocation).title("Your location: "+latitude+"  "+longitude));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18f));
+        // Move the in default location
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom( new LatLng(38.2749497,  23.8102717), 18f));
     }
 
     @Override
@@ -220,10 +232,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.create_area:
-             
-                return true;
-
-
+               //TODO LOGIC
+            return true;
 
             default:
                 return super.onOptionsItemSelected(item);
@@ -231,7 +241,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-    
     @Override
     protected void onDestroy() {
         // Unregister since the activity is about to be closed.

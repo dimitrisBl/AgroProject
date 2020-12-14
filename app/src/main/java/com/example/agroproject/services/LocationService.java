@@ -74,11 +74,8 @@ public class LocationService extends Service implements Executor{
         locationRequest = new LocationRequest();
 
         //PRIORITY_HIGH_ACCURACY using from the gps
-        locationRequest.setInterval(1000);
-        locationRequest.setFastestInterval(1000);
-        locationRequest.setSmallestDisplacement(05); //0.5 metres
+        locationRequest.setInterval(5000); // 5 seconds
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
 
         // Start location service
         getLocation();
@@ -154,12 +151,6 @@ public class LocationService extends Service implements Executor{
                 }
             }
         };
-    }
-
-    @Override
-    public void onRebind(Intent intent) {
-        super.onRebind(intent);
-        Toast.makeText(this," on rebind calll", Toast.LENGTH_LONG).show();
     }
 
     @Override

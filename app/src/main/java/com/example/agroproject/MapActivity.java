@@ -61,7 +61,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Receive this Broadcast GPSLocation message from LocationService class.
+        // Receive messages about current location.
+        // We are registering an observer (gpsLocationReceiver) to receive Intents with actions named "GPSLocation".
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 gpsLocationReceiver, new IntentFilter("GPSLocation"));
 
@@ -202,4 +203,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         return true;
     }
 
+    @Override
+    protected void onDestroy() {
+        // Unregister since the activity is about to be closed.
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(gpsLocationReceiver);
+        super.onDestroy();
+    }
 }

@@ -33,6 +33,13 @@
         <activity
             android:name=".MapActivity"
             android:label="@string/title_activity_map"></activity>
+
+        <!--
+            Location Service
+        -->
+        <service
+            android:name=".services.LocationService" />
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

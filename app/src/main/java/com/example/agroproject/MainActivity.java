@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Initiating Menu XML file (activity_main_top_menu.xml)
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.activity_main_top_menu, menu);
+        inflater.inflate(R.menu.activity_main_menu, menu);
 
         // set title alignment for each item is center
         int positionOfMenuItem0 = 0; //or any other postion

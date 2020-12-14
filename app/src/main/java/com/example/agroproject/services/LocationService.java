@@ -59,7 +59,9 @@ public class LocationService extends Service implements Executor{
     }
 
     /**
-     * TODO DESCRIPTION
+     * This method instantiate  a location request using the GPS
+     * with FusedLocationProviderClient Google API.
+     *
      */
     @SuppressLint("MissingPermission")
     private void requestLocation(){
@@ -78,14 +80,14 @@ public class LocationService extends Service implements Executor{
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         // Start location service
-        getLocation();
+        getCurrentLocation();
     }
 
     /**
      *  TODO DESCRIPTION
      */
     @SuppressLint("MissingPermission")
-    public void getLocation(){
+    public void getCurrentLocation(){
         Log.d(TAG, "Location service is performed");
         fusedLocationProviderClient.getLastLocation()
                 .addOnSuccessListener( this, new OnSuccessListener<Location>() {
@@ -95,14 +97,14 @@ public class LocationService extends Service implements Executor{
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
 
-                            // Get the latitude
+                            // Get the current latitude
                             latitude = location.getLatitude();
 
-                            // Get the longitude
+                            // Get the current longitude
                             longitude = location.getLongitude();
 
                         }else{
-                            //performs location request if the last location is null
+                            // Performs location request if the last location is null
                             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
                         }
 
@@ -114,9 +116,11 @@ public class LocationService extends Service implements Executor{
     }
 
     /**
-     * TODO description
-     * @param latitude
-     * @param longitude
+     * This method send and intent with an action "GPSLocation".
+     * The intent sent should be received by the MapActivity.
+     *
+     * @param latitude takes the current device latitude
+     * @param longitude takes the current device longitude
      */
     private  void sendMessageToActivity(double latitude, double longitude) {
 
@@ -131,9 +135,9 @@ public class LocationService extends Service implements Executor{
     }
 
     /**
-     This method handle the requestLocationUpdates.
-     Used for receiving notifications from the FusedLocationProviderApi
-     when the device location has changed or can no longer be determined.
+     * This method handle the requestLocationUpdates.
+     * Used for receiving notifications from the FusedLocationProviderApi
+     * when the device location has changed or can no longer be determined.
      */
     private void locationCallBackExecute(){
         Log.d(TAG, "Location CallBack service is performed");
@@ -155,8 +159,8 @@ public class LocationService extends Service implements Executor{
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         //stop requestLocationUpdates method from FusedLocationProviderClient service
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+        super.onDestroy();
     }
 }

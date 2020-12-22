@@ -1,6 +1,7 @@
 package com.example.agroproject.map;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -20,6 +21,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
+import android.widget.Toolbar;
+
 import com.example.agroproject.R;
 import com.example.agroproject.services.LocationService;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -63,7 +67,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         binding = ActivityMapBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -200,7 +203,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Setup satellite map
         mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
 
-
         // Move the in default location
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom( new LatLng(38.2749497,  23.8102717), 18f));
     }
@@ -210,6 +212,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Initiating Menu XML file (activity_map_menu.xml)
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.activity_map_menu, menu);
+
+        // Enable back button in menu
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
         // set title alignment for each item is center
         int positionOfMenuItem0 = 0; //or any other postion
@@ -231,9 +237,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
+
+            // Back button case
+            case android.R.id.home:
+                finish();
+
             case R.id.create_area:
                //TODO LOGIC
+
             return true;
+
 
             default:
                 return super.onOptionsItemSelected(item);

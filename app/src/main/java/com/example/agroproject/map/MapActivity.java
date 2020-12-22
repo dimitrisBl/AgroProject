@@ -275,7 +275,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable  Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
+        
         if(requestCode == CREATE_AREA_ACTIVITY_INTENT_CODE){
             if(resultCode == RESULT_OK){
                 Toast.makeText(MapActivity.this,

@@ -189,7 +189,7 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
 
                 case "save area":
                     Intent intent = new Intent();
-                    intent.putExtra("polygonOptions",String.valueOf(polygon));
+//                    intent.putExtra("polygonOptions",String.valueOf(polygon));
                     setResult(RESULT_OK);
                     finish();
                 break;

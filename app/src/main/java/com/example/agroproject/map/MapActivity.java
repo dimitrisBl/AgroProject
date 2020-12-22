@@ -1,6 +1,7 @@
 package com.example.agroproject.map;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -24,6 +25,7 @@ import android.view.View;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
+import com.example.agroproject.MainActivity;
 import com.example.agroproject.R;
 import com.example.agroproject.services.LocationService;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -34,6 +36,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.agroproject.databinding.ActivityMapBinding;
+import com.google.android.gms.maps.model.PolygonOptions;
 
 /**
  *  TODO CLASS DESCRIPTION
@@ -46,6 +49,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     // Location permission request code
     private final int LOCATION_PERMISSION_CODE = 1;
+
+    private static final int CREATE_AREA_ACTIVITY_INTENT_CODE = 2;
 
     // Google Map
     private GoogleMap mMap;
@@ -240,17 +245,42 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
             // Back button case
             case android.R.id.home:
+                /**
+                 * TODO BUG FIX IN THIS CASE
+                 */
                 finish();
 
             case R.id.create_area:
-               //TODO LOGIC
-
+                Intent intent = new Intent(this,CreateAreaActivity.class);
+                intent.putExtra("latitude",latitude);
+                intent.putExtra("longitude",longitude);
+                startActivityForResult(intent, CREATE_AREA_ACTIVITY_INTENT_CODE);
             return true;
 
 
             default:
                 return super.onOptionsItemSelected(item);
 
+        }
+    }
+
+    /**
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     * TODO DESCRIPTION
+     *
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable  Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == CREATE_AREA_ACTIVITY_INTENT_CODE){
+            if(resultCode == RESULT_OK){
+                Toast.makeText(MapActivity.this,
+                        "Pressing save area button!!",Toast.LENGTH_LONG).show();
+            }
         }
     }
 

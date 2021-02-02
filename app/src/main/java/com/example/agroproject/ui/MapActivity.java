@@ -1,4 +1,4 @@
-package com.example.agroproject.map;
+package com.example.agroproject.ui;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,10 +23,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
-import com.example.agroproject.MainActivity;
 import com.example.agroproject.R;
+import com.example.agroproject.model.PolygonModel;
 import com.example.agroproject.services.LocationService;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -69,6 +68,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private double longitude;
     private LatLng currentLocation;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,6 +91,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
+
     /**
      *  This method check if location permission granted.
      *  If the permission has been granted calls the startLocationService method to start a location service.
@@ -158,8 +159,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private BroadcastReceiver locationReceiver  = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG,"receive latitude: "+latitude+" and longitude: "
-                    +longitude+" from location service");
+            Log.d(TAG,"Receive message from " +
+                    "LocationService class about the device coordinates");
 
             // Get extra data included in the Intent
             latitude = intent.getDoubleExtra("latitude",0.0);
@@ -190,7 +191,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Enable visibility for zoom controls buttons
         googleMap.getUiSettings().setZoomControlsEnabled(true);
 
-
         // auta tha mpoun otan kanw ton location live tracker
         //googleMap.setMyLocationEnabled(true);
         //googleMap.getUiSettings().setMyLocationButtonEnabled(true);
@@ -209,7 +209,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
 
         // Move the in default location
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom( new LatLng(38.2749497,  23.8102717), 18f));
+        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom( new LatLng(38.2749497,  23.8102717), 18f));
     }
 
     @Override
@@ -254,7 +254,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 Intent intent = new Intent(this,CreateAreaActivity.class);
                 intent.putExtra("latitude",latitude);
                 intent.putExtra("longitude",longitude);
-                startActivityForResult(intent, CREATE_AREA_ACTIVITY_INTENT_CODE);
+                startActivity(intent);
             return true;
 
 
@@ -270,7 +270,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * @param resultCode
      * @param data
      * TODO DESCRIPTION
-     *
+     *  mallon den tha thn xreiastw gia thn epistrofh apo thn klhsh ths CreateAreaActivity. Tha to ftiaksw me thn onResume
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable  Intent data) {
@@ -278,16 +278,32 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         
         if(requestCode == CREATE_AREA_ACTIVITY_INTENT_CODE){
             if(resultCode == RESULT_OK){
+
                 Toast.makeText(MapActivity.this,
                         "Pressing save area button!!",Toast.LENGTH_LONG).show();
             }
         }
     }
 
+    /**
+     * TODO METHOD DESCRIPTION
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG,"OnResume method performed");
+        if(!PolygonModel.getPolygonOptions().isEmpty()){
+            for(PolygonOptions polygonOptions : PolygonModel.getPolygonOptions()){
+                //
+                mMap.addPolygon(polygonOptions);
+            }
+        }
+    }
+
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         // Unregister since the activity is about to be closed.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(locationReceiver);
-        super.onDestroy();
     }
 }

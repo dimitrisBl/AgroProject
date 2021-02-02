@@ -16,7 +16,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AgroProject">
-        <activity android:name=".map.CreateAreaActivity"></activity>
+        <activity android:name=".ui.CreateAreaActivity"></activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -29,13 +29,14 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
+
         <activity
-            android:name=".map.MapActivity"
+            android:name=".ui.MapActivity"
             android:label="@string/title_activity_map"></activity>
         <!--            Location Service -->
         <service android:name=".services.LocationService" />
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

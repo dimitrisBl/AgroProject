@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".map.CreateAreaActivity">
+    tools:context=".ui.CreateAreaActivity">
 
 
     <fragment
@@ -25,26 +25,26 @@
 
 
         <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:id="@+id/draw_polygon"
-            android:layout_weight="1.5"
-            android:text="draw area"/>
-
-        <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1.5"
+            android:text="draw" />
+
+        <Button
             android:id="@+id/save_area"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="1.5"
-            android:text="save area"/>
+            android:text="save" />
 
 
         <Button
+            android:id="@+id/clear_map"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/clear_map"
             android:layout_weight="1.5"
-            android:text="clear map"/>
+            android:text="clear" />
 
     </LinearLayout>
 

@@ -77,7 +77,8 @@ public class LocationService extends Service implements Executor {
         locationRequest = new LocationRequest();
 
         //PRIORITY_HIGH_ACCURACY uses the gps
-        locationRequest.setInterval(5000); // 5 seconds
+        locationRequest.setInterval(5000); // 1 second
+        locationRequest.setFastestInterval(1000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         // Start location service

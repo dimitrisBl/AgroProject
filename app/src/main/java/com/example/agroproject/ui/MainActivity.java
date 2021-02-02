@@ -1,4 +1,4 @@
-package com.example.agroproject;
+package com.example.agroproject.ui;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -12,8 +12,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMainBinding;
-import com.example.agroproject.map.MapActivity;
 
 public class MainActivity extends AppCompatActivity {
 

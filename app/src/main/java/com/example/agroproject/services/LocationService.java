@@ -56,7 +56,7 @@ public class LocationService extends Service implements Executor {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Start request for location
-        requestLocation();
+        locationRequest();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -66,7 +66,7 @@ public class LocationService extends Service implements Executor {
      * to starts a location service.
      */
     @SuppressLint("MissingPermission")
-    private void requestLocation(){
+    private void locationRequest(){
 
         // Instantiate  FusedLocationProviderClient object
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -163,11 +163,15 @@ public class LocationService extends Service implements Executor {
         };
     }
 
-//    @Override
-//    public void onDestroy() {
-//        //stop requestLocationUpdates method from FusedLocationProviderClient service
-//        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-//        super.onDestroy();
-//    }
+    /**
+     * This method stop the request for location updates
+     * of the FusedLocationProviderClient service.
+     */
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Stop location updates
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+    }
 
 }

@@ -112,7 +112,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             ActivityCompat.requestPermissions(this, new String[]
                     {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_CODE);
         } else {
-            //Start the location service
+            // Start the location service
             startLocationService();
         }
     }
@@ -131,7 +131,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                 Log.d(TAG, "Location permission granted!");
 
-                //Start the location service
+                // Start the location service
                 startLocationService();
 
             }else{
@@ -145,7 +145,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     /**
      *  This method starts an intent service
-     *  in LocationService class
+     *  in LocationService class.
      */
     private void startLocationService(){
         Intent locationService = new Intent(this, LocationService.class);

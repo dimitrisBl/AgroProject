@@ -56,7 +56,7 @@ public class LocationService extends Service implements Executor {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Start request for location
-        locationRequest();
+        startLocationService();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -66,7 +66,7 @@ public class LocationService extends Service implements Executor {
      * to starts a location service.
      */
     @SuppressLint("MissingPermission")
-    private void locationRequest(){
+    private void startLocationService(){
 
         // Instantiate  FusedLocationProviderClient object
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);

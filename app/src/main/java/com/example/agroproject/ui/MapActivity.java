@@ -37,13 +37,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.agroproject.databinding.ActivityMapBinding;
 import com.google.android.gms.maps.model.PolygonOptions;
 
-/**
- *  TODO CLASS DESCRIPTION
- *
- */
-
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    // Class TAG
     private final String TAG = "MapActivity";
 
     // Location permission request code
@@ -68,6 +64,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private double longitude;
     private LatLng currentLocation;
 
+    // PolygonModel
+    private PolygonModel polygonModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +80,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         // Current view
         currentView = findViewById(android.R.id.content);
+
+        // Instantiate the polygonModel object.
+        polygonModel = new PolygonModel(this);
 
         // Permission check service
         checkPermissions();
@@ -209,7 +210,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
 
         // Move the in default location
-        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom( new LatLng(38.2749497,  23.8102717), 18f));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom( new LatLng(38.2749497,  23.8102717), 18f));
+
+        // Add the existing polygons in the map
+        addPolygonsInTheMap();
     }
 
     @Override
@@ -288,20 +292,28 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /**
      * TODO METHOD DESCRIPTION
      */
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG,"OnResume method performed");
-        if(!PolygonModel.getPolygonOptions().isEmpty()){
-            for(PolygonOptions polygonOptions : PolygonModel.getPolygonOptions()){
-                //
+    private void addPolygonsInTheMap(){
+        if(!polygonModel.getSavedPolygonOptions().isEmpty()){
+            for(PolygonOptions polygonOptions : polygonModel.getSavedPolygonOptions()){
                 mMap.addPolygon(polygonOptions);
             }
         }
     }
 
+    /**
+     * TODO METHOD DESCRIPTION
+     */
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d(TAG,"onRestart method executed");
+        // Add the existing polygons in the map
+        addPolygonsInTheMap();
+    }
+
     @Override
     protected void onDestroy() {
+        Log.d(TAG,"onDestroy method executed");
         super.onDestroy();
         // Unregister since the activity is about to be closed.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(locationReceiver);

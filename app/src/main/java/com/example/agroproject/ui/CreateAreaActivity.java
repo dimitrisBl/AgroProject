@@ -13,8 +13,8 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.agroproject.R;
-import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.model.PolygonModel;
+import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -23,7 +23,6 @@ import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -39,6 +38,7 @@ import java.util.List;
 
 public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCallback {
 
+    // Class TAG
     private final String TAG = "CreateAreaActivity";
 
     // Binding
@@ -64,6 +64,9 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
     // Initialize LatLng arrayList
     private List<LatLng> latLngList = new ArrayList<>();
 
+    // PolygonModel
+    private PolygonModel polygonModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,6 +82,9 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
         // Get extras from intent
         latitude = intent.getDoubleExtra("latitude", 0.0);
         longitude = intent.getDoubleExtra("longitude",0.0);
+
+        // Instantiate the PolygonModel object.
+        polygonModel = new PolygonModel(this);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -102,11 +108,8 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
         // Move the camera in current location
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom( new LatLng(latitude,  longitude), 18.5f));
 
-        if(!PolygonModel.getPolygonOptions().isEmpty()){
-            for(PolygonOptions polyOptions : PolygonModel.getPolygonOptions()){
-                mMap.addPolygon(polyOptions);
-            }
-        }
+        //Add the existing polygons in the map
+        addPolygonsInTheMap();
     }
     /**
      * TODO description
@@ -125,7 +128,6 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
                 // Remove the previous marker
                 marker.remove();
             }
-
             // Create Marker in the map
             marker = mMap.addMarker(markerOptions);
 
@@ -147,7 +149,6 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
 
                 mMap.addPolyline(polylineOptions);
             }
-
         }
     };
 
@@ -172,7 +173,6 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
                                 .fillColor(Color.rgb(204, 255, 204)).clickable(true);
                         // Draw area on the Map
                         mMap.addPolygon(polygonOptions);
-
 
                         // Remove markers from the map
                         for (Marker marker : markerList) {
@@ -223,23 +223,39 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
                 .setMessage("You want to save this area?")
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        // If answer is yes adds the polygonOptions on polygonOptionsList in PolygonModel class.
-                        PolygonModel.addPolygon(polygonOptions);
+                        // If answer is yes save the polygon in shared preferences.
+                        //polygonModel.savePolygon(polygonOptions);
+                        polygonModel.addPolygonOptions(polygonOptions);
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        // If answer is no do nothing.
+                        // If answer is no, clean the map and add the existing polygons.
                         mMap.clear();
-
-                        if(!PolygonModel.getPolygonOptions().isEmpty()){
-                            for(PolygonOptions polyOptions : PolygonModel.getPolygonOptions()){
-                                mMap.addPolygon(polyOptions);
-                            }
-                        }
+                        //Add the existing polygons in the map
+                        addPolygonsInTheMap();
                     }
                 })
         .show();
+    }
+
+    /**
+     * TODO METHOD DESCRIPTION
+     */
+    private void addPolygonsInTheMap(){
+        if(!polygonModel.getSavedPolygonOptions().isEmpty()){
+           for(PolygonOptions polygonOptions : polygonModel.getSavedPolygonOptions()){
+               mMap.addPolygon(polygonOptions);
+           }
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d(TAG,"onPause method executed");
+        super.onPause();
+        // Save polygons in shared preferences.
+        polygonModel.savePolygonOptions();
     }
 }

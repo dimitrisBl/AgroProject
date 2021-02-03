@@ -26,6 +26,7 @@ import java.util.concurrent.Executor;
 
 public class LocationService extends Service implements Executor {
 
+    // Class TAG
     private final String TAG = "LocationService";
 
     // Google's API for location service
@@ -77,7 +78,7 @@ public class LocationService extends Service implements Executor {
         locationRequest = new LocationRequest();
 
         //PRIORITY_HIGH_ACCURACY uses the gps
-        locationRequest.setInterval(5000); // 1 second
+        locationRequest.setInterval(1000); // 1 second
         locationRequest.setFastestInterval(1000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
@@ -162,11 +163,11 @@ public class LocationService extends Service implements Executor {
         };
     }
 
-    @Override
-    public void onDestroy() {
-        //stop requestLocationUpdates method from FusedLocationProviderClient service
-        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-        super.onDestroy();
-    }
+//    @Override
+//    public void onDestroy() {
+//        //stop requestLocationUpdates method from FusedLocationProviderClient service
+//        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+//        super.onDestroy();
+//    }
 
 }

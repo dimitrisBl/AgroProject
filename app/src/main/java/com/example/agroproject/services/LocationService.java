@@ -71,9 +71,6 @@ public class LocationService extends Service implements Executor {
         // Instantiate  FusedLocationProviderClient object
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // Location callBack method
-        locationCallBackExecute();
-
         // Initialize a location request
         locationRequest = new LocationRequest();
 
@@ -84,6 +81,9 @@ public class LocationService extends Service implements Executor {
 
         // Start location service
         getCurrentLocation();
+
+        // Location callBack method
+        locationCallBackExecute();
     }
 
     /**
@@ -107,13 +107,13 @@ public class LocationService extends Service implements Executor {
                             // Get the current longitude
                             longitude = location.getLongitude();
 
+                            // Send coordinates in MapActivity
+                            sendMessageToActivity(latitude,longitude);
+
                         }else{
                             // Performs location request if the last location is null
                             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
                         }
-
-                        // Send coordinates in MapActivity
-                        sendMessageToActivity(latitude,longitude);
                     }
 
                 });
@@ -159,6 +159,9 @@ public class LocationService extends Service implements Executor {
                     // Get the longitude
                     longitude = location.getLongitude();
                 }
+
+                // Send coordinates in MapActivity
+                sendMessageToActivity(latitude,longitude);
             }
         };
     }
@@ -166,12 +169,12 @@ public class LocationService extends Service implements Executor {
     /**
      * This method stop the request for location updates
      * of the FusedLocationProviderClient service.
+     * auth h methodo mallon einai gia mpoulo giati mou dimiourgouse ena mikro problhma sto service
      */
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        // Stop location updates
-        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-    }
-
+//    @Override
+//    public void onDestroy() {
+//        super.onDestroy();
+//        // Stop location updates
+//        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+//    }
 }

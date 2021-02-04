@@ -25,7 +25,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.example.agroproject.R;
-import com.example.agroproject.model.PolygonModel;
+import com.example.agroproject.model.MonitoringAreas;
 import com.example.agroproject.services.LocationService;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -45,19 +45,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     // Location permission request code
     private final int LOCATION_PERMISSION_CODE = 1;
 
-    private static final int CREATE_AREA_ACTIVITY_INTENT_CODE = 2;
-
     // Google Map
     private GoogleMap mMap;
 
-    // Marker
-    private Marker marker;
-
     // Binding
     private ActivityMapBinding binding;
-
-    // current view
-    private View currentView;
 
     // Device coordinates
     private double latitude;
@@ -65,7 +57,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private LatLng currentLocation;
 
     // PolygonModel
-    private PolygonModel polygonModel;
+    private MonitoringAreas monitoringAreas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,11 +70,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 locationReceiver, new IntentFilter("LocationService"));
 
-        // Current view
-        currentView = findViewById(android.R.id.content);
-
         // Instantiate the polygonModel object.
-        polygonModel = new PolygonModel(this);
+        monitoringAreas = new MonitoringAreas(this);
 
         // Permission check service
         checkPermissions();
@@ -175,7 +164,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     .position(currentLocation).title("Your location: "+latitude+"  "+longitude);
 
             // Add Marker in the map
-            marker = mMap.addMarker(markerOptions);
+            mMap.addMarker(markerOptions);
 
             // Move the camera in current location
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18f));
@@ -269,32 +258,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     /**
-     *
-     * @param requestCode
-     * @param resultCode
-     * @param data
-     * TODO DESCRIPTION
-     *  mallon den tha thn xreiastw gia thn epistrofh apo thn klhsh ths CreateAreaActivity. Tha to ftiaksw me thn onResume
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable  Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        
-        if(requestCode == CREATE_AREA_ACTIVITY_INTENT_CODE){
-            if(resultCode == RESULT_OK){
-
-                Toast.makeText(MapActivity.this,
-                        "Pressing save area button!!",Toast.LENGTH_LONG).show();
-            }
-        }
-    }
-
-    /**
      * TODO METHOD DESCRIPTION
      */
     private void addPolygonsInTheMap(){
-        if(!polygonModel.getSavedPolygonOptions().isEmpty()){
-            for(PolygonOptions polygonOptions : polygonModel.getSavedPolygonOptions()){
+        if(!monitoringAreas.getSavedArea().isEmpty()){
+            for(PolygonOptions polygonOptions : monitoringAreas.getSavedArea()){
                 mMap.addPolygon(polygonOptions);
             }
         }
@@ -313,8 +281,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     protected void onDestroy() {
-        Log.d(TAG,"onDestroy method executed");
         super.onDestroy();
+        Log.d(TAG,"onDestroy method executed");
         // Unregister since the activity is about to be closed.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(locationReceiver);
     }

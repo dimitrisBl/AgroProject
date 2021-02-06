@@ -3,21 +3,33 @@ package com.example.agroproject.services;
 import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.location.Location;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.example.agroproject.ui.MainActivity;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
+import java.util.Collections;
 import java.util.concurrent.Executor;
 
 /**
@@ -121,13 +133,13 @@ public class LocationService extends Service implements Executor {
 
     /**
      * This method send an intent with an action "LocationService".
-     * The intent sent is received by the MapActivity.
+     * The intent sent is received by the MainActivity.
      *
      * @param latitude takes the current device latitude
      * @param longitude takes the current device longitude
      */
     private  void sendMessageToActivity(double latitude, double longitude) {
-        Log.d(TAG, "sending message to MapActivity");
+        Log.d(TAG, "sending message to MainActivity");
 
         // Instantiate an intent
         Intent intent = new Intent("LocationService");
@@ -160,21 +172,9 @@ public class LocationService extends Service implements Executor {
                     longitude = location.getLongitude();
                 }
 
-                // Send coordinates in MapActivity
+                // Send coordinates in MainActivity
                 sendMessageToActivity(latitude,longitude);
             }
         };
     }
-
-    /**
-     * This method stop the request for location updates
-     * of the FusedLocationProviderClient service.
-     * auth h methodo mallon einai gia mpoulo giati mou dimiourgouse ena mikro problhma sto service
-     */
-//    @Override
-//    public void onDestroy() {
-//        super.onDestroy();
-//        // Stop location updates
-//        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-//    }
 }

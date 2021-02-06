@@ -80,7 +80,6 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
 
         // Set click listener for buttons
         binding.drawPolygon.setOnClickListener(buttonClickListener);
-        binding.saveArea.setOnClickListener(buttonClickListener);
         binding.clearMap.setOnClickListener(buttonClickListener);
 
         Intent intent = getIntent();

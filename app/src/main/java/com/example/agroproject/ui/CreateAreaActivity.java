@@ -274,7 +274,7 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
             public void onClick(View view) {
                 Log.d(TAG,"Submit button pressed");
                 String areaNameText = areaName.getText().toString();
-                String areaDescriptionText = areaName.getText().toString();
+                String areaDescriptionText = areaDescription.getText().toString();
 
 
                 // Create the monitoring area.

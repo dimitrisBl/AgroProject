@@ -47,7 +47,6 @@ public class MonitoringAreaManager {
     public void createMonitoringArea(MonitoringArea monitoringArea){
           monitoringAreaList.add(monitoringArea);
      }
-
     /**
      * This method save the monitoringAreaList in shared preferences file.
      * monitoringAreaList haves the data of the monitoring areas.

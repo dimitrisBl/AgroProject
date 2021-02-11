@@ -246,6 +246,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onRestart() {
         super.onRestart();
         Log.d(TAG,"onRestart method executed");
+        // GPS status
+        isGpsEnable();
     }
 
     @Override

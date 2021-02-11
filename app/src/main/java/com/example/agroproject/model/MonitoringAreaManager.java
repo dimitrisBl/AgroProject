@@ -24,7 +24,7 @@ public class MonitoringAreaManager {
     /** Name for the monitoringAreaList in shared preferences file */
     private final String MONITORING_AREA_LIST = "monitoringAreaList";
 
-    /** SharedPreferences */
+    /** SharedPreferences object */
     private SharedPreferences polygonStatePrefs;
 
     /** List with MonitoringArea objects */

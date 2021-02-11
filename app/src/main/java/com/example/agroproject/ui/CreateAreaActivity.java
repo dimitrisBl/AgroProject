@@ -1,7 +1,9 @@
 package com.example.agroproject.ui;
 
-import androidx.fragment.app.FragmentActivity;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -9,6 +11,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,7 +32,6 @@ import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -38,38 +41,42 @@ import java.util.List;
 
 /**
  * TODO description for this class
- * TODO logic for save areas
+ *
  */
 
+public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCallback {
-
-    // Class TAG
+    /** Class TAG */
     private final String TAG = "CreateAreaActivity";
 
-    // ActivityCreateAreaBinding Binding
+    /** Activity view binding */
     private ActivityCreateAreaBinding binding;
 
-    // Google Map
+    /** GoogleMap object */
     private GoogleMap mMap;
 
-    // Marker
+    /** Marker object */
     private Marker marker = null;
 
-    // Device coordinates
+    /** The current geographic latitude of the device */
     private double latitude;
+
+    /** The current geographic longitude of the device */
     private double longitude;
 
-    //----------- For Polygon - Polyline --------//
+    /** LatLng object for the current location  */
+    private LatLng currentLocation;
+
+    /** PolygonOptions object */
     private PolygonOptions polygonOptions = null;
-    
-    // Initialize Marker arrayList
+
+    /** Initialize List with Marker objects */
     private List<Marker> markerList = new ArrayList<>();
 
-    // Initialize LatLng arrayList
+    /** Initialize List with LatLng objects */
     private List<LatLng> latLngList = new ArrayList<>();
 
-    // MonitoringAreas
+    /** MonitoringAreaManager object */
     private MonitoringAreaManager monitoringAreaManager;
 
     @Override
@@ -82,10 +89,13 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
         binding.drawPolygon.setOnClickListener(buttonClickListener);
         binding.clearMap.setOnClickListener(buttonClickListener);
 
-        Intent intent = getIntent();
         // Get extras from intent
+        Intent intent = getIntent();
         latitude = intent.getDoubleExtra("latitude", 0.0);
         longitude = intent.getDoubleExtra("longitude",0.0);
+
+        // Create the LatLng object of the current location
+        currentLocation = new LatLng(latitude, longitude);
 
         // Instantiate the PolygonModel object.
         monitoringAreaManager = new MonitoringAreaManager(this);
@@ -99,21 +109,16 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-
         // Initialize map
         mMap = googleMap;
-
         // Setup satellite map
         mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
-
         // Set Map click listener method
         mMap.setOnMapClickListener(mapClickListener);
-
         // Move the camera in current location
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom( new LatLng(latitude,  longitude), 18.5f));
-
-        //Add the existing polygons in the map
-        addPolygonsInTheMap();
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18.5f));
+        //Add the existing monitoring areas in the map
+        addTheExistingAreasInMap();
     }
 
     /**
@@ -170,7 +175,7 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
 
             switch (currentButtonText){
                 case "draw area":
-                    if(!latLngList.isEmpty() && markerList.size() >= 3) {
+                    if(!latLngList.isEmpty() && markerList.size() >= 4 ) {
                         // Create PolygonOptions
                         polygonOptions = new PolygonOptions()
                                 .strokeWidth(5.2f).addAll(latLngList).strokeColor(Color.RED)
@@ -188,10 +193,10 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
                         markerList.clear();
                         latLngList.clear();
 
-                    }else if(!markerList.isEmpty() && markerList.size() <= 2){
+                    }else if(!markerList.isEmpty() && markerList.size() <= 3 ){
                         // Show message
                          Toast.makeText(CreateAreaActivity.this,
-                                "You need three markers at least to draw an area",Toast.LENGTH_LONG).show();
+                                "You need four markers at least to draw an area",Toast.LENGTH_LONG).show();
                     }else{
                         // Show message
                         Toast.makeText(CreateAreaActivity.this,
@@ -203,7 +208,8 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
                     markerList.clear();
                     mMap.clear();
                     //prepei na bgei apo edw to afhnw gia na mn gemizw to arxeio malakies
-                    monitoringAreaManager.clearSharedPreferencesFile();
+                    //monitoringAreaManager.clearSharedPreferencesFile();
+                    addTheExistingAreasInMap();
                 break;
             }
         }
@@ -212,6 +218,8 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
     /**
      * TODO method description
      */
+
+    @SuppressLint("NewApi")
     private void showSaveAlertDialog(){
         new AlertDialog.Builder(CreateAreaActivity.this)
                 .setIcon(R.drawable.ic_baseline_save)
@@ -219,17 +227,24 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
                 .setMessage("You want to save this area?")
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        // If answer is show popup alert form.
-                         showSavePopupAlert();
+                        // If answer is yes show popup alert form.
+                        showSaveAreaPopup();
                     }
-                })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         // If answer is no, clean the map and add the existing polygons.
                         mMap.clear();
                         //Add the existing polygons in the map
-                        addPolygonsInTheMap();
+                        addTheExistingAreasInMap();
+                    }
+                }).setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialogInterface) {
+                        // If dismiss Popup, clean the map and add the existing polygons.
+                        mMap.clear();
+                        //Add the existing polygons in the map
+                        addTheExistingAreasInMap();
                     }
                 })
         .show();
@@ -239,7 +254,7 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
     /**
      * TODO method description
      */
-    private void showSavePopupAlert(){
+    private void showSaveAreaPopup(){
         // Binding
         SaveAreaPopupStyleBinding popupBinding;
 
@@ -265,10 +280,10 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
         imageViewClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close dialog
                 popupDialog.dismiss();
             }
-        });
-        // Submit Button ClickEvent
+        });// Save Button ClickEvent
         submitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -276,26 +291,51 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
                 String areaNameText = areaName.getText().toString();
                 String areaDescriptionText = areaDescription.getText().toString();
 
-
                 // Create the monitoring area.
                 monitoringAreaManager.createMonitoringArea(
                         new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions));
 
+                // Save monitoring area in shared preferences.
+                monitoringAreaManager.saveMonitoringArea();
+
                 // Close dialog
                 popupDialog.dismiss();
             }
+        });// Dismiss Popup Event
+        popupDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                mMap.clear();
+                //Add the existing polygons in the map
+                addTheExistingAreasInMap();
+            }
         });
         popupDialog.show();
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Enable back button in menu
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        return super.onCreateOptionsMenu(menu);
     }
 
     /**
      * TODO METHOD DESCRIPTION
      *
      */
-    private void addPolygonsInTheMap(){
+    private void addTheExistingAreasInMap(){
         if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
             for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
                 mMap.addPolygon(monitoringArea.getPolygonOptions());
+                // Get the center location of the area
+                LatLng centerLatLng = monitoringArea
+                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
+                // Add Marker on map  in the center location of area
+                mMap.addMarker(new MarkerOptions()
+                        .position(centerLatLng).title(monitoringArea.getName()));
             }
         }
     }
@@ -304,7 +344,5 @@ public class CreateAreaActivity extends FragmentActivity implements OnMapReadyCa
     protected void onPause() {
         Log.d(TAG,"onPause method executed");
         super.onPause();
-        // Save monitoring area in shared preferences.
-        monitoringAreaManager.saveMonitoringArea();
     }
 }

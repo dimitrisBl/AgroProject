@@ -38,20 +38,22 @@ import java.util.concurrent.Executor;
 
 public class LocationService extends Service implements Executor {
 
-    // Class TAG
+    /** Class TAG */
     private final String TAG = "LocationService";
 
-    // Google's API for location service
+    /** Google's API for location service */
     private FusedLocationProviderClient fusedLocationProviderClient;
 
-    // Location callback
+    /** LocationCallback object */
     private LocationCallback locationCallback;
 
-    // Location request
+    /** LocationRequest object */
     private LocationRequest locationRequest;
 
-    // Coordinates
+    /** The current geographic latitude of the device */
     private double latitude;
+
+    /** The current geographic longitude of the device */
     private double longitude;
 
     @Nullable
@@ -112,16 +114,12 @@ public class LocationService extends Service implements Executor {
                     public void onSuccess(Location location) {
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
-
                             // Get the current latitude
                             latitude = location.getLatitude();
-
                             // Get the current longitude
                             longitude = location.getLongitude();
-
                             // Send coordinates in MapActivity
                             sendMessageToActivity(latitude,longitude);
-
                         }else{
                             // Performs location request if the last location is null
                             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
@@ -140,10 +138,8 @@ public class LocationService extends Service implements Executor {
      */
     private  void sendMessageToActivity(double latitude, double longitude) {
         Log.d(TAG, "sending message to MainActivity");
-
         // Instantiate an intent
         Intent intent = new Intent("LocationService");
-
         // Include extra data
         intent.putExtra("latitude", latitude);
         intent.putExtra("longitude", longitude);
@@ -162,18 +158,14 @@ public class LocationService extends Service implements Executor {
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-
                 for (Location location : locationResult.getLocations()) {
-
-                    // Get the latitude
+                    // Get the current latitude
                     latitude = location.getLatitude();
-
-                    // Get the longitude
+                    // Get the current longitude
                     longitude = location.getLongitude();
                 }
-
-                // Send coordinates in MainActivity
-                sendMessageToActivity(latitude,longitude);
+            // Send coordinates in MainActivity
+            sendMessageToActivity(latitude,longitude);
             }
         };
     }

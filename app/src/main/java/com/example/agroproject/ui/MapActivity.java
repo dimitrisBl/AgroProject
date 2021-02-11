@@ -5,13 +5,11 @@ package com.example.agroproject.ui;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.widget.Toast;
-
 import com.example.agroproject.R;
 import com.example.agroproject.model.MonitoringAreaManager;
 import com.example.agroproject.model.MonitoringArea;
@@ -23,23 +21,38 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.agroproject.databinding.ActivityMapBinding;
 import com.google.android.gms.maps.model.Polygon;
-import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.maps.android.SphericalUtil;
+import com.google.maps.android.ui.BubbleIconFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    // Class TAG
+    /** Class TAG */
     private final String TAG = "MapActivity";
-    // Google Map
+
+    /** GoogleMap object */
     private GoogleMap mMap;
-    // Binding
+
+    /** Activity view binding */
     private ActivityMapBinding binding;
-    // Device coordinates
+
+    /** The current geographic latitude of the device */
     private double latitude;
+
+    /** The current geographic longitude of the device */
     private double longitude;
+
+    /** LatLng object for the current location  */
     private LatLng currentLocation;
 
-    // PolygonModel
+    /** Polygon object */
+    private Polygon polygon;
+
+    /** MonitoringAreaManager object */
     private MonitoringAreaManager monitoringAreaManager;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +68,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         latitude = intent.getDoubleExtra("latitude", 0.0);
         longitude = intent.getDoubleExtra("longitude",0.0);
 
-        // Create LatLng
+        // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -86,43 +99,28 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18f));
         // Polygon click listener
         mMap.setOnPolygonClickListener(polygonClickListener);
-        // Add the existing polygons in the map
-        addPolygonsInTheMap();
+        // Put the existing monitoring areas in the map
+        addTheExistingAreas();
     }
 
     public GoogleMap.OnPolygonClickListener polygonClickListener = new GoogleMap.OnPolygonClickListener() {
         @Override
         public void onPolygonClick(Polygon polygon) {
-            PolygonOptions polygonOptions = new PolygonOptions()
-                    .strokeWidth(polygon.getStrokeWidth()).addAll(polygon.getPoints()).strokeColor(polygon.getStrokeColor())
-                    .fillColor(polygon.getFillColor()).clickable(true);
 
-            for(int i =0 ; i < monitoringAreaManager.loadMonitoringArea().size(); i++){
-                if(polygonOptions.getStrokeColor() == monitoringAreaManager.loadMonitoringArea().get(i).getPolygonOptions().getStrokeColor()){
-                    Toast.makeText(MapActivity.this,"eimai edwww mesa", Toast.LENGTH_LONG).show();
-                }
+            Map<String, MonitoringArea> areaMap = new HashMap<>();
+
+            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+                areaMap.put(monitoringArea.getName(), monitoringArea);
             }
 
-
-
-
-
-//                for(MonitoringArea monitoringArea : monitoringAreaManage.){
-//
-//
-//
-//                    if(monitoringArea.getPolygonOptions().getPoints().equals(polygonOptions.getPoints())){
-//                        Toast.makeText(MapActivity.this,"eimai edwww mesa", Toast.LENGTH_LONG).show();
-//                    }
-//                }
-
-//            if(polygonOptions.equals(monitoringArea.getPolygonOptions())){
-//
-//                Toast.makeText(MapActivity.this,"eimai edwww", Toast.LENGTH_LONG).show();
-//
-//                Log.d(TAG," Area name is "+monitoringArea.getName());
-//            }
-
+            for(Map.Entry<String, MonitoringArea> kapa : areaMap.entrySet()){
+                if(polygon.getTag().equals(kapa.getKey())){
+                    Toast.makeText(MapActivity.this, "name: "+kapa.getKey()+
+                            " description: "+kapa.getValue().getDescription()+
+                            " area compute: "+ SphericalUtil.computeArea(kapa.getValue().getPolygonOptions().getPoints()), Toast.LENGTH_SHORT)
+                            .show();
+                }
+            }
         }
     };
 
@@ -141,12 +139,22 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     /**
-     * TODO METHOD DESCRIPTION
+     * This method put the existing monitoring areas in the map
+     * loads the existing areas data from the shared preferences file.
      */
-    private void addPolygonsInTheMap(){
+    private void addTheExistingAreas(){
         if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
             for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-                mMap.addPolygon(monitoringArea.getPolygonOptions());
+                // Put the area in the map
+                polygon = mMap.addPolygon(monitoringArea.getPolygonOptions());
+                // Set tag in the polygon
+                polygon.setTag(monitoringArea.getName());
+                // Get the center location of the area
+                LatLng centerLatLng = monitoringArea
+                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
+                // Add Marker on map  in the center location of area
+                mMap.addMarker(new MarkerOptions()
+                        .position(centerLatLng).title(monitoringArea.getName()));
             }
         }
     }
@@ -159,6 +167,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onRestart();
         Log.d(TAG,"onRestart method executed");
         // Add the existing polygons in the map
-        addPolygonsInTheMap();
+        addTheExistingAreas();
     }
 }

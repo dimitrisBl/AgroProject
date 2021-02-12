@@ -17,12 +17,14 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.agroproject.databinding.ActivityMapBinding;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.maps.android.SphericalUtil;
 import com.google.maps.android.ui.BubbleIconFactory;
+import com.google.maps.android.ui.IconGenerator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -152,9 +154,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 // Get the center location of the area
                 LatLng centerLatLng = monitoringArea
                         .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
+                // Instantiate a IconGenerator object
+                IconGenerator iconFactory = new IconGenerator(this);
                 // Add Marker on map  in the center location of area
-                mMap.addMarker(new MarkerOptions()
-                        .position(centerLatLng).title(monitoringArea.getName()));
+                mMap.addMarker(new MarkerOptions().position(centerLatLng)
+                        .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(monitoringArea.getName())))
+                        .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV()));
             }
         }
     }

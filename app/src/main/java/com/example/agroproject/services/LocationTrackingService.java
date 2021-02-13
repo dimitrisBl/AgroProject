@@ -55,10 +55,10 @@ public class LocationTrackingService extends Service implements Executor {
         Log.d(TAG, "onStartCommand method executed");
 
         // Location callBack method
-        //locationCallBackExecute();
+        locationCallBackExecute();
 
         // Start request for location
-        //startLocationTrackingService();
+        startLocationTrackingService();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -72,8 +72,8 @@ public class LocationTrackingService extends Service implements Executor {
         locationRequest = new LocationRequest();
 
         // Location request setup
-        locationRequest.setInterval(1000); //5 seconds
-        locationRequest.setFastestInterval(1000);
+        locationRequest.setInterval(5000); //5 seconds
+        locationRequest.setFastestInterval(5000);
         locationRequest.setSmallestDisplacement(1); //1 metro
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 

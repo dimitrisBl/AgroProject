@@ -99,13 +99,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** checkBox state */
     private boolean checkBoxIsChecked = false;
 
-
-
-    FusedLocationProviderClient fusedLocationProviderClient;
-    LocationRequest locationRequest;
-    LocationCallback locationCallback;
-    Polyline polyline;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -113,7 +106,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         setContentView(binding.getRoot());
 
         // Receive messages about current location.
-        // We are registering an observer (gpsLocationReceiver) to receive Intents with actions named "LocationTrackingService".
+        // We are registering an observer (locationTrackingReceiver) to receive Intents with actions named "LocationTrackingService".
         LocalBroadcastManager.getInstance(CreateAreaActivity.this).registerReceiver(
                 locationTrackingReceiver, new IntentFilter("LocationTrackingService"));
 
@@ -138,8 +131,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-       // locationCallBackExecute();
     }
 
 
@@ -172,6 +163,9 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 // Enable location button
                 mMap.setMyLocationEnabled(false);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
+
+                // Unregister since the activity is about to be closed.
+                LocalBroadcastManager.getInstance(CreateAreaActivity.this).unregisterReceiver(locationTrackingReceiver);
             }
 
         }
@@ -185,26 +179,37 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
     @SuppressLint("MissingPermission")
     private void startLocationTrackingService() {
-        Toast.makeText(this, "Edwwwwww sto start", Toast.LENGTH_SHORT).show();
-        Intent locationTrackingService = new Intent(CreateAreaActivity.this, LocationTrackingService.class);
+        Intent locationTrackingService = new Intent(this, LocationTrackingService.class);
         startService(locationTrackingService);
     }
 
     /**
      *  Our handler for received Intents. This will be called whenever an Intent
-     *  with an action named "LocationService".
+     *  with an action named "LocationTrackingService".
      *  TODO MORE DESCRIPTION
      */
     private BroadcastReceiver locationTrackingReceiver  = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG,"Receive message from LocationTrackingService class about the device coordinates");
+            Log.d(TAG,"Receive message from " +
+                    "LocationTrackingService class about the location tracking");
             // Get extra data included in the Intent
             latitude = intent.getDoubleExtra("latitude",0.0);
             longitude = intent.getDoubleExtra("longitude",0.0);
 
-            Toast.makeText(CreateAreaActivity.this,
-                    "Location tracking runn!!! "+latitude,Toast.LENGTH_LONG).show();
+            currentLocation = new LatLng(latitude,longitude);
+
+            Polyline polyline = null;
+
+            latLngList.add(currentLocation);
+
+           if(polyline!=null){
+               polyline.setPoints(latLngList);
+           }else{
+               polyline = mMap.addPolyline(new PolylineOptions()
+                       .addAll(latLngList).color(Color.MAGENTA).jointType(JointType.ROUND).width(3.0f));
+           }
+
         }
     };
 

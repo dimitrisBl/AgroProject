@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         // Receive messages about current location.
-        // We are registering an observer (gpsLocationReceiver) to receive Intents with actions named "LocationService".
+        // We are registering an observer (locationReceiver) to receive Intents with actions named "LocationService".
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 locationReceiver, new IntentFilter("LocationService"));
 

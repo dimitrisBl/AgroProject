@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                                         "GPS is required for use map and other services. Please enable GPS",Toast.LENGTH_LONG).show();
                         }
                     })
-                    .show();
+            .show();
         }
         return  false;
     }
@@ -226,12 +226,26 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     @Override
     protected void onRestart() {
         super.onRestart();
         Log.d(TAG,"onRestart method executed");
+        // Receive messages about current location.
+        // We are registering an observer (gpsLocationReceiver) to receive Intents with actions named "LocationService".
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                locationReceiver, new IntentFilter("LocationService"));
         // GPS status
         isGpsEnable();
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG,"onPause method executed");
+        // Unregister since the activity is about to be closed.
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationReceiver);
     }
 
     @Override

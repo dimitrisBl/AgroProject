@@ -3,17 +3,26 @@ package com.example.agroproject.ui;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -23,6 +32,13 @@ import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
 import com.example.agroproject.model.MonitoringAreaManager;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.model.MonitoringArea;
+import com.example.agroproject.services.LocationService;
+import com.example.agroproject.services.LocationTrackingService;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -32,7 +48,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.TileOverlay;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,15 +96,32 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** MonitoringAreaManager object */
     private MonitoringAreaManager monitoringAreaManager;
 
+    /** checkBox state */
+    private boolean checkBoxIsChecked = false;
+
+
+
+    FusedLocationProviderClient fusedLocationProviderClient;
+    LocationRequest locationRequest;
+    LocationCallback locationCallback;
+    Polyline polyline;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityCreateAreaBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // Receive messages about current location.
+        // We are registering an observer (gpsLocationReceiver) to receive Intents with actions named "LocationTrackingService".
+        LocalBroadcastManager.getInstance(CreateAreaActivity.this).registerReceiver(
+                locationTrackingReceiver, new IntentFilter("LocationTrackingService"));
+
         // Set click listener for buttons
         binding.drawPolygon.setOnClickListener(buttonClickListener);
         binding.clearMap.setOnClickListener(buttonClickListener);
+        // Set checked listener for checkbox
+        binding.checkBox.setOnCheckedChangeListener(checkBoxListener);
 
         // Get extras from intent
         Intent intent = getIntent();
@@ -102,8 +138,75 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+       // locationCallBackExecute();
     }
 
+
+    public CompoundButton.OnCheckedChangeListener checkBoxListener = new CompoundButton.OnCheckedChangeListener() {
+        @SuppressLint("MissingPermission")
+        @Override
+        public void onCheckedChanged(CompoundButton compoundButton, boolean state) {
+            // get the checkBox state
+            checkBoxIsChecked = state;
+
+            if (checkBoxIsChecked) {
+                // Enable location button
+                mMap.setMyLocationEnabled(true);
+                mMap.getUiSettings().setMyLocationButtonEnabled(true);
+
+                // Start the location tracking
+                startLocationTrackingService();
+
+                // Location button click event
+                mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+                    @Override
+                    public boolean onMyLocationButtonClick() {
+                        // Move the camera in current location
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18.5f));
+                        return true;
+                    }
+                });
+            }else{
+
+                // Enable location button
+                mMap.setMyLocationEnabled(false);
+                mMap.getUiSettings().setMyLocationButtonEnabled(false);
+            }
+
+        }
+    };
+
+    /**
+     *  This method starts an intent service
+     *  in LocationTrackingService class.
+     */
+
+
+    @SuppressLint("MissingPermission")
+    private void startLocationTrackingService() {
+        Toast.makeText(this, "Edwwwwww sto start", Toast.LENGTH_SHORT).show();
+        Intent locationTrackingService = new Intent(CreateAreaActivity.this, LocationTrackingService.class);
+        startService(locationTrackingService);
+    }
+
+    /**
+     *  Our handler for received Intents. This will be called whenever an Intent
+     *  with an action named "LocationService".
+     *  TODO MORE DESCRIPTION
+     */
+    private BroadcastReceiver locationTrackingReceiver  = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG,"Receive message from LocationTrackingService class about the device coordinates");
+            // Get extra data included in the Intent
+            latitude = intent.getDoubleExtra("latitude",0.0);
+            longitude = intent.getDoubleExtra("longitude",0.0);
+
+            Toast.makeText(CreateAreaActivity.this,
+                    "Location tracking runn!!! "+latitude,Toast.LENGTH_LONG).show();
+        }
+    };
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -125,36 +228,37 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     public GoogleMap.OnMapClickListener mapClickListener = new GoogleMap.OnMapClickListener() {
         @Override
         public void onMapClick(LatLng latLng) {
-            Log.d(TAG,"OnMapClickListener function running");
+            Log.d(TAG, "OnMapClickListener function running");
+            if (!checkBoxIsChecked) {
+                // Create MarkerOptions
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(latLng).title("" + latLng.latitude + " " + latLng.longitude);
 
-            // Create MarkerOptions
-            MarkerOptions markerOptions = new MarkerOptions()
-                    .position(latLng).title(""+latLng.latitude+" "+latLng.longitude);
+                if (marker != null) {
+                    // Remove the previous marker
+                    marker.remove();
+                }
+                // Create Marker in the map
+                marker = mMap.addMarker(markerOptions);
 
-            if (marker != null) {
-                // Remove the previous marker
-                marker.remove();
-            }
-            // Create Marker in the map
-            marker = mMap.addMarker(markerOptions);
+                // Add LatLng in latLngList
+                latLngList.add(latLng);
 
-            // Add LatLng in latLngList
-            latLngList.add(latLng);
+                // Add Marker in markerList
+                markerList.add(marker);
 
-            // Add Marker in markerList
-            markerList.add(marker);
+                if (markerList.size() > 1) {
 
-            if(markerList.size() > 1){
+                    latitude = latLng.latitude;
+                    longitude = latLng.longitude;
 
-                latitude = latLng.latitude;
-                longitude =latLng.longitude;
+                    marker.setPosition(new LatLng(latitude, longitude));
 
-                marker.setPosition(new LatLng(latitude,longitude));
+                    PolylineOptions polylineOptions = new PolylineOptions()
+                            .addAll(latLngList).color(Color.RED).jointType(JointType.BEVEL);
 
-                PolylineOptions polylineOptions = new PolylineOptions()
-                        .addAll(latLngList).color(Color.RED).jointType(JointType.BEVEL);
-
-                mMap.addPolyline(polylineOptions);
+                    mMap.addPolyline(polylineOptions);
+                }
             }
         }
     };
@@ -212,6 +316,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             }
         }
     };
+
 
     /**
      * TODO method description
@@ -339,8 +444,28 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     @Override
+    protected void onRestart() {
+        Log.d(TAG,"onRestart method executed");
+        super.onRestart();
+        // Receive messages about current location.
+        // We are registering an observer (gpsLocationReceiver) to receive Intents with actions named "LocationTrackingService".
+        LocalBroadcastManager.getInstance(CreateAreaActivity.this).registerReceiver(
+                locationTrackingReceiver, new IntentFilter("LocationTrackingService"));
+    }
+
+    @Override
     protected void onPause() {
-        Log.d(TAG,"onPause method executed");
         super.onPause();
+        Log.d(TAG,"onPause method executed");
+        // Unregister since the activity is about to be closed.
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationTrackingReceiver);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG,"onDestroy method executed");
+        // Unregister since the activity is about to be closed.
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationTrackingReceiver);
     }
 }

@@ -105,6 +105,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         addTheExistingAreas();
     }
 
+
     public GoogleMap.OnPolygonClickListener polygonClickListener = new GoogleMap.OnPolygonClickListener() {
         @Override
         public void onPolygonClick(Polygon polygon) {
@@ -125,7 +126,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         }
     };
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

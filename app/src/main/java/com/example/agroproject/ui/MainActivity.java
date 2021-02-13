@@ -239,14 +239,14 @@ public class MainActivity extends AppCompatActivity {
         isGpsEnable();
     }
 
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG,"onPause method executed");
-        // Unregister since the activity is about to be closed.
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationReceiver);
-    }
+//
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        Log.d(TAG,"onPause method executed");
+//        // Unregister since the activity is about to be closed.
+//        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationReceiver);
+//    }
 
     @Override
     protected void onDestroy() {

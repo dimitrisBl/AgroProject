@@ -82,7 +82,10 @@ public class MonitoringAreaManager {
         return monitoringAreaList;
     }
 
-
+    /**
+     * TODO delete area method
+     *
+     */
     public void clearSharedPreferencesFile(){
         SharedPreferences.Editor editor = polygonStatePrefs.edit();
         editor.clear();

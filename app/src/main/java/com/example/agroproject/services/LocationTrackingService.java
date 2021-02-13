@@ -94,9 +94,11 @@ public class LocationTrackingService extends Service implements Executor {
             public void onLocationResult(LocationResult locationResult) {
                 Log.d(TAG, "onLocationResult location tracker");
 
-
+                // Get the current latitude
                 latitude = locationResult.getLastLocation().getLatitude();
-                longitude =locationResult.getLastLocation().getLongitude();
+
+                // Get the current longitude
+                longitude = locationResult.getLastLocation().getLongitude();
 
                 // Send coordinates in MainActivity
                 sendMessageToActivity(latitude,longitude);

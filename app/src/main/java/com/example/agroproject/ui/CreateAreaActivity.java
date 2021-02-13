@@ -1,6 +1,7 @@
 package com.example.agroproject.ui;
 
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -15,6 +16,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
@@ -32,8 +36,10 @@ import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
 import com.example.agroproject.model.MonitoringAreaManager;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.model.MonitoringArea;
+import com.example.agroproject.model.MyLocation;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.LocationTrackingService;
+import com.example.agroproject.services.MyLocationService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -51,6 +57,11 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.TileOverlay;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +72,7 @@ import java.util.List;
  *
  */
 
-public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
 
     /** Class TAG */
     private final String TAG = "CreateAreaActivity";
@@ -96,6 +107,14 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** MonitoringAreaManager object */
     private MonitoringAreaManager monitoringAreaManager;
 
+    private Polyline polyline = null;
+
+//    /** Firebase database */
+//    private DatabaseReference dbReference;
+//
+//    /** LocationManager object */
+//    private LocationManager locationManager;
+
     /** checkBox state */
     private boolean checkBoxIsChecked = false;
 
@@ -104,6 +123,14 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         super.onCreate(savedInstanceState);
         binding = ActivityCreateAreaBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+//        // User-101 is a demo user
+//        dbReference = FirebaseDatabase.getInstance().getReference().child("user-101");
+//
+//        // Initialize a locationManager object
+//        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+
 
         // Receive messages about current location.
         // We are registering an observer (locationTrackingReceiver) to receive Intents with actions named "LocationTrackingService".
@@ -131,7 +158,44 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
+//        readChanges();
     }
+
+
+
+//    public void readChanges(){
+//        dbReference.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                    if(dataSnapshot.exists()){
+//                        MyLocation location = dataSnapshot.getValue(MyLocation.class);
+//                        try{
+//                            if(location!=null){
+//                                LatLng currentLocation = new LatLng(location.getLatitude(),location.getLongitude());
+//
+//
+//                                latLngList.add(currentLocation);
+//
+//                                if(polyline!=null){
+//                                    polyline.setPoints(latLngList);
+//                                }else{
+//                                    polyline = mMap.addPolyline(new PolylineOptions()
+//                                            .addAll(latLngList).color(Color.MAGENTA).jointType(JointType.ROUND).width(3.0f));
+//                                }
+//                            }
+//                        }catch (Exception e){
+//
+//                        }
+//                    }
+//            }
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError error) {
+//
+//            }
+//        });
+//    }
 
 
     public CompoundButton.OnCheckedChangeListener checkBoxListener = new CompoundButton.OnCheckedChangeListener() {
@@ -147,7 +211,12 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
                 // Start the location tracking
-                startLocationTrackingService();
+                //startLocationTrackingService();
+                MyLocationService myLocation = new MyLocationService(getApplicationContext());
+
+                myLocation.startLocationService();
+
+
 
                 // Location button click event
                 mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
@@ -164,8 +233,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 mMap.setMyLocationEnabled(false);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
 
-                // Unregister since the activity is about to be closed.
-                LocalBroadcastManager.getInstance(CreateAreaActivity.this).unregisterReceiver(locationTrackingReceiver);
+//                // Unregister since the activity is about to be closed.
+//                LocalBroadcastManager.getInstance(CreateAreaActivity.this).unregisterReceiver(locationTrackingReceiver);
             }
 
         }
@@ -179,8 +248,21 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
     @SuppressLint("MissingPermission")
     private void startLocationTrackingService() {
-        Intent locationTrackingService = new Intent(this, LocationTrackingService.class);
-        startService(locationTrackingService);
+       //FirebaseDatabase.getInstance().getReference().setValue("my first message");
+//            if(locationManager!=null){
+//
+//                if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+//                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+//                            1000, 1000,this);
+//                }else{
+//                    Toast.makeText(this,
+//                            "No provider enable", Toast.LENGTH_SHORT).show();
+//                }
+//
+//            }
+
+//        Intent locationTrackingService = new Intent(this, LocationTrackingService.class);
+//        startService(locationTrackingService);
     }
 
     /**
@@ -188,6 +270,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
      *  with an action named "LocationTrackingService".
      *  TODO MORE DESCRIPTION
      */
+
     private BroadcastReceiver locationTrackingReceiver  = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -197,9 +280,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             latitude = intent.getDoubleExtra("latitude",0.0);
             longitude = intent.getDoubleExtra("longitude",0.0);
 
-            currentLocation = new LatLng(latitude,longitude);
+            LatLng currentLocation = new LatLng(latitude,longitude);
 
-            Polyline polyline = null;
 
             latLngList.add(currentLocation);
 
@@ -209,9 +291,9 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                polyline = mMap.addPolyline(new PolylineOptions()
                        .addAll(latLngList).color(Color.MAGENTA).jointType(JointType.ROUND).width(3.0f));
            }
-
         }
     };
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -448,29 +530,45 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         }
     }
 
-    @Override
-    protected void onRestart() {
-        Log.d(TAG,"onRestart method executed");
-        super.onRestart();
-        // Receive messages about current location.
-        // We are registering an observer (gpsLocationReceiver) to receive Intents with actions named "LocationTrackingService".
-        LocalBroadcastManager.getInstance(CreateAreaActivity.this).registerReceiver(
-                locationTrackingReceiver, new IntentFilter("LocationTrackingService"));
-    }
+//    @Override
+//    protected void onRestart() {
+//        Log.d(TAG,"onRestart method executed");
+//        super.onRestart();
+//        // Receive messages about current location.
+//        // We are registering an observer (gpsLocationReceiver) to receive Intents with actions named "LocationTrackingService".
+//        LocalBroadcastManager.getInstance(CreateAreaActivity.this).registerReceiver(
+//                locationTrackingReceiver, new IntentFilter("LocationTrackingService"));
+//    }
+//
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        Log.d(TAG,"onPause method executed");
+//        // Unregister since the activity is about to be closed.
+//        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationTrackingReceiver);
+//    }
+//
+//    @Override
+//    protected void onDestroy() {
+//        super.onDestroy();
+//        Log.d(TAG,"onDestroy method executed");
+//        // Unregister since the activity is about to be closed.
+//        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationTrackingReceiver);
+//    }
+
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG,"onPause method executed");
-        // Unregister since the activity is about to be closed.
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationTrackingReceiver);
+    public void onLocationChanged(@NonNull Location location) {
+        if(location!=null){
+            saveLocation(location);
+        }else{
+            Toast.makeText(CreateAreaActivity.this,
+                    "no location",Toast.LENGTH_SHORT).show();
+        }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG,"onDestroy method executed");
-        // Unregister since the activity is about to be closed.
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationTrackingReceiver);
+
+    public void saveLocation(Location location){
+      //      dbReference.setValue(location);
     }
 }

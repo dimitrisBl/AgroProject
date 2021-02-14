@@ -2,6 +2,7 @@ package com.example.agroproject;
 
 import androidx.fragment.app.FragmentActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.example.agroproject.databinding.ActivityMapBinding;
@@ -15,15 +16,37 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
 
+    /** Class TAG */
+    private final String TAG = "MapActivity";
+
+    /** GoogleMap  */
     private GoogleMap mMap;
+
+    /** Activity view binding */
     private ActivityMapBinding binding;
+
+    /** The current geographic latitude of the device */
+    private double latitude;
+
+    /** The current geographic longitude of the device */
+    private double longitude;
+
+    /** LatLng object for the current location  */
+    private LatLng currentLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         binding = ActivityMapBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Get extras from intent
+        Intent intent = getIntent();
+        latitude = intent.getDoubleExtra("latitude", 0.0);
+        longitude = intent.getDoubleExtra("longitude",0.0);
+
+        // Create the LatLng object of the current location
+        currentLocation = new LatLng(latitude, longitude);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()

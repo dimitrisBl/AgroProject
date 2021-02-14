@@ -86,14 +86,14 @@ public class LocationService extends Service {
      * @param location receives the current device location.
      *
      */
-    private  void sendMessageToActivity(Location location) {
+    private  void sendMessageToActivity(LocationResult location) {
         Log.d(TAG, "sending message on activity");
         // Instantiate an intent
         Intent intent = new Intent("GPSLocationUpdates");
 
         // Include the device coordinates in intent
-        intent.putExtra("latitude", location.getLatitude());
-        intent.putExtra("longitude", location.getLongitude());
+        intent.putExtra("latitude", location.getLastLocation().getLatitude());
+        intent.putExtra("longitude", location.getLastLocation().getLongitude());
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
@@ -109,10 +109,13 @@ public class LocationService extends Service {
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-                for (Location location : locationResult.getLocations()) {
-                    // Send coordinates in MainActivity
-                    sendMessageToActivity(location);
-                }
+//                for (Location location : locationResult.getLocations()) {
+//                    // Send coordinates in MainActivity
+//                    sendMessageToActivity(location);
+//                }
+
+                // Send coordinates in MainActivity
+                sendMessageToActivity(locationResult);
 
             }
         };

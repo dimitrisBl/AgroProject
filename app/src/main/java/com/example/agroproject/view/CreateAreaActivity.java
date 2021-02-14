@@ -1,16 +1,22 @@
 package com.example.agroproject.view;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -20,6 +26,8 @@ import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
 import com.example.agroproject.model.MonitoringArea;
 import com.example.agroproject.model.MonitoringAreaManager;
+import com.example.agroproject.services.LocationService;
+import com.example.agroproject.services.LocationTrackingService;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -29,6 +37,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
@@ -74,6 +83,12 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** MonitoringAreaManager object */
     private MonitoringAreaManager monitoringAreaManager;
 
+    /** checkBox state */
+    private boolean checkBoxIsChecked = false;
+
+    /** Polyline */
+    private Polyline polyline = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,6 +109,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         // Set click listener for buttons
         binding.drawPolygon.setOnClickListener(buttonClickListener);
         binding.clearMap.setOnClickListener(buttonClickListener);
+        // Set checked listener for checkbox
+        binding.checkBox.setOnCheckedChangeListener(checkBoxListener);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -127,35 +144,38 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     public GoogleMap.OnMapClickListener mapClickListener = new GoogleMap.OnMapClickListener() {
         @Override
         public void onMapClick(LatLng latLng) {
-            Log.d(TAG,"OnMapClickListener function running");
-            // Create MarkerOptions
-            MarkerOptions markerOptions = new MarkerOptions()
-                    .position(latLng).title(""+latLng.latitude+" "+latLng.longitude);
+            Log.d(TAG, "OnMapClickListener function running");
+             // If checkBox state is false
+            if (!checkBoxIsChecked) {
+                // Create MarkerOptions
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(latLng).title("" + latLng.latitude + " " + latLng.longitude);
 
-            if (marker != null) {
-                // Remove the previous marker
-                marker.remove();
-            }
-            // Create Marker in the map
-            marker = mMap.addMarker(markerOptions);
+                if (marker != null) {
+                    // Remove the previous marker
+                    marker.remove();
+                }
+                // Create Marker in the map
+                marker = mMap.addMarker(markerOptions);
 
-            // Add LatLng in latLngList
-            latLngList.add(latLng);
+                // Add LatLng in latLngList
+                latLngList.add(latLng);
 
-            // Add Marker in markerList
-            markerList.add(marker);
+                // Add Marker in markerList
+                markerList.add(marker);
 
-            if(markerList.size() > 1){
+                if (markerList.size() > 1) {
 
-                latitude = latLng.latitude;
-                longitude =latLng.longitude;
+                    latitude = latLng.latitude;
+                    longitude = latLng.longitude;
 
-                marker.setPosition(new LatLng(latitude,longitude));
+                    marker.setPosition(new LatLng(latitude, longitude));
 
-                PolylineOptions polylineOptions = new PolylineOptions()
-                        .addAll(latLngList).color(Color.RED).jointType(JointType.BEVEL);
+                    PolylineOptions polylineOptions = new PolylineOptions()
+                            .addAll(latLngList).color(Color.RED).jointType(JointType.BEVEL);
 
-                mMap.addPolyline(polylineOptions);
+                    mMap.addPolyline(polylineOptions);
+                }
             }
         }
     };
@@ -211,6 +231,87 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     //monitoringAreaManager.clearSharedPreferencesFile();
                     addTheExistingAreasInMap();
                 break;
+            }
+        }
+    };
+
+    /**
+     *  TODO description
+     */
+    public CompoundButton.OnCheckedChangeListener checkBoxListener = new CompoundButton.OnCheckedChangeListener() {
+        @SuppressLint("MissingPermission")
+        @Override
+        public void onCheckedChanged(CompoundButton compoundButton, boolean state) {
+            // get the checkBox state
+            checkBoxIsChecked = state;
+
+            if (checkBoxIsChecked) {
+                // Enable location button
+//                mMap.setMyLocationEnabled(true);
+//                mMap.getUiSettings().setMyLocationButtonEnabled(true);
+
+                startLocationTrackingService();
+
+                // Location button click event
+                mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+                    @Override
+                    public boolean onMyLocationButtonClick() {
+                        // Move the camera in current location
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18.5f));
+                        return true;
+                    }
+                });
+            }else{
+
+//                // Enable location button
+//                mMap.setMyLocationEnabled(false);
+//                mMap.getUiSettings().setMyLocationButtonEnabled(false);
+
+                mMap.clear();
+            }
+
+        }
+    };
+
+
+    /**
+     *  This method starts an intent service
+     *  in LocationTrackingService class.
+     */
+    public void startLocationTrackingService(){
+        Intent locationTrackingService = new Intent(this, LocationTrackingService.class);
+        startService(locationTrackingService);
+    }
+
+
+
+    /**
+     *  Our handler for received Intents. This will be called whenever an Intent
+     *  with an action named "GPSLocationUpdates".
+     *  TODO MORE DESCRIPTION
+     */
+    private BroadcastReceiver locationTrackingReceiver  = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Toast.makeText(CreateAreaActivity.this,
+                    "Receive coordinates in main activity: "
+                            +intent.getDoubleExtra("latitude",0.0),
+                    Toast.LENGTH_SHORT).show();
+
+            // Receive extra data included in the Intent
+            latitude = intent.getDoubleExtra("latitude",0.0);
+            longitude = intent.getDoubleExtra("longitude",0.0);
+
+            // Create LatLng for current location
+            LatLng currentLocation = new LatLng(latitude,longitude);
+
+            latLngList.add(currentLocation);
+
+            if(polyline!=null){
+                polyline.setPoints(latLngList);
+            }else{
+                polyline = mMap.addPolyline(new PolylineOptions()
+                        .addAll(latLngList).color(Color.MAGENTA).jointType(JointType.ROUND).width(3.0f));
             }
         }
     };
@@ -329,4 +430,23 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             }
         }
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG,"onResume executed");
+        // Receive messages about current location.
+        // We are registering an observer (locationTrackingReceiver) to receive Intents with actions named "GPSLocationUpdates".
+        LocalBroadcastManager.getInstance(CreateAreaActivity.this).registerReceiver(
+                locationTrackingReceiver, new IntentFilter("GPSLocationUpdates"));
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG,"onStop executed");
+        // Unregister since the activity is about to be closed.
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationTrackingReceiver);
+    }
+
 }

@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
     }
     /**
      *  Our handler for received Intents. This will be called whenever an Intent
-     *  with an action named "GPSLocationUpdates".
+     *  with an action named "LocationService".
      *  TODO MORE DESCRIPTION
      */
     private BroadcastReceiver locationReceiver  = new BroadcastReceiver() {
@@ -214,7 +214,8 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             Toast.makeText(MainActivity.this,
                     "Receive coordinates in main activity: "
-                            +intent.getDoubleExtra("latitude",0.0),Toast.LENGTH_SHORT).show();
+                            +intent.getDoubleExtra("latitude",0.0),
+                    Toast.LENGTH_SHORT).show();
 
             // Get extra data included in the Intent
             latitude = intent.getDoubleExtra("latitude",0.0);

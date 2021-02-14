@@ -48,16 +48,29 @@ public class LocationTrackingService extends Service {
         // Instantiate  FusedLocationProviderClient object
         fusedLocationProviderClient = LocationServices
                 .getFusedLocationProviderClient(this);
+
+        // Instantiate LocationRequest object
+        locationRequest = new LocationRequest();
+
+        // For high accuracy location
+        locationRequest.setInterval(5000); //5 second
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setSmallestDisplacement(1); //1 metro
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
         // Location callBack method
         locationCallBackExecute();
     }
 
-
+    @SuppressLint("MissingPermission")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG,"service started");
         // Start request for location
-        requestLocation();
+        //requestLocation();
+        //performs request location updates
+        fusedLocationProviderClient.requestLocationUpdates(
+                locationRequest, locationCallback, Looper.myLooper());
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -67,17 +80,9 @@ public class LocationTrackingService extends Service {
      */
     @SuppressLint("MissingPermission")
     private void requestLocation(){
-        // Instantiate LocationRequest object
-        locationRequest = new LocationRequest();
 
-        // For high accuracy location
-        locationRequest.setInterval(5000); //5 second
-        locationRequest.setFastestInterval(5000);
-        //locationRequest.setSmallestDisplacement(1); //1 metro
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        //performs request location updates
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+
     }
 
     /**

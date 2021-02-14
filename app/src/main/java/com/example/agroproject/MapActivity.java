@@ -19,7 +19,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     /** Class TAG */
     private final String TAG = "MapActivity";
 
-    /** GoogleMap  */
+    /** GoogleMap object */
     private GoogleMap mMap;
 
     /** Activity view binding */
@@ -48,6 +48,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
 
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -57,19 +58,22 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
+     * This method Adds a marker in current location, sets zoom in the camera and defines the satellite map type.
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        // Enable visibility for zoom controls buttons
+        googleMap.getUiSettings().setZoomControlsEnabled(true);
+        // Initialize map
         mMap = googleMap;
-
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        // Setup satellite map
+        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+        // Create MarkerOption for current location
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(currentLocation).title("Your location: "+latitude+"  "+longitude);
+        // Add Marker in the map
+        mMap.addMarker(markerOptions);
+        // Move the camera in current location
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18f));
     }
 }

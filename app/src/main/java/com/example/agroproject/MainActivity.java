@@ -49,8 +49,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        Log.d(TAG,"onCreate method");
-
         // Permission check service
         checkPermissions();
     }
@@ -212,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
                     yourMapIntent.putExtra("longitude",longitude);
                     startActivity(yourMapIntent);
                 }
-                return true;
+             return true;
 
             case R.id.createArea_item:
 //                if(isGpsEnable()){
@@ -230,6 +228,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG,"onStart executed");
+        // GPS status
+        isGpsEnable();
+    }
+
+
+    @Override
     protected void onResume() {
         super.onResume();
         Log.d(TAG,"onResume executed");
@@ -237,9 +244,6 @@ public class MainActivity extends AppCompatActivity {
         // We are registering an observer (GPSLocationUpdates) to receive Intents with actions named "LocationService".
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 locationReceiver, new IntentFilter("GPSLocationUpdates"));
-
-        // GPS status
-        isGpsEnable();
     }
 
 

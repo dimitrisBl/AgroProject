@@ -186,13 +186,12 @@ public class MainActivity extends AppCompatActivity {
         s.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s.length(), 0);
         item.setTitle(s);
 
-        //this code is for second item in menu
-//        // set title alignment for each item is center
-//        int positionOfMenuItem1 = 1; //or any other postion
-//        MenuItem item1 = menu.getItem(positionOfMenuItem1);
-//        SpannableString s1 = new SpannableString(item1.getTitle());
-//        s1.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s1.length(), 0);
-//        item1.setTitle(s1);
+        // set title alignment for each item is center
+        int positionOfMenuItem1 = 1; //or any other postion
+        MenuItem item1 = menu.getItem(positionOfMenuItem1);
+        SpannableString s1 = new SpannableString(item1.getTitle());
+        s1.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s1.length(), 0);
+        item1.setTitle(s1);
         // Calling super after populating the menu is necessary here to ensure that the
         // action bar helpers have a chance to handle this event.
         return true;
@@ -215,14 +214,14 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return true;
 
-//            case R.id.createArea_item:
+            case R.id.createArea_item:
 //                if(isGpsEnable()){
 //                    Intent createAreaIntent = new Intent(this, CreateAreaActivity.class);
 //                    createAreaIntent.putExtra("latitude", latitude);
 //                    createAreaIntent.putExtra("longitude", longitude);
 //                    startActivity(createAreaIntent);
 //                }
-//                return true;
+                return true;
 
             default:
                 return super.onOptionsItemSelected(item);

@@ -13,7 +13,9 @@
             android:id="@+id/yourMap_item"
             android:title="Open Map"/>
 
-
+        <item
+            android:id="@+id/createArea_item"
+            android:title="Create Area"/>
 
     </item>
 

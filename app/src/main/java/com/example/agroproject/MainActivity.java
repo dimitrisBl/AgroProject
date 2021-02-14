@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -28,46 +29,44 @@ import com.google.android.material.snackbar.Snackbar;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Location permission request code
+    /** Class TAG */
+    private final String TAG = "MainActivity";
+
+    /** Permission request code */
     private static final int LOCATION_PERMISSION_CODE = 1;
 
-    // Google's API for location service
-    private FusedLocationProviderClient fusedLocationProviderClient;
 
-    // Location callback
-    private LocationCallback locationCallback;
+    private double latitude;
 
-    // Location request
-    private LocationRequest locationRequest;
-    //-------------------------------------------
+    private double longitude;
 
     // current view
     private View currentView;
+
+    private Button button;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.d(TAG,"onCreate method");
 
         // Current view
         currentView = findViewById(android.R.id.content);
 
-        // Initialize FusedLocationProviderClient object
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        button = findViewById(R.id.activity_btn);
 
-        // Initialize a location request
-        locationRequest = new LocationRequest();
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent secondActivity = new Intent(
+                        MainActivity.this, SecondActivity.class);
+                startActivity(secondActivity);
 
-        //PRIORITY_HIGH_ACCURACY using from the gps
-        locationRequest.setInterval(1000);
-        locationRequest.setFastestInterval(1000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            }
+        });
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                mMessageReceiver, new IntentFilter("GPSLocationUpdates"));
 
-        // Location callBack method
-        //locationCallBackExecute();
 
         if(Build.VERSION.SDK_INT >= 16){
 
@@ -86,15 +85,11 @@ public class MainActivity extends AppCompatActivity {
                     {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_CODE);
 
            }else{
-//               fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
                //Start the location service
                startLocationService();
            }
 
         }else{
-
-            //fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
-
             //Start the location service
             startLocationService();
         }
@@ -106,27 +101,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
+
     // Our handler for received Intents. This will be called whenever an Intent
     // with an action named "custom-event-name" is broadcasted.
     private BroadcastReceiver mMessageReceiver  = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Toast.makeText(MainActivity.this,
+                    "Receive coordinates in main activity: "+latitude,Toast.LENGTH_SHORT).show();
 
             // Get extra data included in the Intent
             // Get extra data included in the Intent
-             double latitude = intent.getDoubleExtra("latitude",0.0);
-             double longitude = intent.getDoubleExtra("longitude",0.0);
+             latitude = intent.getDoubleExtra("latitude",0.0);
+             longitude = intent.getDoubleExtra("longitude",0.0);
 
-            Log.d("Receiver", "Got latitude: " + latitude);
+            Log.d("main activity receiver", "receive coordinates: " +latitude+" "+longitude);
         }
     };
 
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        Toast.makeText(this," im over here", Toast.LENGTH_LONG).show();
-    }
+//    @Override
+//    protected void onNewIntent(Intent intent) {
+//        super.onNewIntent(intent);
+//        Toast.makeText(this," im over here", Toast.LENGTH_LONG).show();
+//    }
 
     @SuppressLint("MissingPermission")
     @Override
@@ -136,34 +135,33 @@ public class MainActivity extends AppCompatActivity {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
 
                 startLocationService();
-
-//                fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
-
             }else{
                 Snackbar.make(currentView, "Permission is not accepted", Snackbar.LENGTH_LONG).show();
             }
         }
     }
 
-    /*
-       This method handle the requestLocationUpdates.
-       Used for receiving notifications from the FusedLocationProviderApi
-       when the device location has changed or can no longer be determined.
-       */
-    private void locationCallBackExecute(){
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult == null) {
-                    return;
-                }
-                for (Location location : locationResult.getLocations()) {
-                    //set coordinates
-                    Toast.makeText(MainActivity.this,"latitude from locationCallBackExecute: "
-                            +location.getLatitude(), Toast.LENGTH_LONG).show();
-                }
-            }
-        };
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Receive messages about current location.
+        // We are registering an observer (GPSLocationUpdates) to receive Intents with actions named "LocationService".
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                mMessageReceiver, new IntentFilter("GPSLocationUpdates"));
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Unregister since the activity is about to be closed.
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+    }
+
+
+    //    @Override
+//    protected void onDestroy() {
+//        super.onDestroy();
+//        // Unregister since the activity is about to be closed.
+//        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+//    }
 }

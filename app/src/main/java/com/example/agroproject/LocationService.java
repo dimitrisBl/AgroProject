@@ -17,16 +17,21 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
-
+/**
+ *  TODO CLASS DESCRIPTION
+ *  */
 public class LocationService extends Service {
 
-    // Google's API for location service
+    /** Class TAG */
+    private final String TAG = "LocationService";
+
+    /** Google's API for location service */
     private FusedLocationProviderClient fusedLocationProviderClient;
 
-    // Location callback
+    /** Location callback */
     private LocationCallback locationCallback;
 
-    // Location request
+    /** Location request*/
     private LocationRequest locationRequest;
 
 
@@ -39,62 +44,76 @@ public class LocationService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        // Initialize FusedLocationProviderClient object
+        // Instantiate  FusedLocationProviderClient object
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
-        locationCallback = new LocationCallback(){
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                super.onLocationResult(locationResult);
-                
-                // Send message
-                sendMessageToActivity(locationResult," ");
-
-                Log.i("latitude: ", " "+locationResult.getLastLocation().getLatitude());
-
-            }
-        };
+        // locationCallback
+        locationCallBackExecute();
     }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("LocationService","service started");
         requestLocation();
         return super.onStartCommand(intent, flags, startId);
     }
 
+    /**
+     * This method initialize and execute
+     * a location request using the GPS.
+     */
     @SuppressLint("MissingPermission")
     private void requestLocation(){
-        // Initialize LocationRequest object
+        // Instantiate LocationRequest object
         locationRequest = new LocationRequest();
-
+        
         // For high accuracy location
-        locationRequest.setInterval(1000);
-        locationRequest.setFastestInterval(1000);
+        locationRequest.setInterval(5000); //5 second
+        locationRequest.setFastestInterval(2000);
+        //locationRequest.setSmallestDisplacement(1); //1 metro
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         //performs request location updates
         fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
     }
 
-
-
-    private  void sendMessageToActivity(LocationResult locationResult, String msg) {
+    /**
+     * This method send an intent with an action "GPSLocationUpdates".
+     * The intent sent is received by the Activity.
+     *
+     * @param locationResult receives the current device location.
+     *
+     */
+    private  void sendMessageToActivity(LocationResult locationResult) {
+        Log.d(TAG, "sending message on activity");
+        // Instantiate an intent
         Intent intent = new Intent("GPSLocationUpdates");
-        // You can also include some extra data.
-        intent.putExtra("Status", msg);
 
-        // Set coordinates in activity
+        // Include the device coordinates in intent
         intent.putExtra("latitude", locationResult.getLastLocation().getLatitude());
         intent.putExtra("longitude", locationResult.getLastLocation().getLongitude());
-
-//        Bundle b = new Bundle();
-//        b.putParcelable("Location", locationResult);
-//        intent.putExtra("Location", b);
-
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
+    /**
+     * This callback method handle the location Update request, is triggered
+     * when called the method requestLocationUpdates of FusedLocationProviderApi.
+     * Used for receiving notifications from the FusedLocationProviderApi
+     * when the device location has changed or can no longer be determined.
+     */
+    private void locationCallBackExecute(){
+        Log.d(TAG, "Location CallBack service is performed");
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                for (Location location : locationResult.getLocations()) {
+                    // Send coordinates in MainActivity
+                    sendMessageToActivity(locationResult);
+                }
+
+            }
+        };
+    }
 
 }

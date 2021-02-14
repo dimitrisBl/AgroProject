@@ -115,4 +115,10 @@ public class LocationService extends Service {
         };
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG,"onDestroy executed");
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+    }
 }

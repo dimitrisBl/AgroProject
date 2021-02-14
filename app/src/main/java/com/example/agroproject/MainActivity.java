@@ -230,8 +230,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG,"onResume executed");
         // Receive messages about current location.
         // We are registering an observer (GPSLocationUpdates) to receive Intents with actions named "LocationService".
         LocalBroadcastManager.getInstance(this).registerReceiver(
@@ -241,9 +242,11 @@ public class MainActivity extends AppCompatActivity {
         isGpsEnable();
     }
 
+
     @Override
     protected void onStop() {
         super.onStop();
+        Log.d(TAG,"onStop executed");
         // Unregister since the activity is about to be closed.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(locationReceiver);
     }

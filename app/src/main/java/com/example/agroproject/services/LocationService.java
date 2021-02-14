@@ -109,14 +109,8 @@ public class LocationService extends Service {
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-//                for (Location location : locationResult.getLocations()) {
-//                    // Send coordinates in MainActivity
-//                    sendMessageToActivity(location);
-//                }
-
                 // Send coordinates in MainActivity
                 sendMessageToActivity(locationResult);
-
             }
         };
     }

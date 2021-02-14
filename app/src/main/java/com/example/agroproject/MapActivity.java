@@ -1,9 +1,13 @@
 package com.example.agroproject;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
 
 import com.example.agroproject.databinding.ActivityMapBinding;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -14,7 +18,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     /** Class TAG */
     private final String TAG = "MapActivity";
@@ -75,5 +79,19 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         mMap.addMarker(markerOptions);
         // Move the camera in current location
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18f));
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Initiating Menu XML file (activity_map_menu.xml)
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.activity_map_menu, menu);
+        // Enable back button in menu
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        // Calling super after populating the menu is necessary here to ensure that the
+        // action bar helpers have a chance to handle this event.
+        return true;
     }
 }

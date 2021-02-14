@@ -11,7 +11,6 @@
     <uses-permission android:name="android.permission.INTERNET" /> <!-- To request foreground location access, declare one of these permissions. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -22,12 +21,14 @@
 
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
-             (See the file "res/values/google_map_api.xml").
+             (See the file "res/values/google_maps_api.xml").
              Note that the API key is linked to the encryption key used to sign the APK.
              You need a different API key for each encryption key, including the release key that is used to
              sign the APK for publishing.
              You can define the keys for the debug and release targets in src/debug/ and src/release/.
         -->
+
+        <!---//////////    Google Map - Google Services     //////      -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${mapsApiKey}" />
@@ -40,19 +41,37 @@
             android:name="org.apache.http.legacy"
             android:required="false" />
 
-        <activity
-            android:name=".MapActivity"
-            android:label="@string/title_activity_map"
-            android:parentActivityName=".MainActivity"/>
+        <!---||||||||||||||||||||||||||||||||||||||||||||||||||||||||     -->
 
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".view.CreateAreaActivity"
+            android:parentActivityName=".view.MainActivity"
+            android:label="@string/title_activity_create_area"/>
+
+        <activity
+            android:name=".view.MapActivity"
+            android:label="@string/title_activity_map"
+            android:parentActivityName=".view.MainActivity" />
+
+        <activity android:name=".view.MainActivity">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
 
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
-        </activity> <!-- Location Tracking Service -->
+        </activity>
+
+        <!---//////////        Services     /////////////      -->
+
+        <!--
+            Location Tracking Service -->
+        <service android:name=".services.LocationTrackingService" />
+        <!--
+            Location  Service -->
         <service android:name=".services.LocationService" />
+
+        <!---||||||||||||||||||||||||||||||||||||||||||||||||||||||||     -->
+
     </application>
 
 </manifest>

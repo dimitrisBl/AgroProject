@@ -22,9 +22,9 @@
             </intent-filter>
         </activity>
         <!--
-            Location Service
+            Location Tracking Service
         -->
-        <service android:name=".LocationService" />
+        <service android:name=".services.LocationService" />
     </application>
 
 </manifest>

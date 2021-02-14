@@ -22,6 +22,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.agroproject.databinding.ActivityMainBinding;
 import com.example.agroproject.services.LocationService;
 
 public class MainActivity extends AppCompatActivity {
@@ -36,23 +37,18 @@ public class MainActivity extends AppCompatActivity {
     private double latitude;
     private double longitude;
 
+    /** Binding */
+    private ActivityMainBinding binding;
 
-    // current view
-    private View currentView;
-
-    private Button button;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         Log.d(TAG,"onCreate method");
 
-        // Current view
-        currentView = findViewById(android.R.id.content);
-
-        button = findViewById(R.id.activity_btn);
-
+        Button button = binding.activityBtn;
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -180,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
              latitude = intent.getDoubleExtra("latitude",0.0);
              longitude = intent.getDoubleExtra("longitude",0.0);
 
-            Log.d("main activity receiver", "receive coordinates: " +latitude+" "+longitude);
+            Log.d(TAG, "receive coordinates: " +latitude+" "+longitude);
         }
     };
 

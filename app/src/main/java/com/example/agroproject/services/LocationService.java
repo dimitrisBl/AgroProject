@@ -70,8 +70,8 @@ public class LocationService extends Service {
         locationRequest = new LocationRequest();
 
         // For high accuracy location
-        locationRequest.setInterval(1000); //5 second
-        locationRequest.setFastestInterval(1000);
+        locationRequest.setInterval(5000); //5 second
+        locationRequest.setFastestInterval(5000);
         //locationRequest.setSmallestDisplacement(1); //1 metro
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 

@@ -1,10 +1,9 @@
 package com.example.agroproject.view;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
-
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -12,10 +11,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
+import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
 import com.example.agroproject.model.MonitoringArea;
 import com.example.agroproject.model.MonitoringAreaManager;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -37,8 +39,6 @@ import java.util.List;
  * TODO description for this class
  *
  */
-
-
 public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     /** Class TAG */
@@ -104,11 +104,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
+     * This method Adds a marker in current location, sets zoom in the camera and defines the satellite map type.
+     * TODO MORE COMMENTS
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -205,7 +202,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                         Toast.makeText(CreateAreaActivity.this,
                                 "Tap in the map and mark your area first", Toast.LENGTH_LONG).show();
                     }
-                    break;
+                break;
                 case "clear":
                     latLngList.clear();
                     markerList.clear();
@@ -213,7 +210,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     //prepei na bgei apo edw to afhnw gia na mn gemizw to arxeio malakies
                     //monitoringAreaManager.clearSharedPreferencesFile();
                     addTheExistingAreasInMap();
-                    break;
+                break;
             }
         }
     };

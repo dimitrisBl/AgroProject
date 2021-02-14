@@ -51,15 +51,28 @@ public class LocationService extends Service implements Executor {
         runnable.run();
     }
 
+    /**
+     * This method initialize a location request, using
+     * the GPS provider for high accuracy.
+     */
     @Override
     public void onCreate() {
         super.onCreate();
-        // Instantiate  FusedLocationProviderClient object
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        // Location callBack method
+        // Instantiate FusedLocationProviderClient object
+        fusedLocationProviderClient = LocationServices
+                .getFusedLocationProviderClient(this);
+
+        // Initialize a location request
+        locationRequest = new LocationRequest();
+
+        //PRIORITY_HIGH_ACCURACY uses the gps
+        locationRequest.setInterval(5000); // 5 second
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        // Define the callBack method
         locationCallBackExecute();
     }
-
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -70,34 +83,11 @@ public class LocationService extends Service implements Executor {
 
 
     /**
-     * This method initialize a location request using the GPS,
-     * then calls the getCurrentLocation method
-     * to starts a location service.
-     */
-    @SuppressLint("MissingPermission")
-    private void startLocationService(){
-
-        // Initialize a location request
-        locationRequest = new LocationRequest();
-
-        //PRIORITY_HIGH_ACCURACY uses the gps
-        locationRequest.setInterval(5000); // 1 second
-        locationRequest.setFastestInterval(5000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        // Start location service
-        getCurrentLocation();
-
-        // Location callBack method
-        //locationCallBackExecute();
-    }
-
-    /**
      *  This method get current location with with FusedLocationProviderClient Google API.
      *  If last location is null performs a request location updates to gets the current location.
      */
     @SuppressLint("MissingPermission")
-    public void getCurrentLocation(){
+    public void startLocationService(){
         Log.d(TAG, "Location service is performed");
         fusedLocationProviderClient.getLastLocation()
                 .addOnSuccessListener( this, new OnSuccessListener<Location>() {
@@ -166,6 +156,7 @@ public class LocationService extends Service implements Executor {
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG,"onDestroy executed, location updates is stopped");
+        // Remove location updates
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 }

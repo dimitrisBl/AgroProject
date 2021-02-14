@@ -46,7 +46,8 @@ public class LocationTrackingService extends Service {
     public void onCreate() {
         super.onCreate();
         // Instantiate  FusedLocationProviderClient object
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationProviderClient = LocationServices
+                .getFusedLocationProviderClient(this);
         // Location callBack method
         locationCallBackExecute();
     }

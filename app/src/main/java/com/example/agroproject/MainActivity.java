@@ -17,7 +17,13 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.text.Layout;
+import android.text.SpannableString;
+import android.text.style.AlignmentSpan;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -47,19 +53,6 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         Log.d(TAG,"onCreate method");
-
-        Button button = binding.activityBtn;
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent secondActivity = new Intent(
-                        MainActivity.this, MapActivity.class);
-                secondActivity.putExtra("latitude",latitude);
-                secondActivity.putExtra("longitude",longitude);
-                startActivity(secondActivity);
-
-            }
-        });
 
         // Permission check service
         checkPermissions();
@@ -181,6 +174,63 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "receive coordinates: " +latitude+" "+longitude);
         }
     };
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Initiating Menu XML file (activity_main_top_menu.xml)
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.activity_main_menu, menu);
+
+        // set title alignment for each item is center
+        int positionOfMenuItem0 = 0; //or any other postion
+        MenuItem item = menu.getItem(positionOfMenuItem0);
+        SpannableString s = new SpannableString(item.getTitle());
+        s.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s.length(), 0);
+        item.setTitle(s);
+
+        //this code is for second item in menu
+//        // set title alignment for each item is center
+//        int positionOfMenuItem1 = 1; //or any other postion
+//        MenuItem item1 = menu.getItem(positionOfMenuItem1);
+//        SpannableString s1 = new SpannableString(item1.getTitle());
+//        s1.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s1.length(), 0);
+//        item1.setTitle(s1);
+        // Calling super after populating the menu is necessary here to ensure that the
+        // action bar helpers have a chance to handle this event.
+        return true;
+    }
+
+    /**
+     * Event Handling for Individual menu item selected
+     * Identify single menu item by it's id
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.yourMap_item:
+                if(isGpsEnable()){
+                    Intent yourMapIntent = new Intent(MainActivity.this, MapActivity.class);
+                    yourMapIntent.putExtra("latitude",latitude);
+                    yourMapIntent.putExtra("longitude",longitude);
+                    startActivity(yourMapIntent);
+                }
+                return true;
+
+//            case R.id.createArea_item:
+//                if(isGpsEnable()){
+//                    Intent createAreaIntent = new Intent(this, CreateAreaActivity.class);
+//                    createAreaIntent.putExtra("latitude", latitude);
+//                    createAreaIntent.putExtra("longitude", longitude);
+//                    startActivity(createAreaIntent);
+//                }
+//                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
 
     @Override

@@ -46,7 +46,7 @@ public class LocationService extends Service {
         super.onCreate();
         // Instantiate  FusedLocationProviderClient object
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        // locationCallback
+        // Location callBack method
         locationCallBackExecute();
     }
 
@@ -54,6 +54,7 @@ public class LocationService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d("LocationService","service started");
+        // Start request for location
         requestLocation();
         return super.onStartCommand(intent, flags, startId);
     }
@@ -66,7 +67,7 @@ public class LocationService extends Service {
     private void requestLocation(){
         // Instantiate LocationRequest object
         locationRequest = new LocationRequest();
-        
+
         // For high accuracy location
         locationRequest.setInterval(5000); //5 second
         locationRequest.setFastestInterval(2000);

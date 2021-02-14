@@ -1,4 +1,4 @@
-package com.example.agroproject;
+package com.example.agroproject.view;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,6 +24,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMainBinding;
 import com.example.agroproject.services.LocationService;
 
@@ -213,12 +215,12 @@ public class MainActivity extends AppCompatActivity {
              return true;
 
             case R.id.createArea_item:
-//                if(isGpsEnable()){
-//                    Intent createAreaIntent = new Intent(this, CreateAreaActivity.class);
-//                    createAreaIntent.putExtra("latitude", latitude);
-//                    createAreaIntent.putExtra("longitude", longitude);
-//                    startActivity(createAreaIntent);
-//                }
+                if(isGpsEnable()){
+                    Intent createAreaIntent = new Intent(this, CreateAreaActivity.class);
+                    createAreaIntent.putExtra("latitude", latitude);
+                    createAreaIntent.putExtra("longitude", longitude);
+                    startActivity(createAreaIntent);
+                }
                 return true;
 
             default:

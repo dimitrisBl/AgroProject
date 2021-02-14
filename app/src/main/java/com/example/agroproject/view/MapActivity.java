@@ -1,4 +1,4 @@
-package com.example.agroproject;
+package com.example.agroproject.view;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
+
+import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -48,8 +50,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
-
-
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()

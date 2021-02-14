@@ -53,7 +53,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent secondActivity = new Intent(
-                        MainActivity.this, SecondActivity.class);
+                        MainActivity.this, MapActivity.class);
+                secondActivity.putExtra("latitude",latitude);
+                secondActivity.putExtra("longitude",longitude);
                 startActivity(secondActivity);
 
             }

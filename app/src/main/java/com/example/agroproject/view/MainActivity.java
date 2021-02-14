@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
     /** Binding */
     private ActivityMainBinding binding;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -142,37 +141,6 @@ public class MainActivity extends AppCompatActivity {
         return  false;
     }
 
-
-
-    /**
-     *  This method starts an intent service
-     *  in LocationService class.
-     */
-    public void startLocationService(){
-        Intent locationServiceIntent = new Intent(this, LocationService.class);
-        startService(locationServiceIntent);
-    }
-
-    /**
-     *  Our handler for received Intents. This will be called whenever an Intent
-     *  with an action named "GPSLocationUpdates".
-     *  TODO MORE DESCRIPTION
-     */
-    private BroadcastReceiver locationReceiver  = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Toast.makeText(MainActivity.this,
-                    "Receive coordinates in main activity: "+latitude,Toast.LENGTH_SHORT).show();
-
-            // Get extra data included in the Intent
-             latitude = intent.getDoubleExtra("latitude",0.0);
-             longitude = intent.getDoubleExtra("longitude",0.0);
-
-            Log.d(TAG, "receive coordinates: " +latitude+" "+longitude);
-        }
-    };
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Initiating Menu XML file (activity_main_top_menu.xml)
@@ -228,6 +196,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     *  This method starts an intent service
+     *  in LocationService class.
+     */
+    public void startLocationService(){
+        Intent locationServiceIntent = new Intent(this, LocationService.class);
+        startService(locationServiceIntent);
+    }
+    /**
+     *  Our handler for received Intents. This will be called whenever an Intent
+     *  with an action named "GPSLocationUpdates".
+     *  TODO MORE DESCRIPTION
+     */
+    private BroadcastReceiver locationReceiver  = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Toast.makeText(MainActivity.this,
+                    "Receive coordinates in main activity: "
+                            +intent.getDoubleExtra("latitude",0.0),Toast.LENGTH_SHORT).show();
+
+            // Get extra data included in the Intent
+            latitude = intent.getDoubleExtra("latitude",0.0);
+            longitude = intent.getDoubleExtra("longitude",0.0);
+
+            Log.d(TAG, "receive coordinates: " +latitude+" "+longitude);
+        }
+    };
 
     @Override
     protected void onStart() {
@@ -243,9 +238,9 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         Log.d(TAG,"onResume executed");
         // Receive messages about current location.
-        // We are registering an observer (GPSLocationUpdates) to receive Intents with actions named "LocationService".
+        // We are registering an observer (LocationService) to receive Intents with actions named "LocationService".
         LocalBroadcastManager.getInstance(this).registerReceiver(
-                locationReceiver, new IntentFilter("GPSLocationUpdates"));
+                locationReceiver, new IntentFilter("LocationService"));
     }
 
 

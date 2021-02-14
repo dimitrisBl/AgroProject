@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.agroproject">
+
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -17,20 +18,21 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AgroProject">
-        <activity android:name=".view.CreateAreaActivity"
-            android:parentActivityName=".view.MainActivity"
-            android:label="@string/title_activity_create_area"/>
+
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
-             (See the file "res/values/google_map_api.xml").
+             (See the file "res/values/google_maps_api.xml").
              Note that the API key is linked to the encryption key used to sign the APK.
              You need a different API key for each encryption key, including the release key that is used to
              sign the APK for publishing.
              You can define the keys for the debug and release targets in src/debug/ and src/release/.
         -->
+
+        <!---//////////    Google Map - Google Services     //////      -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${mapsApiKey}" />
+
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
@@ -39,18 +41,37 @@
             android:name="org.apache.http.legacy"
             android:required="false" />
 
+        <!---||||||||||||||||||||||||||||||||||||||||||||||||||||||||     -->
+
+        <activity
+            android:name=".view.CreateAreaActivity"
+            android:parentActivityName=".view.MainActivity"
+            android:label="@string/title_activity_create_area"/>
+
         <activity
             android:name=".view.MapActivity"
             android:label="@string/title_activity_map"
             android:parentActivityName=".view.MainActivity" />
+
         <activity android:name=".view.MainActivity">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
 
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
-        </activity> <!-- Location Tracking Service -->
+        </activity>
+
+        <!---//////////        Services     /////////////      -->
+
+        <!--
+            Location Tracking Service -->
+        <service android:name=".services.LocationTrackingService" />
+        <!--
+            Location  Service -->
         <service android:name=".services.LocationService" />
+
+        <!---||||||||||||||||||||||||||||||||||||||||||||||||||||||||     -->
+
     </application>
 
 </manifest>

@@ -4,11 +4,11 @@ import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
 import android.location.Location;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -16,31 +16,40 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
-/**
- *  TODO CLASS DESCRIPTION
- *
- *  */
-public class LocationService extends Service {
+import java.util.concurrent.Executor;
+
+public class LocationService extends Service implements Executor {
 
     /** Class TAG */
-    private final String TAG = "LocationTrackingService";
+    private final String TAG = "LocationService";
 
     /** Google's API for location service */
     private FusedLocationProviderClient fusedLocationProviderClient;
 
-    /** Location callback */
+    /** LocationCallback object */
     private LocationCallback locationCallback;
 
-    /** Location request*/
+    /** LocationRequest object */
     private LocationRequest locationRequest;
 
+    /** The current geographic latitude of the device */
+    private double latitude;
 
+    /** The current geographic longitude of the device */
+    private double longitude;
+
+    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
 
+    @Override
+    public void execute(Runnable runnable) {
+        runnable.run();
+    }
 
     @Override
     public void onCreate() {
@@ -54,46 +63,78 @@ public class LocationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG,"service started");
         // Start request for location
-        requestLocation();
+        startLocationService();
         return super.onStartCommand(intent, flags, startId);
     }
 
+
     /**
-     * This method initialize and execute
-     * a location request using the GPS.
+     * This method initialize a location request using the GPS,
+     * then calls the getCurrentLocation method
+     * to starts a location service.
      */
     @SuppressLint("MissingPermission")
-    private void requestLocation(){
-        // Instantiate LocationRequest object
+    private void startLocationService(){
+
+        // Initialize a location request
         locationRequest = new LocationRequest();
 
-        // For high accuracy location
-        locationRequest.setInterval(5000); //5 second
+        //PRIORITY_HIGH_ACCURACY uses the gps
+        locationRequest.setInterval(5000); // 1 second
         locationRequest.setFastestInterval(5000);
-        //locationRequest.setSmallestDisplacement(1); //1 metro
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        //performs request location updates
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+        // Start location service
+        getCurrentLocation();
+
+        // Location callBack method
+        //locationCallBackExecute();
     }
 
     /**
-     * This method send an intent with an action "GPSLocationUpdates".
-     * The intent sent is received by the Activity.
-     *
-     * @param location receives the current device location.
-     *
+     *  This method get current location with with FusedLocationProviderClient Google API.
+     *  If last location is null performs a request location updates to gets the current location.
      */
-    private  void sendMessageToActivity(LocationResult location) {
-        Log.d(TAG, "sending message on activity");
-        // Instantiate an intent
-        Intent intent = new Intent("GPSLocationUpdates");
+    @SuppressLint("MissingPermission")
+    public void getCurrentLocation(){
+        Log.d(TAG, "Location service is performed");
+        fusedLocationProviderClient.getLastLocation()
+                .addOnSuccessListener( this, new OnSuccessListener<Location>() {
+                    @SuppressLint("MissingPermission")
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            // Get the current latitude
+                            latitude = location.getLatitude();
+                            // Get the current longitude
+                            longitude = location.getLongitude();
+                            // Send coordinates in MapActivity
+                            sendMessageToActivity(latitude,longitude);
+                        }else{
+                            // Performs location request if the last location is null
+                            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+                        }
+                    }
 
-        // Include the device coordinates in intent
-        intent.putExtra("latitude", location.getLastLocation().getLatitude());
-        intent.putExtra("longitude", location.getLastLocation().getLongitude());
+                });
+    }
+
+    /**
+     * This method send an intent with an action "LocationService".
+     * The intent sent is received by the MainActivity.
+     *
+     * @param latitude takes the current device latitude
+     * @param longitude takes the current device longitude
+     */
+    private  void sendMessageToActivity(double latitude, double longitude) {
+        Log.d(TAG, "sending message to MainActivity");
+        // Instantiate an intent
+        Intent intent = new Intent("LocationService");
+        // Include extra data
+        intent.putExtra("latitude", latitude);
+        intent.putExtra("longitude", longitude);
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
@@ -109,8 +150,14 @@ public class LocationService extends Service {
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
+                for (Location location : locationResult.getLocations()) {
+                    // Get the current latitude
+                    latitude = location.getLatitude();
+                    // Get the current longitude
+                    longitude = location.getLongitude();
+                }
                 // Send coordinates in MainActivity
-                sendMessageToActivity(locationResult);
+                sendMessageToActivity(latitude,longitude);
             }
         };
     }

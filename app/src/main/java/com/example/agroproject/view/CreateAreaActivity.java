@@ -266,7 +266,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 //                // Enable location button
 //                mMap.setMyLocationEnabled(false);
 //                mMap.getUiSettings().setMyLocationButtonEnabled(false);
-
+                polyline = null;
+                latLngList.clear();
                 mMap.clear();
             }
 

@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
      * This method ask for gps enable if the gps of the device is off, else
      * if the gps is enable  he don't any something.
      * TODO MORE DESCRIPTION
-     * @return boolean, true if gps status is enable or false if gps status is disable.
+     * @return true if gps status is enable or false if gps status is disable.
      */
     @SuppressLint("MissingPermission")
     private boolean isGpsEnable(){

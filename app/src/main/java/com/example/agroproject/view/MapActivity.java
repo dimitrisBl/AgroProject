@@ -2,6 +2,9 @@ package com.example.agroproject.view;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
+
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -83,12 +86,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * This method Adds a marker in current location, sets zoom in the camera and defines the satellite map type.
      * TODO MORE COMMENTS
      */
+    @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        // Enable visibility for zoom controls buttons
-        googleMap.getUiSettings().setZoomControlsEnabled(true);
         // Initialize map
         mMap = googleMap;
+        // Enable visibility for zoom controls buttons
+        mMap.getUiSettings().setZoomControlsEnabled(true);
         // Setup satellite map
         mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
         // Create MarkerOption for current location
@@ -104,6 +108,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         addTheExistingAreas();
     }
 
+    /**
+     * TODO DESCRIPTION
+     */
     public GoogleMap.OnPolygonClickListener polygonClickListener = new GoogleMap.OnPolygonClickListener() {
         @Override
         public void onPolygonClick(Polygon polygon) {

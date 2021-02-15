@@ -294,7 +294,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         @Override
         public void onReceive(Context context, Intent intent) {
             Toast.makeText(CreateAreaActivity.this,
-                    "Receive coordinates in main activity: "
+                    "Receive coordinates in activity create area: "
                             +intent.getDoubleExtra("latitude",0.0),
                     Toast.LENGTH_SHORT).show();
 
@@ -328,7 +328,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 .setMessage("You want to save this area?")
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        // If answer is yes show popup alert form.
+                        // If answer is yes show save area popup.
                         showSaveAreaPopup();
                     }
                 }).setNegativeButton("No", new DialogInterface.OnClickListener() {

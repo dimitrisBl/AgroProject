@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
             //permission question
             ActivityCompat.requestPermissions(this, new String[]
-                    {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_CODE);
+                    {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_CODE);
         } else {
             // Start the location service
             startLocationService();
@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
      * TODO MORE DESCRIPTION
      * @return boolean, true if gps status is enable or false if gps status is disable.
      */
+    @SuppressLint("MissingPermission")
     private boolean isGpsEnable(){
         // Initialize a LocationManager object
         LocationManager locationManager =
@@ -200,6 +201,7 @@ public class MainActivity extends AppCompatActivity {
      *  This method starts an intent service
      *  in LocationService class.
      */
+    @SuppressLint("MissingPermission")
     public void startLocationService(){
         Intent locationServiceIntent = new Intent(this, LocationService.class);
         startService(locationServiceIntent);
@@ -232,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
         // GPS status
         isGpsEnable();
     }
+
 
 
     @Override

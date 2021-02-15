@@ -53,7 +53,7 @@ public class LocationService extends Service implements Executor {
 
     /**
      * This method initialize a location request, using
-     * the GPS provider for high accuracy.
+     * the GPS and wifi provider for high accuracy.
      */
     @Override
     public void onCreate() {
@@ -68,12 +68,12 @@ public class LocationService extends Service implements Executor {
         //PRIORITY_HIGH_ACCURACY uses the gps
         locationRequest.setInterval(5000); // 5 second
         locationRequest.setFastestInterval(5000);
+        locationRequest.setSmallestDisplacement(1); //1 metro
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        // Define the callBack method
-        locationCallBackExecute();
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Start request for location
@@ -100,12 +100,16 @@ public class LocationService extends Service implements Executor {
                             latitude = location.getLatitude();
                             // Get the current longitude
                             longitude = location.getLongitude();
-                            // Send coordinates in MapActivity
+                            // Send old location in Activity
                             sendMessageToActivity(latitude,longitude);
-                        }else{
-                            // Performs location request if the last location is null
-                            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
                         }
+
+                    // Define the callBack method
+                    locationCallBackExecute();
+                    // Performs location request for newest location.
+                    fusedLocationProviderClient.requestLocationUpdates
+                            (locationRequest, locationCallback, Looper.getMainLooper());
+
                     }
 
                 });

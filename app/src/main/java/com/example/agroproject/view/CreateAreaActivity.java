@@ -1,16 +1,22 @@
 package com.example.agroproject.view;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -20,6 +26,7 @@ import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
 import com.example.agroproject.model.MonitoringArea;
 import com.example.agroproject.model.MonitoringAreaManager;
+import com.example.agroproject.services.LocationService;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -29,6 +36,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
@@ -74,6 +82,12 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** MonitoringAreaManager object */
     private MonitoringAreaManager monitoringAreaManager;
 
+    /** checkBox state */
+    private boolean checkBoxIsChecked = false;
+
+    /** Polyline */
+    private Polyline polyline = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,12 +102,14 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
 
-        // Instantiate the PolygonModel object.
+        // Instantiate a MonitoringAreaManager object
         monitoringAreaManager = new MonitoringAreaManager(this);
 
         // Set click listener for buttons
         binding.drawPolygon.setOnClickListener(buttonClickListener);
         binding.clearMap.setOnClickListener(buttonClickListener);
+        // Set checked listener for checkbox
+        binding.checkBox.setOnCheckedChangeListener(checkBoxListener);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -127,39 +143,41 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     public GoogleMap.OnMapClickListener mapClickListener = new GoogleMap.OnMapClickListener() {
         @Override
         public void onMapClick(LatLng latLng) {
-            Log.d(TAG,"OnMapClickListener function running");
-            // Create MarkerOptions
-            MarkerOptions markerOptions = new MarkerOptions()
-                    .position(latLng).title(""+latLng.latitude+" "+latLng.longitude);
+            Log.d(TAG, "OnMapClickListener function running");
+             // If checkBox state is false
+            if (!checkBoxIsChecked) {
+                // Create MarkerOptions
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(latLng).title("" + latLng.latitude + " " + latLng.longitude);
 
-            if (marker != null) {
-                // Remove the previous marker
-                marker.remove();
-            }
-            // Create Marker in the map
-            marker = mMap.addMarker(markerOptions);
+                if (marker != null) {
+                    // Remove the previous marker
+                    marker.remove();
+                }
+                // Create Marker in the map
+                marker = mMap.addMarker(markerOptions);
 
-            // Add LatLng in latLngList
-            latLngList.add(latLng);
+                // Add LatLng in latLngList
+                latLngList.add(latLng);
 
-            // Add Marker in markerList
-            markerList.add(marker);
+                // Add Marker in markerList
+                markerList.add(marker);
 
-            if(markerList.size() > 1){
+                if (markerList.size() > 1) {
 
-                latitude = latLng.latitude;
-                longitude =latLng.longitude;
+                    latitude = latLng.latitude;
+                    longitude = latLng.longitude;
 
-                marker.setPosition(new LatLng(latitude,longitude));
+                    marker.setPosition(new LatLng(latitude, longitude));
 
-                PolylineOptions polylineOptions = new PolylineOptions()
-                        .addAll(latLngList).color(Color.RED).jointType(JointType.BEVEL);
+                    PolylineOptions polylineOptions = new PolylineOptions()
+                            .addAll(latLngList).color(Color.RED).jointType(JointType.BEVEL);
 
-                mMap.addPolyline(polylineOptions);
+                    mMap.addPolyline(polylineOptions);
+                }
             }
         }
     };
-
 
     /**
      *  TODO description
@@ -167,11 +185,12 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     private View.OnClickListener buttonClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            // Get current button
+            // Get current button click
             Button currentButton = (Button) view;
 
             // Get text from current button
-            String currentButtonText = String.valueOf(currentButton.getText());
+            String currentButtonText =
+                    String.valueOf(currentButton.getText());
 
             switch (currentButtonText){
                 case "draw area":
@@ -180,6 +199,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                         polygonOptions = new PolygonOptions()
                                 .strokeWidth(5.2f).addAll(latLngList).strokeColor(Color.RED)
                                 .fillColor(Color.rgb(204, 255, 204)).clickable(true);
+
                         // Draw area on the Map
                         mMap.addPolygon(polygonOptions);
 
@@ -207,6 +227,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     latLngList.clear();
                     markerList.clear();
                     mMap.clear();
+                    polyline = null;
                     //prepei na bgei apo edw to afhnw gia na mn gemizw to arxeio malakies
                     //monitoringAreaManager.clearSharedPreferencesFile();
                     addTheExistingAreasInMap();
@@ -216,9 +237,81 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     };
 
     /**
+     *  TODO description
+     */
+    public CompoundButton.OnCheckedChangeListener checkBoxListener = new CompoundButton.OnCheckedChangeListener() {
+        @SuppressLint("MissingPermission")
+        @Override
+        public void onCheckedChanged(CompoundButton compoundButton, boolean state) {
+            // get the checkBox state
+            checkBoxIsChecked = state;
+
+            if (checkBoxIsChecked) {
+                marker = null;
+                markerList.clear();
+                latLngList.clear();
+
+            }else{
+                polyline = null;
+                latLngList.clear();
+                markerList.clear();
+                mMap.clear();
+                //Add the existing monitoring areas in the map
+                addTheExistingAreasInMap();
+            }
+        }
+    };
+
+
+    /**
+     * TODO METHOD DESCRIPTION
+     * LOGIKA THA UPARXEI KAPOU MIA LEPTOMERIA
+     * POU THA DIMOURGEI PROBLHMA - BUG, NA KANW DEBUG GIA NA ENTOPISW PITHANA SFALMATA
+     *
+     **/
+    public void refreshMapForNewLocation(){
+
+        if(checkBoxIsChecked){
+
+            // Add LatLng in latLngList
+            latLngList.add(currentLocation);
+
+            if(polyline!=null){
+
+                polyline.setPoints(latLngList);
+
+            }else{
+                // Create MarkerOptions
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(currentLocation).title("Your location: " +latitude + " " + longitude);
+
+                if (marker != null) {
+                    // Remove the previous marker
+                    marker.remove();
+                }
+                // Create Marker in the map
+                marker = mMap.addMarker(markerOptions);
+                // Add Marker in markerList
+                markerList.add(marker);
+
+                if (markerList.size() > 1){
+
+                    marker.setPosition(new LatLng(latitude, longitude));
+
+                    PolylineOptions polylineOptions = new PolylineOptions()
+                            .addAll(latLngList).color(Color.RED).jointType(JointType.BEVEL);
+
+                    mMap.addPolyline(polylineOptions);
+                }
+            }
+            // If location tracking checkBox is checked move the camera in new location
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18f));
+        }
+    }
+
+    /**
      * TODO method description
      */
-
     @SuppressLint("NewApi")
     private void showSaveAlertDialog(){
         new AlertDialog.Builder(CreateAreaActivity.this)
@@ -227,7 +320,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 .setMessage("You want to save this area?")
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        // If answer is yes show popup alert form.
+                        // If answer is yes show save area popup.
                         showSaveAreaPopup();
                     }
                 }).setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -329,4 +422,50 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             }
         }
     }
+
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG,"onResume executed");
+        // Receive messages about current location.
+        // We are registering an observer (locationReceiver) to receive Intents with actions named "LocationUpdates".
+        LocalBroadcastManager.getInstance(CreateAreaActivity.this).registerReceiver(
+                locationReceiver, new IntentFilter(LocationService.ACTION_NAME));
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG,"onPause executed");
+        // Unregister since the activity is about to be closed.
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationReceiver);
+    }
+
+    /**
+     *  Our handler for received Intents. This will be called whenever an Intent
+     *  with an action named "LocationUpdates". Receives the current latitude
+     *  and longitude of the device.
+     */
+    private BroadcastReceiver locationReceiver  = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Toast.makeText(CreateAreaActivity.this,
+                    "Receive coordinates in activity create area: "
+                            + intent.getDoubleExtra("latitude", 0.0),
+                    Toast.LENGTH_SHORT).show();
+
+            // Receive extra data included in the Intent
+            latitude = intent.getDoubleExtra("latitude", 0.0);
+            longitude = intent.getDoubleExtra("longitude", 0.0);
+
+            // Instantiate a new LatLng for current location
+            currentLocation = new LatLng(latitude, longitude);
+
+            // Refresh ui for the location changes
+            refreshMapForNewLocation();
+        }
+    };
 }

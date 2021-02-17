@@ -29,6 +29,9 @@ import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMainBinding;
 import com.example.agroproject.services.LocationService;
 
+/**
+ * TODO IS NETWORK ENABLE METHOD
+ */
 
 public class MainActivity extends AppCompatActivity {
 
@@ -38,12 +41,13 @@ public class MainActivity extends AppCompatActivity {
     /** Permission request code */
     private static final int LOCATION_PERMISSION_CODE = 1;
 
+    /** Binding */
+    private ActivityMainBinding binding;
+
     /** Device coordinates */
     private double latitude;
     private double longitude;
 
-    /** Binding */
-    private ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
             //permission question
             ActivityCompat.requestPermissions(this, new String[]
-                    {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_CODE);
+                    {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_CODE);
         } else {
             // Start the location service
             startLocationService();
@@ -106,9 +110,11 @@ public class MainActivity extends AppCompatActivity {
      * This method ask for gps enable if the gps of the device is off, else
      * if the gps is enable  he don't any something.
      * TODO MORE DESCRIPTION
-     * @return boolean, true if gps status is enable or false if gps status is disable.
+     * @return true if gps status is enable or false if gps status is disable.
      */
+    @SuppressLint("MissingPermission")
     private boolean isGpsEnable(){
+
         // Initialize a LocationManager object
         LocationManager locationManager =
                 (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -119,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(providerEnable){
             // GPS is enable
-            return true;
+            return  true;
         }else{
             // GPS is not enable
             AlertDialog alertDialog = new AlertDialog.Builder(this)
@@ -138,8 +144,10 @@ public class MainActivity extends AppCompatActivity {
                     })
             .show();
         }
-        return  false;
+        return false;
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -175,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.yourMap_item:
                 if(isGpsEnable()){
-                    Intent yourMapIntent = new Intent(MainActivity.this, MapActivity.class);
+                    Intent yourMapIntent = new Intent(this, MapActivity.class);
                     yourMapIntent.putExtra("latitude",latitude);
                     yourMapIntent.putExtra("longitude",longitude);
                     startActivity(yourMapIntent);
@@ -196,39 +204,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     *  This method starts an intent service
-     *  in LocationService class.
-     */
-    public void startLocationService(){
-        Intent locationServiceIntent = new Intent(this, LocationService.class);
-        startService(locationServiceIntent);
-    }
-    /**
-     *  Our handler for received Intents. This will be called whenever an Intent
-     *  with an action named "GPSLocationUpdates".
-     *  TODO MORE DESCRIPTION
-     */
-    private BroadcastReceiver locationReceiver  = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Toast.makeText(MainActivity.this,
-                    "Receive coordinates in main activity: "
-                            +intent.getDoubleExtra("latitude",0.0),Toast.LENGTH_SHORT).show();
-
-            // Get extra data included in the Intent
-            latitude = intent.getDoubleExtra("latitude",0.0);
-            longitude = intent.getDoubleExtra("longitude",0.0);
-
-            Log.d(TAG, "receive coordinates: " +latitude+" "+longitude);
-        }
-    };
 
     @Override
     protected void onStart() {
         super.onStart();
         Log.d(TAG,"onStart executed");
-        // GPS status
+        // GPS status check
         isGpsEnable();
     }
 
@@ -238,17 +219,56 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         Log.d(TAG,"onResume executed");
         // Receive messages about current location.
-        // We are registering an observer (LocationService) to receive Intents with actions named "LocationService".
+        // We are registering an observer (locationReceiver) to receive intents with action name "LocationUpdates".
         LocalBroadcastManager.getInstance(this).registerReceiver(
-                locationReceiver, new IntentFilter("LocationService"));
+                locationReceiver, new IntentFilter(LocationService.ACTION_NAME));
     }
 
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d(TAG,"onStop executed");
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG,"onPause executed");
         // Unregister since the activity is about to be closed.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(locationReceiver);
     }
+
+
+    /**
+     *  This method starts an intent service
+     *  in LocationService class.
+     *  apo edw ksekinaei to location service
+     *  mia fora kai sunexizei na trexei mexri na kleithei h methodos onDestroy.
+     *  Gia na labw ta dedomena topothesias se allo activity grafw ksana
+     *  thn function locationReceiver sto allo activity kai kanw
+     *  registerReceiver sthn onResume tou allou activity opws ekana kai parakatw.
+     *  TODO Den xreiazetai na epanalabw ksana ton kwdika ths startLocationService.
+     *
+     */
+    @SuppressLint("MissingPermission")
+    public void startLocationService(){
+        Intent locationServiceIntent = new Intent(this, LocationService.class);
+        startService(locationServiceIntent);
+    }
+
+    /**
+     *  Our handler for received Intents. This will be called whenever an Intent
+     *  with an action named "LocationUpdates". Receives the current latitude
+     *  and longitude of the device.
+     */
+    private BroadcastReceiver locationReceiver  = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Toast.makeText(MainActivity.this,
+                    "Receive coordinates in main activity: "
+                            +intent.getDoubleExtra("latitude",0.0),
+                    Toast.LENGTH_SHORT).show();
+
+            // Get extra data included in the Intent
+            latitude = intent.getDoubleExtra("latitude",0.0);
+            longitude = intent.getDoubleExtra("longitude",0.0);
+
+            Log.d(TAG, "receive coordinates: " +latitude+" "+longitude);
+        }
+    };
 }

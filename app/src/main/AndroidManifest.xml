@@ -8,8 +8,9 @@
          location permissions for the "MyLocation" functionality.
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.INTERNET" /> <!-- To request foreground location access, declare one of these permissions. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- To request foreground location access, declare one of these permissions. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -56,21 +57,14 @@
         <activity android:name=".view.MainActivity">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
-
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
 
-        <!---//////////        Services     /////////////      -->
-
         <!--
-            Location Tracking Service -->
-        <service android:name=".services.LocationTrackingService" />
-        <!--
-            Location  Service -->
+            Location  Service
+        -->
         <service android:name=".services.LocationService" />
-
-        <!---||||||||||||||||||||||||||||||||||||||||||||||||||||||||     -->
 
     </application>
 

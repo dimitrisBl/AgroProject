@@ -20,10 +20,22 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.concurrent.Executor;
 
+/**
+ * TODO CLASS DESCRIPTION
+ * AUTO TO SERVICE EKTELEITE STO BACKGROUND H EKKIHNSH GINETAI APO THN MAINACTIVITY,
+ * ME THN BOITHEIA TOU LOCALBROADCASTMANAGER STELNONTAI DEDOMENO STO UI THREAD ME SKOPO
+ * NA GINOUN ALLAGES SXETIKA ME THN TOPOTHESIA PX H THESI TOU MARKER EPANW STON XARTI.
+ */
 public class LocationService extends Service implements Executor {
 
     /** Class TAG */
     private final String TAG = "LocationService";
+
+    /** Intent action name */
+    public static final String ACTION_NAME = "LocationUpdates";
+
+    /** Intent */
+    private Intent intent;
 
     /** Google's API for location service */
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -53,11 +65,14 @@ public class LocationService extends Service implements Executor {
 
     /**
      * This method initialize a location request, using
-     * the GPS provider for high accuracy.
+     * the GPS and wifi provider for high accuracy.
      */
     @Override
     public void onCreate() {
         super.onCreate();
+        // Instantiate an intent
+        intent = new Intent(ACTION_NAME);
+
         // Instantiate FusedLocationProviderClient object
         fusedLocationProviderClient = LocationServices
                 .getFusedLocationProviderClient(this);
@@ -68,12 +83,11 @@ public class LocationService extends Service implements Executor {
         //PRIORITY_HIGH_ACCURACY uses the gps
         locationRequest.setInterval(5000); // 5 second
         locationRequest.setFastestInterval(5000);
+        locationRequest.setSmallestDisplacement(1); //1 metro
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        // Define the callBack method
-        locationCallBackExecute();
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Start request for location
@@ -100,14 +114,16 @@ public class LocationService extends Service implements Executor {
                             latitude = location.getLatitude();
                             // Get the current longitude
                             longitude = location.getLongitude();
-                            // Send coordinates in MapActivity
+                            // Send old location in Activity
                             sendMessageToActivity(latitude,longitude);
-                        }else{
-                            // Performs location request if the last location is null
-                            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
                         }
-                    }
 
+                    // Define the callBack method
+                    locationCallBackExecute();
+                    // Performs location request for newest location.
+                    fusedLocationProviderClient.requestLocationUpdates
+                            (locationRequest, locationCallback, Looper.getMainLooper());
+                    }
                 });
     }
 
@@ -120,12 +136,12 @@ public class LocationService extends Service implements Executor {
      */
     private  void sendMessageToActivity(double latitude, double longitude) {
         Log.d(TAG, "sending message to MainActivity");
-        // Instantiate an intent
-        Intent intent = new Intent("LocationService");
+
         // Include extra data
         intent.putExtra("latitude", latitude);
         intent.putExtra("longitude", longitude);
 
+        // LocalBroadcastManager used to send the  in foreground.
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 

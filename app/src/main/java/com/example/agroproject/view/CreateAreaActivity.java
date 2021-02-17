@@ -27,7 +27,6 @@ import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
 import com.example.agroproject.model.MonitoringArea;
 import com.example.agroproject.model.MonitoringAreaManager;
 import com.example.agroproject.services.LocationService;
-import com.example.agroproject.services.LocationTrackingService;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -103,7 +102,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
 
-        // Instantiate the PolygonModel object.
+        // Instantiate a MonitoringAreaManager object
         monitoringAreaManager = new MonitoringAreaManager(this);
 
         // Set click listener for buttons
@@ -180,18 +179,18 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         }
     };
 
-
     /**
      *  TODO description
      */
     private View.OnClickListener buttonClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            // Get current button
+            // Get current button click
             Button currentButton = (Button) view;
 
             // Get text from current button
-            String currentButtonText = String.valueOf(currentButton.getText());
+            String currentButtonText =
+                    String.valueOf(currentButton.getText());
 
             switch (currentButtonText){
                 case "draw area":
@@ -200,6 +199,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                         polygonOptions = new PolygonOptions()
                                 .strokeWidth(5.2f).addAll(latLngList).strokeColor(Color.RED)
                                 .fillColor(Color.rgb(204, 255, 204)).clickable(true);
+
                         // Draw area on the Map
                         mMap.addPolygon(polygonOptions);
 
@@ -227,6 +227,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     latLngList.clear();
                     markerList.clear();
                     mMap.clear();
+                    polyline = null;
                     //prepei na bgei apo edw to afhnw gia na mn gemizw to arxeio malakies
                     //monitoringAreaManager.clearSharedPreferencesFile();
                     addTheExistingAreasInMap();
@@ -246,81 +247,71 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             checkBoxIsChecked = state;
 
             if (checkBoxIsChecked) {
-                // Enable location button
-//                mMap.setMyLocationEnabled(true);
-//                mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                marker = null;
+                markerList.clear();
+                latLngList.clear();
 
-                startLocationTrackingService();
-
-                // Location button click event
-                mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
-                    @Override
-                    public boolean onMyLocationButtonClick() {
-                        // Move the camera in current location
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18.5f));
-                        return true;
-                    }
-                });
             }else{
-
-//                // Enable location button
-//                mMap.setMyLocationEnabled(false);
-//                mMap.getUiSettings().setMyLocationButtonEnabled(false);
                 polyline = null;
                 latLngList.clear();
+                markerList.clear();
                 mMap.clear();
+                //Add the existing monitoring areas in the map
+                addTheExistingAreasInMap();
             }
-
         }
     };
 
 
     /**
-     *  This method starts an intent service
-     *  in LocationTrackingService class.
-     */
-    public void startLocationTrackingService(){
-        Intent locationTrackingService = new Intent(this, LocationTrackingService.class);
-        startService(locationTrackingService);
-    }
+     * TODO METHOD DESCRIPTION
+     * LOGIKA THA UPARXEI KAPOU MIA LEPTOMERIA
+     * POU THA DIMOURGEI PROBLHMA - BUG, NA KANW DEBUG GIA NA ENTOPISW PITHANA SFALMATA
+     *
+     **/
+    public void refreshMapForNewLocation(){
 
+        if(checkBoxIsChecked){
 
-
-    /**
-     *  Our handler for received Intents. This will be called whenever an Intent
-     *  with an action named "GPSLocationUpdates".
-     *  TODO MORE DESCRIPTION
-     */
-    private BroadcastReceiver locationTrackingReceiver  = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Toast.makeText(CreateAreaActivity.this,
-                    "Receive coordinates in activity create area: "
-                            +intent.getDoubleExtra("latitude",0.0),
-                    Toast.LENGTH_SHORT).show();
-
-            // Receive extra data included in the Intent
-            latitude = intent.getDoubleExtra("latitude",0.0);
-            longitude = intent.getDoubleExtra("longitude",0.0);
-
-            // Create LatLng for current location
-            LatLng currentLocation = new LatLng(latitude,longitude);
-
+            // Add LatLng in latLngList
             latLngList.add(currentLocation);
 
             if(polyline!=null){
+
                 polyline.setPoints(latLngList);
+
             }else{
-                polyline = mMap.addPolyline(new PolylineOptions()
-                        .addAll(latLngList).color(Color.MAGENTA).jointType(JointType.ROUND).width(3.0f));
+                // Create MarkerOptions
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(currentLocation).title("Your location: " +latitude + " " + longitude);
+
+                if (marker != null) {
+                    // Remove the previous marker
+                    marker.remove();
+                }
+                // Create Marker in the map
+                marker = mMap.addMarker(markerOptions);
+                // Add Marker in markerList
+                markerList.add(marker);
+
+                if (markerList.size() > 1){
+
+                    marker.setPosition(new LatLng(latitude, longitude));
+
+                    PolylineOptions polylineOptions = new PolylineOptions()
+                            .addAll(latLngList).color(Color.RED).jointType(JointType.BEVEL);
+
+                    mMap.addPolyline(polylineOptions);
+                }
             }
+            // If location tracking checkBox is checked move the camera in new location
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18f));
         }
-    };
+    }
 
     /**
      * TODO method description
      */
-
     @SuppressLint("NewApi")
     private void showSaveAlertDialog(){
         new AlertDialog.Builder(CreateAreaActivity.this)
@@ -432,22 +423,49 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         }
     }
 
+
+
     @Override
     protected void onResume() {
         super.onResume();
         Log.d(TAG,"onResume executed");
         // Receive messages about current location.
-        // We are registering an observer (locationTrackingReceiver) to receive Intents with actions named "GPSLocationUpdates".
+        // We are registering an observer (locationReceiver) to receive Intents with actions named "LocationUpdates".
         LocalBroadcastManager.getInstance(CreateAreaActivity.this).registerReceiver(
-                locationTrackingReceiver, new IntentFilter("GPSLocationUpdates"));
+                locationReceiver, new IntentFilter(LocationService.ACTION_NAME));
     }
+
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d(TAG,"onStop executed");
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG,"onPause executed");
         // Unregister since the activity is about to be closed.
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationTrackingReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationReceiver);
     }
 
+    /**
+     *  Our handler for received Intents. This will be called whenever an Intent
+     *  with an action named "LocationUpdates". Receives the current latitude
+     *  and longitude of the device.
+     */
+    private BroadcastReceiver locationReceiver  = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Toast.makeText(CreateAreaActivity.this,
+                    "Receive coordinates in activity create area: "
+                            + intent.getDoubleExtra("latitude", 0.0),
+                    Toast.LENGTH_SHORT).show();
+
+            // Receive extra data included in the Intent
+            latitude = intent.getDoubleExtra("latitude", 0.0);
+            longitude = intent.getDoubleExtra("longitude", 0.0);
+
+            // Instantiate a new LatLng for current location
+            currentLocation = new LatLng(latitude, longitude);
+
+            // Refresh ui for the location changes
+            refreshMapForNewLocation();
+        }
+    };
 }

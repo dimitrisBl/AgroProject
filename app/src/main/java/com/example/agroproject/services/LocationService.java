@@ -20,10 +20,22 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.concurrent.Executor;
 
+/**
+ * TODO CLASS DESCRIPTION
+ * AUTO TO SERVICE EKTELEITE STO BACKGROUND H EKKIHNSH GINETAI APO THN MAINACTIVITY,
+ * ME THN BOITHEIA TOU LOCALBROADCASTMANAGER STELNONTAI DEDOMENO STO UI THREAD ME SKOPO
+ * NA GINOUN ALLAGES SXETIKA ME THN TOPOTHESIA PX H THESI TOU MARKER EPANW STON XARTI.
+ */
 public class LocationService extends Service implements Executor {
 
     /** Class TAG */
     private final String TAG = "LocationService";
+
+    /** Intent action name */
+    public static final String ACTION_NAME = "LocationUpdates";
+
+    /** Intent */
+    private Intent intent;
 
     /** Google's API for location service */
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -58,6 +70,9 @@ public class LocationService extends Service implements Executor {
     @Override
     public void onCreate() {
         super.onCreate();
+        // Instantiate an intent
+        intent = new Intent(ACTION_NAME);
+
         // Instantiate FusedLocationProviderClient object
         fusedLocationProviderClient = LocationServices
                 .getFusedLocationProviderClient(this);
@@ -70,7 +85,6 @@ public class LocationService extends Service implements Executor {
         locationRequest.setFastestInterval(5000);
         locationRequest.setSmallestDisplacement(1); //1 metro
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
     }
 
     @SuppressLint("MissingPermission")
@@ -109,9 +123,7 @@ public class LocationService extends Service implements Executor {
                     // Performs location request for newest location.
                     fusedLocationProviderClient.requestLocationUpdates
                             (locationRequest, locationCallback, Looper.getMainLooper());
-
                     }
-
                 });
     }
 
@@ -124,12 +136,12 @@ public class LocationService extends Service implements Executor {
      */
     private  void sendMessageToActivity(double latitude, double longitude) {
         Log.d(TAG, "sending message to MainActivity");
-        // Instantiate an intent
-        Intent intent = new Intent("LocationService");
+
         // Include extra data
         intent.putExtra("latitude", latitude);
         intent.putExtra("longitude", longitude);
 
+        // LocalBroadcastManager used to send the  in foreground.
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 

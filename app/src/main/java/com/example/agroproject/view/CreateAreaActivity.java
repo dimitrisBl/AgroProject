@@ -1,7 +1,7 @@
 package com.example.agroproject.view;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -431,8 +431,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         Log.d(TAG,"onResume executed");
         // Receive messages about current location.
         // We are registering an observer (locationReceiver) to receive Intents with actions named "LocationUpdates".
-        LocalBroadcastManager.getInstance(CreateAreaActivity.this).registerReceiver(
-                locationReceiver, new IntentFilter(LocationService.ACTION_NAME));
+        registerReceiver(locationReceiver, new IntentFilter(LocationService.ACTION_NAME));
     }
 
 
@@ -441,7 +440,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         super.onPause();
         Log.d(TAG,"onPause executed");
         // Unregister since the activity is about to be closed.
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationReceiver);
+        unregisterReceiver(locationReceiver);
     }
 
     /**

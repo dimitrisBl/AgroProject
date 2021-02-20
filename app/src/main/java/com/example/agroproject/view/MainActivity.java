@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
+    
     @Override
     protected void onActivityResult(int requestCode, int resultCode,  Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -156,22 +156,19 @@ public class MainActivity extends AppCompatActivity {
                     .setTitle("GPS permission")
                     .setMessage("The GPS is required for this app, go to location source settings to turn on GPS.")
                     .setPositiveButton("Yes", ((dialogInterface, i) -> {
-                        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                        startActivityForResult(intent,LOCATION_SOURCE_SETTINGS_CODE);
+                            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivityForResult(intent,LOCATION_SOURCE_SETTINGS_CODE);
                     }))
-                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
+                    .setNegativeButton("No", ((dialogInterface, i) -> {
                             Toast.makeText(MainActivity.this,
                                     "GPS is required for use map and other services. " +
                                             "Please enable GPS.",Toast.LENGTH_LONG).show();
                             finish();
-                        }
-                    })
+                    }))
                     .setOnCancelListener(((dialogInterface) -> {
-                        Toast.makeText(this, "GPS is required for use map and other services. " +
+                            Toast.makeText(this, "GPS is required for use map and other services. " +
                                 "Please enable GPS.", Toast.LENGTH_LONG).show();
-                        //finish();
+                            //finish();
                     }))
             .show();
         }
@@ -259,12 +256,6 @@ public class MainActivity extends AppCompatActivity {
     /**
      *  This method starts an intent service
      *  in LocationService class.
-     *  apo edw ksekinaei to location service
-     *  mia fora kai sunexizei na trexei mexri na kleithei h methodos onDestroy.
-     *  Gia na labw ta dedomena topothesias se allo activity grafw ksana
-     *  thn function locationReceiver sto allo activity kai kanw
-     *  registerReceiver sthn onResume tou allou activity opws ekana kai parakatw.
-     *  TODO Den xreiazetai na epanalabw ksana ton kwdika ths startLocationService.
      *
      */
     @SuppressLint("MissingPermission")

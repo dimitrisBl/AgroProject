@@ -3,7 +3,6 @@ package com.example.agroproject.view;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -220,8 +219,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG,"onResume executed");
         // Receive messages about current location.
         // We are registering an observer (locationReceiver) to receive intents with action name "LocationUpdates".
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                locationReceiver, new IntentFilter(LocationService.ACTION_NAME));
+        registerReceiver(locationReceiver, new IntentFilter(LocationService.ACTION_NAME));
     }
 
 
@@ -230,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         Log.d(TAG,"onPause executed");
         // Unregister since the activity is about to be closed.
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationReceiver);
+        unregisterReceiver(locationReceiver);
     }
 
 

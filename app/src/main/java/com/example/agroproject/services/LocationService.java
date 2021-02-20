@@ -9,7 +9,6 @@ import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -142,7 +141,7 @@ public class LocationService extends Service implements Executor {
         intent.putExtra("longitude", longitude);
 
         // LocalBroadcastManager used to send the  in foreground.
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        sendBroadcast(intent);
     }
 
     /**

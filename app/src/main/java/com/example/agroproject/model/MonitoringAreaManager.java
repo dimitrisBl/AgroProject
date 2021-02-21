@@ -81,11 +81,4 @@ public class MonitoringAreaManager {
         }
         return monitoringAreaList;
     }
-
-
-    public void clearSharedPreferencesFile(){
-        SharedPreferences.Editor editor = polygonStatePrefs.edit();
-        editor.clear();
-        editor.commit();
-    }
 }

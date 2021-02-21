@@ -228,8 +228,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     markerList.clear();
                     mMap.clear();
                     polyline = null;
-                    //prepei na bgei apo edw to afhnw gia na mn gemizw to arxeio malakies
-                    //monitoringAreaManager.clearSharedPreferencesFile();
                     addTheExistingAreasInMap();
                 break;
             }

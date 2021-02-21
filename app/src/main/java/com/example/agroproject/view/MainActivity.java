@@ -40,6 +40,15 @@ public class MainActivity extends AppCompatActivity {
     /** Permission request code */
     private static final int LOCATION_PERMISSION_CODE = 1;
 
+    /** location source settings intent code */
+    private static final int LOCATION_SOURCE_SETTINGS_CODE = 2;
+
+    /** CreateAreaActivity intent code */
+    private static final int CREATE_AREA_ACTIVITY_CODE = 3;
+
+    /** LocationManager */
+    private LocationManager locationManager;
+
     /** Binding */
     private ActivityMainBinding binding;
 
@@ -53,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        // Initialize a LocationManager object
+         locationManager = (LocationManager)
+                 getSystemService(Context.LOCATION_SERVICE);
         // Permission check service
         checkPermissions();
     }
@@ -105,19 +117,32 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,  Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // If i returns from location source settings intent
+        if(requestCode == LOCATION_SOURCE_SETTINGS_CODE){
+            // Check status of the GPS
+            if(isGpsEnable()){
+                // Start the location service
+                Intent locationServiceIntent = new Intent(this, LocationService.class);
+                startService(locationServiceIntent);
+            }
+        }// If i returns from CreateAreaActivity intent
+        else if (requestCode == CREATE_AREA_ACTIVITY_CODE){
+            // Check status of the GPS
+            isGpsEnable();
+        }
+    }
+
     /**
-     * This method ask for gps enable if the gps of the device is off, else
-     * if the gps is enable  he don't any something.
-     * TODO MORE DESCRIPTION
+     * This method check the GPS status, if GPS state is off
+     * displays a alert to GPS turn on, if GPS state is on he don't any something.
+     *
      * @return true if gps status is enable or false if gps status is disable.
      */
     @SuppressLint("MissingPermission")
     private boolean isGpsEnable(){
-
-        // Initialize a LocationManager object
-        LocationManager locationManager =
-                (LocationManager) getSystemService(LOCATION_SERVICE);
-
         // Get GPS provider status
         boolean providerEnable = locationManager
                 .isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -127,20 +152,25 @@ public class MainActivity extends AppCompatActivity {
             return  true;
         }else{
             // GPS is not enable
+            // Show alert for GPS turn on
             AlertDialog alertDialog = new AlertDialog.Builder(this)
                     .setTitle("GPS permission")
-                    .setMessage("GPS is required for use map and other services. Please enable GPS")
+                    .setMessage("The GPS is required for this app, go to location source settings to turn on GPS.")
                     .setPositiveButton("Yes", ((dialogInterface, i) -> {
-                        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                        startActivity(intent);
+                            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivityForResult(intent,LOCATION_SOURCE_SETTINGS_CODE);
                     }))
-                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
+                    .setNegativeButton("No", ((dialogInterface, i) -> {
                             Toast.makeText(MainActivity.this,
-                                    "GPS is required for use map and other services. Please enable GPS",Toast.LENGTH_LONG).show();
-                        }
-                    })
+                                    "GPS is required for use map and other services. " +
+                                            "Please enable GPS.",Toast.LENGTH_LONG).show();
+                            finish();
+                    }))
+                    .setOnCancelListener(((dialogInterface) -> {
+                            Toast.makeText(this, "GPS is required for use map and other services. " +
+                                "Please enable GPS.", Toast.LENGTH_LONG).show();
+                            //finish();
+                    }))
             .show();
         }
         return false;
@@ -194,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
                     Intent createAreaIntent = new Intent(this, CreateAreaActivity.class);
                     createAreaIntent.putExtra("latitude", latitude);
                     createAreaIntent.putExtra("longitude", longitude);
-                    startActivity(createAreaIntent);
+                    startActivityForResult(createAreaIntent,CREATE_AREA_ACTIVITY_CODE);
                 }
                 return true;
 
@@ -203,14 +233,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d(TAG,"onStart executed");
-        // GPS status check
-        isGpsEnable();
-    }
 
 
     @Override
@@ -235,18 +257,16 @@ public class MainActivity extends AppCompatActivity {
     /**
      *  This method starts an intent service
      *  in LocationService class.
-     *  apo edw ksekinaei to location service
-     *  mia fora kai sunexizei na trexei mexri na kleithei h methodos onDestroy.
-     *  Gia na labw ta dedomena topothesias se allo activity grafw ksana
-     *  thn function locationReceiver sto allo activity kai kanw
-     *  registerReceiver sthn onResume tou allou activity opws ekana kai parakatw.
-     *  TODO Den xreiazetai na epanalabw ksana ton kwdika ths startLocationService.
      *
      */
     @SuppressLint("MissingPermission")
     public void startLocationService(){
-        Intent locationServiceIntent = new Intent(this, LocationService.class);
-        startService(locationServiceIntent);
+        // Check status of the GPS
+        if(isGpsEnable()){
+            // Start the location service
+            Intent locationServiceIntent = new Intent(this, LocationService.class);
+            startService(locationServiceIntent);
+        }
     }
 
     /**

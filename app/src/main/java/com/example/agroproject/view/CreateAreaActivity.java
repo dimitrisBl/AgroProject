@@ -228,8 +228,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     markerList.clear();
                     mMap.clear();
                     polyline = null;
-                    //prepei na bgei apo edw to afhnw gia na mn gemizw to arxeio malakies
-                    //monitoringAreaManager.clearSharedPreferencesFile();
                     addTheExistingAreasInMap();
                 break;
             }
@@ -432,6 +430,9 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         // Receive messages about current location.
         // We are registering an observer (locationReceiver) to receive Intents with actions named "LocationUpdates".
         registerReceiver(locationReceiver, new IntentFilter(LocationService.ACTION_NAME));
+        // Receive messages about GPS status.
+        // We are registering an observer (GpsStatusReceiver) to receive intents with action name "android.location.PROVIDERS_CHANGED".
+        registerReceiver(GpsStatusReceiver, new IntentFilter("android.location.PROVIDERS_CHANGED"));
     }
 
 
@@ -441,6 +442,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         Log.d(TAG,"onPause executed");
         // Unregister since the activity is about to be closed.
         unregisterReceiver(locationReceiver);
+        unregisterReceiver(GpsStatusReceiver);
     }
 
     /**
@@ -465,6 +467,18 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
             // Refresh ui for the location changes
             refreshMapForNewLocation();
+        }
+    };
+
+    /**
+     * Receives the GPS status change from enabled to disabled.
+     */
+    public BroadcastReceiver GpsStatusReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals("android.location.PROVIDERS_CHANGED")){
+                finish();
+            }
         }
     };
 }

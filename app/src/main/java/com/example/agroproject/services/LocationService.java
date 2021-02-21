@@ -84,6 +84,9 @@ public class LocationService extends Service implements Executor {
         locationRequest.setFastestInterval(5000);
         locationRequest.setSmallestDisplacement(1); //1 metro
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        // Define the callBack method
+        locationCallBackExecute();
     }
 
     @SuppressLint("MissingPermission")
@@ -116,9 +119,6 @@ public class LocationService extends Service implements Executor {
                             // Send old location in Activity
                             sendMessageToActivity(latitude,longitude);
                         }
-
-                    // Define the callBack method
-                    locationCallBackExecute();
                     // Performs location request for newest location.
                     fusedLocationProviderClient.requestLocationUpdates
                             (locationRequest, locationCallback, Looper.getMainLooper());

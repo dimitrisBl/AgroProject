@@ -46,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
     /** CreateAreaActivity intent code */
     private static final int CREATE_AREA_ACTIVITY_CODE = 3;
 
+    /** LocationManager */
+    private LocationManager locationManager;
+
     /** Binding */
     private ActivityMainBinding binding;
 
@@ -59,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        // Initialize a LocationManager object
+         locationManager = (LocationManager)
+                 getSystemService(Context.LOCATION_SERVICE);
         // Permission check service
         checkPermissions();
     }
@@ -137,11 +143,6 @@ public class MainActivity extends AppCompatActivity {
      */
     @SuppressLint("MissingPermission")
     private boolean isGpsEnable(){
-
-        // Initialize a LocationManager object
-        LocationManager locationManager =
-                (LocationManager) getSystemService(LOCATION_SERVICE);
-
         // Get GPS provider status
         boolean providerEnable = locationManager
                 .isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -266,7 +267,6 @@ public class MainActivity extends AppCompatActivity {
             Intent locationServiceIntent = new Intent(this, LocationService.class);
             startService(locationServiceIntent);
         }
-
     }
 
     /**

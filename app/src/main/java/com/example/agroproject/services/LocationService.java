@@ -69,9 +69,6 @@ public class LocationService extends Service implements Executor {
     @Override
     public void onCreate() {
         super.onCreate();
-        // Instantiate an intent
-        intent = new Intent(ACTION_NAME);
-
         // Instantiate FusedLocationProviderClient object
         fusedLocationProviderClient = LocationServices
                 .getFusedLocationProviderClient(this);
@@ -81,12 +78,9 @@ public class LocationService extends Service implements Executor {
 
         //PRIORITY_HIGH_ACCURACY uses the gps
         locationRequest.setInterval(5000); // 5 second
-        locationRequest.setFastestInterval(5000);
+        locationRequest.setFastestInterval(3000);
         locationRequest.setSmallestDisplacement(1); //1 metro
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        // Define the callBack method
-        locationCallBackExecute();
     }
 
     @SuppressLint("MissingPermission")
@@ -119,6 +113,8 @@ public class LocationService extends Service implements Executor {
                             // Send old location in Activity
                             sendMessageToActivity(latitude,longitude);
                         }
+                    // Define the callBack method
+                    locationCallBackExecute();
                     // Performs location request for newest location.
                     fusedLocationProviderClient.requestLocationUpdates
                             (locationRequest, locationCallback, Looper.getMainLooper());
@@ -135,6 +131,8 @@ public class LocationService extends Service implements Executor {
      */
     private  void sendMessageToActivity(double latitude, double longitude) {
         Log.d(TAG, "sending message to MainActivity");
+        // Instantiate an intent
+        intent = new Intent(ACTION_NAME);
 
         // Include extra data
         intent.putExtra("latitude", latitude);

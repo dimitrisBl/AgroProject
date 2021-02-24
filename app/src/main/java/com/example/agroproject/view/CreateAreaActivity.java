@@ -171,7 +171,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     marker.setPosition(new LatLng(latitude, longitude));
 
                     PolylineOptions polylineOptions = new PolylineOptions()
-                            .addAll(latLngList).color(Color.RED).jointType(JointType.BEVEL);
+                            .addAll(latLngList).color(Color.RED);
 
                     mMap.addPolyline(polylineOptions);
                 }
@@ -197,8 +197,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     if(!latLngList.isEmpty() && markerList.size() >= 4 ) {
                         // Create PolygonOptions
                         polygonOptions = new PolygonOptions()
-                                .strokeWidth(5.2f).addAll(latLngList).strokeColor(Color.RED)
-                                .fillColor(Color.rgb(204, 255, 204)).clickable(true);
+                                .strokeWidth(5f).addAll(latLngList).strokeColor(Color.RED)
+                                .fillColor(Color.argb(70, 50, 255, 0)).clickable(true);
 
                         // Draw area on the Map
                         mMap.addPolygon(polygonOptions);
@@ -297,7 +297,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     marker.setPosition(new LatLng(latitude, longitude));
 
                     PolylineOptions polylineOptions = new PolylineOptions()
-                            .addAll(latLngList).color(Color.RED).jointType(JointType.BEVEL);
+                            .addAll(latLngList).color(Color.RED);
 
                     mMap.addPolyline(polylineOptions);
                 }

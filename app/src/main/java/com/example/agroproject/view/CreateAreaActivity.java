@@ -1,6 +1,7 @@
 package com.example.agroproject.view;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 
 import android.annotation.SuppressLint;
@@ -13,6 +14,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -38,6 +40,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.data.geojson.GeoJsonLayer;
+import com.google.maps.android.data.geojson.GeoJsonPolygonStyle;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -197,8 +205,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     if(!latLngList.isEmpty() && markerList.size() >= 4 ) {
                         // Create PolygonOptions
                         polygonOptions = new PolygonOptions()
-                                .strokeWidth(5.2f).addAll(latLngList).strokeColor(Color.RED)
-                                .fillColor(Color.rgb(204, 255, 204)).clickable(true);
+                                .strokeWidth(3.2f).addAll(latLngList).strokeColor(Color.RED)
+                                .fillColor(Color.argb(20,204, 255, 204)).clickable(true).addHole(latLngList);
 
                         // Draw area on the Map
                         mMap.addPolygon(polygonOptions);
@@ -409,16 +417,83 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
      */
     private void addTheExistingAreasInMap(){
         if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
-            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-                mMap.addPolygon(monitoringArea.getPolygonOptions());
-                // Get the center location of the area
-                LatLng centerLatLng = monitoringArea
-                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
-                // Add Marker on map  in the center location of area
-                mMap.addMarker(new MarkerOptions()
-                        .position(centerLatLng).title(monitoringArea.getName()));
+//            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+//                mMap.addPolygon(monitoringArea.getPolygonOptions());
+//                // Get the center location of the area
+//                LatLng centerLatLng = monitoringArea
+//                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
+//                // Add Marker on map  in the center location of area
+//                mMap.addMarker(new MarkerOptions()
+//                        .position(centerLatLng).title(monitoringArea.getName()));
+//            }
+            // Create layers
+            createLayer();
+        }
+    }
+
+
+
+
+    private void createLayer(){
+
+        for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+
+            JSONObject jsonObject = new JSONObject();
+
+            JSONArray featuresJsonArray = new JSONArray();
+
+            JSONObject geometryObject = new JSONObject();
+
+            JSONArray coordinatesJsonArray = new JSONArray();
+
+            for(LatLng latLng : monitoringArea.getPolygonOptions().getPoints()){
+                // BUILD JSON ARRAY
+                JSONArray innerArray  = null;
+                try {
+                    innerArray = new JSONArray(
+                            "[\n" +
+                                    latLng.longitude+", "+
+                                    latLng.latitude+
+                                    "          ]"
+                    );
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                coordinatesJsonArray.put(innerArray);
+            }
+
+            try {
+                jsonObject.put("type","FeatureCollection");
+
+                geometryObject.put("type","Polygon");
+                geometryObject.put("coordinates",new JSONArray().put(coordinatesJsonArray));
+
+
+                featuresJsonArray.put(new JSONObject().put("type","Feature")
+                                      .put("geometry",geometryObject)
+                                      .put("properties",new JSONObject().put("name",monitoringArea.getName())));
+
+
+                jsonObject.put("features", featuresJsonArray);
+
+
+                Log.d(TAG,"layer is done "+jsonObject);
+
+
+
+                GeoJsonLayer layer = new GeoJsonLayer(mMap, jsonObject);
+
+                GeoJsonPolygonStyle polygonStyle = layer.getDefaultPolygonStyle();
+                polygonStyle.setStrokeColor(monitoringArea.getPolygonOptions().getStrokeColor());
+                polygonStyle.setFillColor(Color.argb(20, 50, 0, 255));
+                layer.addLayerToMap();
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         }
+
     }
 
 

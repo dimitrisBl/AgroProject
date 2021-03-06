@@ -140,7 +140,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
             for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
                 // Put the area in the map
-                polygon = mMap.addPolygon(monitoringArea.getPolygonOptions());
+                polygon = mMap.addPolygon(monitoringArea.getPolygonOptions().clickable(true));
                 // Set tag in the polygon
                 polygon.setTag(monitoringArea.getName());
                 // Get the center location of the area

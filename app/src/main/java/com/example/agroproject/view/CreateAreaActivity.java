@@ -198,7 +198,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                         // Create PolygonOptions
                         polygonOptions = new PolygonOptions()
                                 .strokeWidth(5f).addAll(latLngList).strokeColor(Color.RED)
-                                .fillColor(Color.argb(70, 50, 255, 0)).clickable(true);
+                                .fillColor(Color.argb(70, 50, 255, 0));
 
                         // Draw area on the Map
                         mMap.addPolygon(polygonOptions);

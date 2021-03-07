@@ -63,7 +63,7 @@ public class MonitoringArea {
      * @param points
      * @return
      */
-    public  LatLng getPolygonCenterPoint(List<LatLng> points) {
+    public static LatLng getPolygonCenterPoint(List<LatLng> points) {
         double[] centroid = { 0.0, 0.0 };
 
         for (int i = 0; i < points.size(); i++) {

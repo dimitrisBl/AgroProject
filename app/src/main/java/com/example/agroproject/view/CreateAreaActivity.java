@@ -38,6 +38,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.PolyUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -160,6 +161,16 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 // Add LatLng in latLngList
                 latLngList.add(latLng);
 
+//                for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+//
+//                    boolean inner =  PolyUtil.containsLocation(latLng,
+//                            monitoringArea.getPolygonOptions().getPoints(), true);
+//
+//                    if(inner){
+//                        Toast.makeText(CreateAreaActivity.this,"inner poly",Toast.LENGTH_LONG).show();
+//                    }
+//                }
+
                 // Add Marker in markerList
                 markerList.add(marker);
 
@@ -178,6 +189,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             }
         }
     };
+
 
     /**
      *  TODO description
@@ -381,12 +393,16 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 String areaNameText = areaName.getText().toString();
                 String areaDescriptionText = areaDescription.getText().toString();
 
+                // TODO COMMENTS
+                detectInnerArea(MonitoringArea.getPolygonCenterPoint(polygonOptions.getPoints()));
+
                 // Create the monitoring area.
                 monitoringAreaManager.createMonitoringArea(
                         new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions));
 
                 // Save monitoring area in shared preferences.
                 monitoringAreaManager.saveMonitoringArea();
+
 
                 // Close dialog
                 popupDialog.dismiss();
@@ -401,6 +417,25 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             }
         });
         popupDialog.show();
+    }
+
+    /**
+     *
+     * @param latLng has the center location of area
+     */
+    public void detectInnerArea(LatLng latLng){
+
+        for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+
+            boolean innerArea =  PolyUtil.containsLocation(latLng,
+                   monitoringArea.getPolygonOptions().getPoints(), true);
+
+            if(innerArea){
+                   Toast.makeText(this,"inner area, farm name: " +
+                           ""+monitoringArea.getName(),Toast.LENGTH_LONG).show();
+            }
+
+        }
     }
 
     /**

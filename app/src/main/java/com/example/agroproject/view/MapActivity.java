@@ -14,6 +14,8 @@ import android.widget.Toast;
 
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
+import com.example.agroproject.model.AreaUtilities;
+import com.example.agroproject.model.FarmArea;
 import com.example.agroproject.model.MonitoringArea;
 import com.example.agroproject.model.MonitoringAreaManager;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -137,21 +139,46 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * loads the existing areas data from the shared preferences file.
      */
     private void addTheExistingAreas(){
-        if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
-            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-                // Put the area in the map
-                polygon = mMap.addPolygon(monitoringArea.getPolygonOptions().clickable(true));
-                // Set tag in the polygon
-                polygon.setTag(monitoringArea.getName());
-                // Get the center location of the area
-                LatLng centerLatLng = monitoringArea
-                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
-                // Instantiate a IconGenerator object
-                IconGenerator iconFactory = new IconGenerator(this);
-                // Add Marker on map  in the center location of area
-                mMap.addMarker(new MarkerOptions().position(centerLatLng)
-                        .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(monitoringArea.getName())))
-                        .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV()));
+//        if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
+//            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+//                // Put the area in the map
+//                polygon = mMap.addPolygon(monitoringArea.getPolygonOptions().clickable(true));
+//                // Set tag in the polygon
+//                polygon.setTag(monitoringArea.getName());
+//                // Get the center location of the area
+//                LatLng centerLatLng = AreaUtilities
+//                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
+//                // Instantiate a IconGenerator object
+//                IconGenerator iconFactory = new IconGenerator(this);
+//                // Add Marker on map  in the center location of area
+//                mMap.addMarker(new MarkerOptions().position(centerLatLng)
+//                        .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(monitoringArea.getName())))
+//                        .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV()));
+//            }
+//        }
+        if(!monitoringAreaManager.loadFarmArea().isEmpty()){
+            if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
+
+                for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+
+                    for(FarmArea farmArea : monitoringAreaManager.loadFarmArea()){
+                        // Put the area in the map
+                        polygon = mMap.addPolygon(farmArea.getPolygonOptions().clickable(true));
+                        // Set tag in the polygon
+                        polygon.setTag(monitoringArea.getName());
+                       // Get the center location of the area
+                       LatLng centerLatLng = AreaUtilities
+                            .getPolygonCenterPoint(farmArea.getPolygonOptions().getPoints());
+                       // Instantiate a IconGenerator object
+                       IconGenerator iconFactory = new IconGenerator(this);
+                       // Add Marker on map  in the center location of area
+                       mMap.addMarker(new MarkerOptions().position(centerLatLng)
+                            .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(monitoringArea.getName())))
+                            .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV()));
+                    }
+
+                mMap.addPolygon(monitoringArea.getPolygonOptions());
+                }
             }
         }
     }

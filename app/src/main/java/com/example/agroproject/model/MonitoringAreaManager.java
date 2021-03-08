@@ -91,11 +91,11 @@ public class MonitoringAreaManager {
 
     /**
      *
-     * @param farmArea
+     * @param monitoringArea
      */
-    public void createFarmArea(FarmArea farmArea){
+    public void createFarmArea(MonitoringArea monitoringArea){
         Log.d(TAG,"Farm area create executed");
-        farmAreaList.add(farmArea);
+        monitoringAreaList.add(monitoringArea);
     }
 
 

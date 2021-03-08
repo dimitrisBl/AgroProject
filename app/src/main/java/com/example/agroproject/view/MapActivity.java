@@ -2,12 +2,10 @@ package com.example.agroproject.view;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.widget.Toast;
@@ -15,7 +13,6 @@ import android.widget.Toast;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
 import com.example.agroproject.model.AreaUtilities;
-import com.example.agroproject.model.FarmArea;
 import com.example.agroproject.model.MonitoringArea;
 import com.example.agroproject.model.MonitoringAreaManager;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -127,6 +124,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 if(polygon.getTag().equals(kapa.getKey())){
                     Toast.makeText(MapActivity.this, "name: "+kapa.getKey()+
                             " description: "+kapa.getValue().getDescription()+
+                            " farm name: "+kapa.getValue().getFarmName()+
                             " area compute: "+ SphericalUtil.computeArea(kapa.getValue().getPolygonOptions().getPoints()), Toast.LENGTH_SHORT)
                             .show();
                 }
@@ -139,46 +137,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * loads the existing areas data from the shared preferences file.
      */
     private void addTheExistingAreas(){
-//        if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
-//            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-//                // Put the area in the map
-//                polygon = mMap.addPolygon(monitoringArea.getPolygonOptions().clickable(true));
-//                // Set tag in the polygon
-//                polygon.setTag(monitoringArea.getName());
-//                // Get the center location of the area
-//                LatLng centerLatLng = AreaUtilities
-//                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
-//                // Instantiate a IconGenerator object
-//                IconGenerator iconFactory = new IconGenerator(this);
-//                // Add Marker on map  in the center location of area
-//                mMap.addMarker(new MarkerOptions().position(centerLatLng)
-//                        .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(monitoringArea.getName())))
-//                        .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV()));
-//            }
-//        }
-        if(!monitoringAreaManager.loadFarmArea().isEmpty()){
-            if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
-
-                for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-
-                    for(FarmArea farmArea : monitoringAreaManager.loadFarmArea()){
-                        // Put the area in the map
-                        polygon = mMap.addPolygon(farmArea.getPolygonOptions().clickable(true));
-                        // Set tag in the polygon
-                        polygon.setTag(monitoringArea.getName());
-                       // Get the center location of the area
-                       LatLng centerLatLng = AreaUtilities
-                            .getPolygonCenterPoint(farmArea.getPolygonOptions().getPoints());
-                       // Instantiate a IconGenerator object
-                       IconGenerator iconFactory = new IconGenerator(this);
-                       // Add Marker on map  in the center location of area
-                       mMap.addMarker(new MarkerOptions().position(centerLatLng)
-                            .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(monitoringArea.getName())))
-                            .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV()));
-                    }
-
-                mMap.addPolygon(monitoringArea.getPolygonOptions());
-                }
+        if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
+            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+                // Put the area in the map
+                polygon = mMap.addPolygon(monitoringArea.getPolygonOptions().clickable(true));
+                // Set tag in the polygon
+                polygon.setTag(monitoringArea.getName());
+                // Get the center location of the area
+                LatLng centerLatLng = AreaUtilities
+                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
+                // Instantiate a IconGenerator object
+                IconGenerator iconFactory = new IconGenerator(this);
+                // Add Marker on map  in the center location of area
+                mMap.addMarker(new MarkerOptions().position(centerLatLng)
+                        .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(monitoringArea.getName())))
+                        .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV()));
             }
         }
     }

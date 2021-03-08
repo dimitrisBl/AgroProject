@@ -25,7 +25,6 @@ import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
 import com.example.agroproject.model.AreaUtilities;
-import com.example.agroproject.model.FarmArea;
 import com.example.agroproject.model.MonitoringArea;
 import com.example.agroproject.model.MonitoringAreaManager;
 import com.example.agroproject.services.LocationService;
@@ -33,7 +32,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -162,16 +160,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
                 // Add LatLng in latLngList
                 latLngList.add(latLng);
-
-//                for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-//
-//                    boolean inner =  PolyUtil.containsLocation(latLng,
-//                            monitoringArea.getPolygonOptions().getPoints(), true);
-//
-//                    if(inner){
-//                        Toast.makeText(CreateAreaActivity.this,"inner poly",Toast.LENGTH_LONG).show();
-//                    }
-//                }
 
                 // Add Marker in markerList
                 markerList.add(marker);
@@ -355,7 +343,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         .show();
     }
 
-    List<MonitoringArea> monitoringAreasList = new ArrayList<>();
     /**
      * TODO method description
      */
@@ -397,56 +384,28 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 String areaDescriptionText = areaDescription.getText().toString();
 
                 // Receive the center location of current Polygon
-                LatLng center = AreaUtilities
+                LatLng centerLocationOfCurrentArea = AreaUtilities
                         .getPolygonCenterPoint(polygonOptions.getPoints());
 
-
-
-                if(detectInnerArea(center)){
-
-                 monitoringAreasList.add(new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions));
-
-                    // Create the monitoring area.
-                  monitoringAreaManager.createMonitoringArea(
-                                    new MonitoringArea(areaNameText,areaDescriptionText,polygonOptions));
-                  // Save monitoring area in shared preferences.
-                  monitoringAreaManager.saveMonitoringArea();
-
-                }else{
-
-                    for(MonitoringArea element : monitoringAreasList){
-                        //if()
+                if(detectInnerArea(centerLocationOfCurrentArea)){
+                    for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+                        boolean innerArea =  PolyUtil.containsLocation(centerLocationOfCurrentArea,
+                                monitoringArea.getPolygonOptions().getPoints(), true);
+                        if(innerArea){
+                            // Create inner monitoring area in farm that has same location
+                            monitoringAreaManager.createMonitoringArea(
+                                    new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions, monitoringArea.getName()));
+                            // Save inner area in shared preferences
+                            monitoringAreaManager.saveMonitoringArea();
+                        }
                     }
-                    monitoringAreaManager.createFarmArea(new FarmArea(areaNameText, areaDescription, polygonOptions, ));
-
+                }else{
+                    // Create farm monitoring area
+                    monitoringAreaManager.createMonitoringArea(
+                            new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions));
+                    // Save farm area in shared preferences
+                    monitoringAreaManager.saveMonitoringArea();
                 }
-
-
-//                if(detectInnerArea(center)){
-//
-//                    for(FarmArea farmArea : monitoringAreaManager.loadFarmArea()){
-//
-//                        boolean innerArea =  PolyUtil.containsLocation(center,
-//                                farmArea.getPolygonOptions().getPoints(), true);
-//
-//                        if(innerArea) {
-//                            // Create the monitoring area.
-//                            monitoringAreaManager.createMonitoringArea(
-//                                    new MonitoringArea(areaNameText,areaDescriptionText,polygonOptions,farmArea.getName()));
-//
-//                            // Save monitoring area in shared preferences.
-//                            monitoringAreaManager.saveMonitoringArea();
-//                        }
-//                    }
-//                }else{
-//                    //Create Farm
-//                    monitoringAreaManager.createFarmArea(
-//                            new FarmArea(areaNameText, areaDescriptionText, polygonOptions));
-//
-//                    monitoringAreaManager.saveFarmArea();
-//                }
-
-
 
                 // Close dialog
                 popupDialog.dismiss();
@@ -465,7 +424,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
     /**
      *
-     * @param latLng has the center location of area
+     *
+     * @param latLng has the center location of current area
      */
     public boolean detectInnerArea(LatLng latLng){
         boolean innerArea = false;
@@ -475,12 +435,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             //TODO to geodesic ti kanei kai ti sumbainei an anti gia true balw false
             innerArea =  PolyUtil.containsLocation(latLng,
                    monitoringArea.getPolygonOptions().getPoints(), true);
-
-//            if(innerArea){
-//                   Toast.makeText(this,"inner area, farm name: " +
-//                           ""+monitoringArea.getName(),Toast.LENGTH_LONG).show();
-//            }
-
         }
         return innerArea;
     }
@@ -491,26 +445,14 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
      */
     private void addTheExistingAreasInMap(){
         if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
-//            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-//                mMap.addPolygon(monitoringArea.getPolygonOptions());
-//                // Get the center location of the area
-//                LatLng centerLatLng = AreaUtilities
-//                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
-//                // Add Marker on map  in the center location of area
-//                mMap.addMarker(new MarkerOptions()
-//                        .position(centerLatLng).title(monitoringArea.getName()));
-//            }
-
-            if(!monitoringAreaManager.loadFarmArea().isEmpty()){
-                if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
-
-                    for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-                        for(FarmArea farmArea : monitoringAreaManager.loadFarmArea()){
-                            mMap.addPolygon(farmArea.getPolygonOptions());
-                        }
-                        mMap.addPolygon(monitoringArea.getPolygonOptions());
-                    }
-                }
+            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+                mMap.addPolygon(monitoringArea.getPolygonOptions());
+                // Get the center location of the area
+                LatLng centerLatLng = AreaUtilities
+                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
+                // Add Marker on map  in the center location of area
+                mMap.addMarker(new MarkerOptions()
+                        .position(centerLatLng).title(monitoringArea.getName()));
             }
         }
     }

@@ -3,6 +3,7 @@ package com.example.agroproject.model;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,6 @@ public class MonitoringArea {
     /** The representation */
     private PolygonOptions polygonOptions;
 
-    private Map<String, FarmArea> farmAreaMap = new HashMap<>();
     /**
      * Instantiates a new monitoring area.
      *
@@ -34,19 +34,25 @@ public class MonitoringArea {
      * @param polygonOptions have the polygonOptions of the area.
      * The PolygonOptions is a representation of the monitoring area in the map.
      */
-    public MonitoringArea(String name, String description, PolygonOptions polygonOptions) {
+    public MonitoringArea(String name, String description, PolygonOptions polygonOptions, String farmName) {
+        this.name = name;
+        this.description = description;
+        this.polygonOptions = polygonOptions;
+        this.farmName=farmName;
+    }
+
+    /**
+     *
+     * @param name
+     * @param description
+     * @param polygonOptions
+     */
+    public MonitoringArea(String name, String description, PolygonOptions polygonOptions){
         this.name = name;
         this.description = description;
         this.polygonOptions = polygonOptions;
     }
 
-    /**
-     *
-     * @param farmAreaMap
-     */
-    public void setFarmAreaMap(Map<String, FarmArea> farmAreaMap) {
-        this.farmAreaMap = farmAreaMap;
-    }
 
     /**
      * @return the area name.
@@ -69,5 +75,13 @@ public class MonitoringArea {
      */
     public PolygonOptions getPolygonOptions() {
         return polygonOptions;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public String getFarmName() {
+        return farmName;
     }
 }

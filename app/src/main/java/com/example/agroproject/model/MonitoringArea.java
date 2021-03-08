@@ -79,7 +79,7 @@ public class MonitoringArea {
 
     /**
      *
-     * @return
+     * @return the name of the farm to which the area belongs.
      */
     public String getFarmName() {
         return farmName;

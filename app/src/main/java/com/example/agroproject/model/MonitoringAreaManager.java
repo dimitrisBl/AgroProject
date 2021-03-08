@@ -31,10 +31,7 @@ public class MonitoringAreaManager {
 
     /** List with MonitoringArea objects */
     private List<MonitoringArea> monitoringAreaList = new ArrayList<>();
-
-    /** List with FarmArea objects */
-    private List<FarmArea> farmAreaList = new ArrayList<>();
-
+    
     /**
      * This method initialize the polygonStatePrefs object.
      * @param context takes the current context application.
@@ -87,46 +84,4 @@ public class MonitoringAreaManager {
         return monitoringAreaList;
     }
 
-
-
-    /**
-     *
-     * @param monitoringArea
-     */
-    public void createFarmArea(MonitoringArea monitoringArea){
-        Log.d(TAG,"Farm area create executed");
-        monitoringAreaList.add(monitoringArea);
-    }
-
-
-    /**
-     *
-     */
-    public void saveFarmArea(){
-        Log.d(TAG,"Farm area save executed");
-        Gson gson = new Gson();
-        //Convert java object as a json string.
-        String json = gson.toJson(farmAreaList);
-        SharedPreferences.Editor editor = polygonStatePrefs.edit();
-        // Put json string in shared preferences.
-        editor.putString(FARM_AREA_LIST, json);
-        editor.commit();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public List<FarmArea> loadFarmArea(){
-        Log.d(TAG,"Load area from saved file");
-        String serializedObject = polygonStatePrefs.getString(FARM_AREA_LIST, null);
-        if (serializedObject != null) {
-            // Instantiate the gson object.
-            Gson gson = new Gson();
-
-            Type type = new TypeToken<List<FarmArea>>(){}.getType();
-            farmAreaList = gson.fromJson(serializedObject, type);
-        }
-        return  farmAreaList;
-    }
 }

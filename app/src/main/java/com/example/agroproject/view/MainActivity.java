@@ -5,18 +5,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Layout;
@@ -53,8 +49,6 @@ public class MainActivity extends AppCompatActivity {
 
     /** LocationManager */
     private LocationManager locationManager;
-
-    private ConnectivityManager connectivityManager;
 
     /** Binding */
     private ActivityMainBinding binding;
@@ -248,7 +242,9 @@ public class MainActivity extends AppCompatActivity {
         // Receive messages about current location.
         // We are registering an observer (locationReceiver) to receive intents with action name "LocationUpdates".
         registerReceiver(locationReceiver, new IntentFilter(LocationService.ACTION_NAME));
-        //
+        // Receive messages about Network status.
+        // We are registering an observer from NetworkUtil class which extends BroadCast Receiver class
+        // to receive intents with action name "CONNECTIVITY_ACTION".
         registerReceiver(new NetworkUtil(this),
                 new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }

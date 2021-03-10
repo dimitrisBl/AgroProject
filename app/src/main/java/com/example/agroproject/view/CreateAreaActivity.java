@@ -435,7 +435,9 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         // Receive messages about GPS status.
         // We are registering an observer (GpsStatusReceiver) to receive intents with action name "android.location.PROVIDERS_CHANGED".
         registerReceiver(GpsStatusReceiver, new IntentFilter("android.location.PROVIDERS_CHANGED"));
-        //
+        // Receive messages about Network status.
+        // We are registering an observer from NetworkUtil class which extends BroadCast Receiver class
+        // to receive intents with action name "CONNECTIVITY_ACTION".
         registerReceiver(new NetworkUtil(this),
                 new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }

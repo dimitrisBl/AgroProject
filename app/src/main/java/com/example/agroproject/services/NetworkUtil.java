@@ -26,15 +26,16 @@ public class NetworkUtil extends BroadcastReceiver{
     }
 
     /**
-     * Returns the type of connection that is established
+     *   Checks CONNECTIVITY SERVICE using Connectivity Manager and returns the established connection if available
+     *
      * @param context
-     * @return
+     * @return Returns the type of connection that is established
      */
     public int getConnectivityStatus(Context context) {
-        ConnectivityManager cm = (ConnectivityManager) context
+        ConnectivityManager connectivityManager = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
         if (null != activeNetwork) {
             if(activeNetwork.getType() == ConnectivityManager.TYPE_WIFI)
                 return TYPE_WIFI;
@@ -46,25 +47,25 @@ public class NetworkUtil extends BroadcastReceiver{
     }
 
     /**
-     * Check's if there is an internet connection
+     * Check's if there is an internet connection using getConnectivityStatus and returns the status of the connection
      * @param context
-     * @return
+     * @return status of the connection
      */
     public String getConnectivityStatusString(Context context) {
-        int conn = getConnectivityStatus(context);
+        int connection = getConnectivityStatus(context);
         String status = null;
-        if (conn == NetworkUtil.TYPE_WIFI) {
+        if (connection == NetworkUtil.TYPE_WIFI) {
             status = "Connected";
-        } else if (conn == NetworkUtil.TYPE_MOBILE) {
+        } else if (connection == NetworkUtil.TYPE_MOBILE) {
             status = "Connected";
-        } else if (conn == NetworkUtil.TYPE_NOT_CONNECTED) {
+        } else if (connection == NetworkUtil.TYPE_NOT_CONNECTED) {
             status = "Not connected to Internet";
         }
         return status;
     }
 
     /**
-     * Check's connection everytime it changes
+     * Check's connection everytime it changes using BroadCast Receiver
      * @param context
      * @param intent
      */

@@ -8,11 +8,11 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Layout;
@@ -27,6 +27,7 @@ import android.widget.Toast;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMainBinding;
 import com.example.agroproject.services.LocationService;
+import com.example.agroproject.services.NetworkUtil;
 
 /**
  * TODO IS NETWORK ENABLE METHOD
@@ -63,8 +64,9 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         // Initialize a LocationManager object
-         locationManager = (LocationManager)
-                 getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager)
+                getSystemService(Context.LOCATION_SERVICE);
+
         // Permission check service
         checkPermissions();
     }
@@ -120,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode,  Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         // If i returns from location source settings intent
         if(requestCode == LOCATION_SOURCE_SETTINGS_CODE){
             // Check status of the GPS
@@ -169,7 +172,6 @@ public class MainActivity extends AppCompatActivity {
                     .setOnCancelListener(((dialogInterface) -> {
                             Toast.makeText(this, "GPS is required for use map and other services. " +
                                 "Please enable GPS.", Toast.LENGTH_LONG).show();
-                            //finish();
                     }))
             .show();
         }
@@ -233,8 +235,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -242,6 +242,11 @@ public class MainActivity extends AppCompatActivity {
         // Receive messages about current location.
         // We are registering an observer (locationReceiver) to receive intents with action name "LocationUpdates".
         registerReceiver(locationReceiver, new IntentFilter(LocationService.ACTION_NAME));
+        // Receive messages about Network status.
+        // We are registering an observer from NetworkUtil class which extends BroadCast Receiver class
+        // to receive intents with action name "CONNECTIVITY_ACTION".
+        registerReceiver(new NetworkUtil(this),
+                new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
 

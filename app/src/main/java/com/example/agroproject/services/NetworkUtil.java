@@ -19,8 +19,15 @@ public class NetworkUtil extends BroadcastReceiver{
     public static int TYPE_MOBILE = 2;
     /** not connected **/
     public static int TYPE_NOT_CONNECTED = 0;
+
+    /** Activity */
     private Activity activity;
 
+    /**
+     * Instantiates a new NetworkUtil.
+     *
+     * @param activity has the current activity of application.
+     */
     public NetworkUtil(Activity activity) {
         this.activity = activity;
     }

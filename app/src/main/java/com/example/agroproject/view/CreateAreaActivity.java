@@ -395,17 +395,15 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                             // Create inner monitoring area in farm that has same location
                             monitoringAreaManager.createMonitoringArea(
                                     new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions, monitoringArea.getName()));
-                            // Save inner area in shared preferences
-                            monitoringAreaManager.saveMonitoringArea();
                         }
                     }
                 }else{
                     // Create farm monitoring area
                     monitoringAreaManager.createMonitoringArea(
                             new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions));
-                    // Save farm area in shared preferences
-                    monitoringAreaManager.saveMonitoringArea();
                 }
+                // Save farm area in shared preferences
+                monitoringAreaManager.saveMonitoringArea();
 
                 // Close dialog
                 popupDialog.dismiss();

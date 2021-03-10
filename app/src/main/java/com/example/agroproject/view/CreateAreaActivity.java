@@ -86,7 +86,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** checkBox state */
     private boolean checkBoxIsChecked = false;
 
-    /** Polyline */
+    /** Polyline **/
     private Polyline polyline = null;
 
     @Override

@@ -73,6 +73,9 @@ public class LocationService extends Service implements Executor {
         fusedLocationProviderClient = LocationServices
                 .getFusedLocationProviderClient(this);
 
+        // Define the callBack method
+        locationCallBackExecute();
+
         // Initialize a location request
         locationRequest = new LocationRequest();
 
@@ -113,8 +116,6 @@ public class LocationService extends Service implements Executor {
                             // Send old location in Activity
                             sendMessageToActivity(latitude,longitude);
                         }
-                    // Define the callBack method
-                    locationCallBackExecute();
                     // Performs location request for newest location.
                     fusedLocationProviderClient.requestLocationUpdates
                             (locationRequest, locationCallback, Looper.getMainLooper());

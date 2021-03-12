@@ -33,7 +33,8 @@ public class NetworkUtil extends BroadcastReceiver{
     }
 
     /**
-     *   Checks CONNECTIVITY SERVICE using Connectivity Manager and returns the established connection if available
+     * Checks CONNECTIVITY SERVICE using Connectivity Manager
+     * and returns the established connection if available.
      *
      * @param context
      * @return Returns the type of connection that is established
@@ -54,37 +55,25 @@ public class NetworkUtil extends BroadcastReceiver{
     }
 
     /**
-     * Check's if there is an internet connection using getConnectivityStatus and returns the status of the connection
-     * @param context
-     * @return status of the connection
-     */
-    public String getConnectivityStatusString(Context context) {
-        int connection = getConnectivityStatus(context);
-        String status = null;
-        if (connection == NetworkUtil.TYPE_WIFI) {
-            status = "Connected";
-        } else if (connection == NetworkUtil.TYPE_MOBILE) {
-            status = "Connected";
-        } else if (connection == NetworkUtil.TYPE_NOT_CONNECTED) {
-            status = "Not connected to Internet";
-        }
-        return status;
-    }
-
-    /**
-     * Check's connection everytime it changes using BroadCast Receiver
-     * @param context
+     * Check's connection everytime it changes using BroadCast Receiver.
+     *
+     * @param context has the current context of application.
      * @param intent
      */
     @Override
     public void onReceive(Context context, Intent intent) {
-        String status = getConnectivityStatusString(context);
-        if(status != "Connected") {
-            AlertDialog alertDialog = new AlertDialog.Builder(activity)
+
+        // Get the internet connection status
+        int connection = getConnectivityStatus(context);
+
+        if(connection == NetworkUtil.TYPE_NOT_CONNECTED){
+            // Show message
+             AlertDialog alertDialog = new AlertDialog.Builder(activity)
                     .setTitle("Wifi permission")
                     .setMessage("The Wifi is required for this app, go to wifi settings to turn on Wifi.")
                     .setPositiveButton("Yes", ((dialogInterface, i) -> {
-                        Intent intent1 = new Intent(Settings.ACTION_WIFI_SETTINGS);
+                        //Intent intent1 = new Intent(Settings.ACTION_WIFI_SETTINGS);
+                        Intent intent1 = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
                         activity.startActivity(intent1);
                     }))
                     .setNegativeButton("No", ((dialogInterface, i) -> {
@@ -101,6 +90,4 @@ public class NetworkUtil extends BroadcastReceiver{
             .show();
         }
     }
-
-
 }

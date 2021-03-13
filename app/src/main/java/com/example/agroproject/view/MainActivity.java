@@ -53,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
     /** Binding */
     private ActivityMainBinding binding;
 
+    /** NetworkUtil */
+    private NetworkUtil networkUtil;
+
     /** Device coordinates */
     private double latitude;
     private double longitude;
@@ -63,10 +66,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        // Instantiate a NetworkUtil object
+        networkUtil = new NetworkUtil(this);
         // Initialize a LocationManager object
         locationManager = (LocationManager)
                 getSystemService(Context.LOCATION_SERVICE);
-
         // Permission check service
         checkPermissions();
     }
@@ -245,8 +249,7 @@ public class MainActivity extends AppCompatActivity {
         // Receive messages about Network status.
         // We are registering an observer from NetworkUtil class which extends BroadCast Receiver class
         // to receive intents with action name "CONNECTIVITY_ACTION".
-        registerReceiver(new NetworkUtil(this),
-                new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        registerReceiver(networkUtil, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
 
@@ -256,6 +259,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG,"onPause executed");
         // Unregister since the activity is about to be closed.
         unregisterReceiver(locationReceiver);
+        unregisterReceiver(networkUtil);
     }
 
 

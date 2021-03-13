@@ -90,12 +90,16 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** Polyline */
     private Polyline polyline = null;
 
+    /** Networkutil */
+    private NetworkUtil networkUtil;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityCreateAreaBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        // Instantiate a NetworkUtil object
+        networkUtil = new NetworkUtil(this);
         // Get extras from intent
         Intent intent = getIntent();
         latitude = intent.getDoubleExtra("latitude", 0.0);
@@ -438,8 +442,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         // Receive messages about Network status.
         // We are registering an observer from NetworkUtil class which extends BroadCast Receiver class
         // to receive intents with action name "CONNECTIVITY_ACTION".
-        registerReceiver(new NetworkUtil(this),
-                new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        registerReceiver(networkUtil, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
 
@@ -450,6 +453,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         // Unregister since the activity is about to be closed.
         unregisterReceiver(locationReceiver);
         unregisterReceiver(GpsStatusReceiver);
+        unregisterReceiver(networkUtil);
     }
 
     /**

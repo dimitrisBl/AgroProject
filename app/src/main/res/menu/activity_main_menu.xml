@@ -17,6 +17,11 @@
             android:id="@+id/createArea_item"
             android:title="Create Area"/>
 
+
+        <item
+            android:id="@+id/insertFile_item"
+            android:title="Insert file"/>
+
     </item>
 
 </menu>

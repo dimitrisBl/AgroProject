@@ -203,6 +203,14 @@ public class MainActivity extends AppCompatActivity {
         SpannableString s1 = new SpannableString(item1.getTitle());
         s1.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s1.length(), 0);
         item1.setTitle(s1);
+
+        // set title alignment for each item is center
+        int positionOfMenuItem2 = 2; //or any other postion
+        MenuItem item2 = menu.getItem(positionOfMenuItem2);
+        SpannableString s2 = new SpannableString(item2.getTitle());
+        s2.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s2.length(), 0);
+        item2.setTitle(s2);
+
         // Calling super after populating the menu is necessary here to ensure that the
         // action bar helpers have a chance to handle this event.
         return true;
@@ -232,7 +240,12 @@ public class MainActivity extends AppCompatActivity {
                     createAreaIntent.putExtra("longitude", longitude);
                     startActivityForResult(createAreaIntent,CREATE_AREA_ACTIVITY_CODE);
                 }
-                return true;
+            return true;
+
+            case R.id.insertFile_item:
+                    OpenFileDialog openFileDialog = new OpenFileDialog(this);
+                    openFileDialog.show();
+            return true;
 
             default:
                 return super.onOptionsItemSelected(item);

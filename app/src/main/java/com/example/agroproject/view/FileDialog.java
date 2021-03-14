@@ -1,6 +1,5 @@
 package com.example.agroproject.view;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -9,6 +8,7 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import com.example.agroproject.R;
+import com.example.agroproject.model.SingletonFilePath;
 
 public class FileDialog extends AppCompatActivity {
     /**
@@ -16,9 +16,12 @@ public class FileDialog extends AppCompatActivity {
      * @param savedInstanceState
      */
 
+    Uri selectedfile;
+    SingletonFilePath filepath;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+         selectedfile=null;
         setContentView(R.layout.activity_file_dialog);
         //Opening file explorer with ACTION_GET_CONTENT
         Intent intent = new Intent()
@@ -26,6 +29,7 @@ public class FileDialog extends AppCompatActivity {
                 .setAction(Intent.ACTION_GET_CONTENT);
 
         startActivityForResult(Intent.createChooser(intent, "Select a file"), 123);
+        filepath = SingletonFilePath.getInstance();
     }
 
     /**
@@ -37,11 +41,13 @@ public class FileDialog extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if(requestCode == 123 && resultCode == RESULT_OK) {
-            Uri selectedfile = data.getData(); //The uri with the location of the file
+            selectedfile = data.getData(); //The uri with the location of the file
             Toast.makeText(this,
                     "file"+selectedfile.getPath(),Toast.LENGTH_LONG).show();
         }
+        filepath.setFile(selectedfile);
         finish();
     }
 }

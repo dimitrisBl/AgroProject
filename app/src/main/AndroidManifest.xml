@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.agroproject">
-
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -12,7 +11,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" /> <!-- To request foreground location access, declare one of these permissions. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+    <uses-permission android:name="android.net.conn.CONNECTIVITY_CHANGE" />
 
     <application
         android:allowBackup="true"
@@ -21,7 +20,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AgroProject">
-
+        <activity android:name=".view.FileDialog"></activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -30,45 +29,34 @@
              sign the APK for publishing.
              You can define the keys for the debug and release targets in src/debug/ and src/release/.
         -->
-
-        <!---//////////    Google Map - Google Services     //////      -->
+        <!-- -//////////    Google Map - Google Services     ////// -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${mapsApiKey}" />
-
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
         <uses-library
             android:name="org.apache.http.legacy"
-            android:required="false" />
-
-        <!---||||||||||||||||||||||||||||||||||||||||||||||||||||||||     -->
-
+            android:required="false" /> <!-- -|||||||||||||||||||||||||||||||||||||||||||||||||||||||| -->
         <activity
             android:name=".view.CreateAreaActivity"
-            android:parentActivityName=".view.MainActivity"
-            android:label="@string/title_activity_create_area"/>
-
+            android:label="@string/title_activity_create_area"
+            android:parentActivityName=".view.MainActivity" />
         <activity
             android:name=".view.MapActivity"
             android:label="@string/title_activity_map"
             android:parentActivityName=".view.MainActivity" />
-
         <activity android:name=".view.MainActivity">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
+
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
-
-        <!--
-            Location  Service
-        -->
+        <!--             Location  Service -->
         <service android:name=".services.LocationService" />
-
-
     </application>
 
 </manifest>

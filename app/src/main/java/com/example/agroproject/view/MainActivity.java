@@ -24,6 +24,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMainBinding;
 import com.example.agroproject.services.LocationService;
@@ -59,8 +60,7 @@ public class MainActivity extends AppCompatActivity {
     /** Device coordinates */
     private double latitude;
     private double longitude;
-
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -243,8 +243,9 @@ public class MainActivity extends AppCompatActivity {
             return true;
 
             case R.id.insertFile_item:
-                    OpenFileDialog openFileDialog = new OpenFileDialog(this);
-                    openFileDialog.show();
+                   //Opens  FileDialog (File Explorer)
+                Intent fileDialogIntent = new Intent(this, FileDialog.class);
+                startActivity(fileDialogIntent);
             return true;
 
             default:

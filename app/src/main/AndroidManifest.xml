@@ -7,14 +7,11 @@
          Google Maps Android API v2, but you must specify either coarse or fine
          location permissions for the "MyLocation" functionality.
     -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!-- To request foreground location access, declare one of these permissions. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.INTERNET" /> <!-- To request foreground location access, declare one of these permissions. -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-
-
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
 
@@ -43,7 +40,8 @@
 
         <uses-library
             android:name="org.apache.http.legacy"
-            android:required="false" /> <!-- -|||||||||||||||||||||||||||||||||||||||||||||||||||||||| -->
+            android:required="false" />
+        <!-- -|||||||||||||||||||||||||||||||||||||||||||||||||||||||| -->
         <activity
             android:name=".view.CreateAreaActivity"
             android:label="@string/title_activity_create_area"
@@ -59,7 +57,7 @@
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
-        <!--             Location  Service -->
+        <!--  Location  Service -->
         <service android:name=".services.LocationService" />
     </application>
 

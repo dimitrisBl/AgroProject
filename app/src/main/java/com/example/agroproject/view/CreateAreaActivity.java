@@ -26,7 +26,7 @@ import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
 import com.example.agroproject.model.MonitoringArea;
 import com.example.agroproject.model.MonitoringAreaManager;
-import com.example.agroproject.model.SingletonFilePath;
+import com.example.agroproject.model.MyFile;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -39,6 +39,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.maps.android.data.geojson.GeoJsonLayer;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,8 +98,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** Networkutil */
     private NetworkUtil networkUtil;
 
-    /** Singleton object to keep track of the filepath **/
-    SingletonFilePath filepath;
+    /** JSONObject has data from the GeoJson file*/
+    private JSONObject jsonObject;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,8 +131,19 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         mapFragment.getMapAsync(this);
 
         //Initialize Singleton Object passing the existing instance
-        filepath = SingletonFilePath.getInstance();
+        MyFile myFile = MyFile.getInstance();
+
+        try {
+            // Instantiate a new JSONObject
+            jsonObject = new JSONObject(myFile.getDataFromFile());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
+
+
+
+
 
     /**
      * Manipulates the map once available.
@@ -326,6 +344,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 .setIcon(R.drawable.ic_baseline_save)
                 .setTitle("Save")
                 .setMessage("You want to save this area?")
+                .setCancelable(false) // Set cancelable on touch outside
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         // If answer is yes show save area popup.
@@ -338,14 +357,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                         mMap.clear();
                         //Add the existing polygons in the map
                         addTheExistingAreasInMap();
-                    }
-                }).setOnDismissListener(new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialogInterface) {
-                        // If dismiss Popup, clean the map and add the existing polygons.
-                    mMap.clear();
-                    //Add the existing polygons in the map
-                    addTheExistingAreasInMap();
                     }
                 })
         .show();
@@ -369,6 +380,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         // Instantiate a Dialog
         Dialog popupDialog = new Dialog(this);
         popupDialog.setContentView(popupView);
+        popupDialog.setCanceledOnTouchOutside(false);
 
         // Initialize ui components
         imageViewClose = popupBinding.btnCLose;
@@ -380,6 +392,9 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         imageViewClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mMap.clear();
+                //Add the existing polygons in the map
+                addTheExistingAreasInMap();
                 // Close dialog
                 popupDialog.dismiss();
             }
@@ -394,22 +409,15 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 // Create the monitoring area.
                 monitoringAreaManager.createMonitoringArea(
                         new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions));
-
                 // Save monitoring area in shared preferences.
                 monitoringAreaManager.saveMonitoringArea();
-
+                //Add the existing polygons in the map
+                addTheExistingAreasInMap();
                 // Close dialog
                 popupDialog.dismiss();
             }
-        });// Dismiss Popup Event
-        popupDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                mMap.clear();
-                //Add the existing polygons in the map
-                addTheExistingAreasInMap();
-            }
         });
+        // Show dialog
         popupDialog.show();
     }
 
@@ -429,11 +437,10 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                         .position(centerLatLng).title(monitoringArea.getName()));
             }
         }
-        createLayer();
-    }
 
-    private void createLayer() {
-
+        // Create GeoJson layer
+        GeoJsonLayer layer = new GeoJsonLayer(mMap, jsonObject);
+        layer.addLayerToMap();
     }
 
 

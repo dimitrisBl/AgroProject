@@ -3,6 +3,7 @@ package com.example.agroproject.view;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -13,6 +14,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Layout;
@@ -27,8 +29,16 @@ import android.widget.Toast;
 
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMainBinding;
+
+import com.example.agroproject.model.MyFile;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
+
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 
 /**
  * TODO IS NETWORK ENABLE METHOD
@@ -47,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
 
     /** CreateAreaActivity intent code */
     private static final int CREATE_AREA_ACTIVITY_CODE = 3;
+
+    /** Intent code for file selection */
+    private final int FILE_SELECTION_CODE = 4;
 
     /** LocationManager */
     private LocationManager locationManager;
@@ -139,6 +152,38 @@ public class MainActivity extends AppCompatActivity {
         else if (requestCode == CREATE_AREA_ACTIVITY_CODE){
             // Check status of the GPS
             isGpsEnable();
+        }// If i returns from file explorer intent
+        else if(requestCode == FILE_SELECTION_CODE){
+            // Get the path from selected file
+            Uri selectedFilePath = data.getData();
+            // Read data
+            readDataFromFile(selectedFilePath);
+        }
+    }
+
+    /**
+     * This method read data from file
+     *
+     * @param path has the path from selected file chosen  by the user
+     */
+    public void readDataFromFile(Uri path){
+        try {
+            // Initialize BufferReader object
+            BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(getContentResolver().openInputStream(path)));
+
+            String dataFromFile = null;
+
+            // Initialize MyFile object
+            MyFile myFile = MyFile.getInstance();
+
+            while ((dataFromFile = bufferedReader.readLine()) != null) {
+                myFile.setDataFromFile(dataFromFile);
+            }
+            // Close the stream
+            bufferedReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -243,14 +288,15 @@ public class MainActivity extends AppCompatActivity {
             return true;
 
             case R.id.insertFile_item:
-                   //Opens  FileDialog (File Explorer)
-                Intent fileDialogIntent = new Intent(this, FileDialog.class);
-                startActivity(fileDialogIntent);
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("*/*");
+                startActivityForResult(intent, FILE_SELECTION_CODE);
             return true;
 
             default:
                 return super.onOptionsItemSelected(item);
         }
+
     }
 
     @Override

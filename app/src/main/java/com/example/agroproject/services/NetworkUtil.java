@@ -71,6 +71,7 @@ public class NetworkUtil extends BroadcastReceiver{
              AlertDialog alertDialog = new AlertDialog.Builder(activity)
                     .setTitle("Wifi permission")
                     .setMessage("The Wifi is required for this app, go to wifi settings to turn on Wifi.")
+                    .setCancelable(false)
                     .setPositiveButton("Yes", ((dialogInterface, i) -> {
                         //Intent intent1 = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
                         Intent intent1 = new Intent(Settings.ACTION_WIFI_SETTINGS);
@@ -80,11 +81,6 @@ public class NetworkUtil extends BroadcastReceiver{
                         Toast.makeText(activity,
                                 "Wifi is required." +
                                         "Please enable wifi.",Toast.LENGTH_LONG).show();
-                        activity.finish();
-                    }))
-                    .setOnCancelListener(((dialogInterface) -> {
-                        Toast.makeText(activity, "Wifi is required." +
-                                "Please enable wifi.", Toast.LENGTH_LONG).show();
                         activity.finish();
                     }))
             .show();

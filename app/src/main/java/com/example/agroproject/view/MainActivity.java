@@ -30,14 +30,13 @@ import android.widget.Toast;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMainBinding;
 
-import com.example.agroproject.model.MyFile;
+import com.example.agroproject.model.KmlFile;
+import com.example.agroproject.model.KmlLocalStorageProvider;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
 
-import java.io.BufferedReader;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -70,6 +69,12 @@ public class MainActivity extends AppCompatActivity {
     /** NetworkUtil */
     private NetworkUtil networkUtil;
 
+    /** Shared preferences storage for kml files */
+    private KmlLocalStorageProvider kmlLocalStorageProvider;
+
+    /** List with KmlFile objects  */
+    private List<KmlFile> kmlFileList = new ArrayList<>();
+
     /** Device coordinates */
     private double latitude;
     private double longitude;
@@ -79,6 +84,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        // Instantiate a KmlLocalStorageProvider object
+        kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
         // Instantiate a NetworkUtil object
         networkUtil = new NetworkUtil(this);
         // Initialize a LocationManager object
@@ -136,8 +143,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode,  Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         // If i returns from location source settings intent
@@ -154,36 +162,12 @@ public class MainActivity extends AppCompatActivity {
             isGpsEnable();
         }// If i returns from file explorer intent
         else if(requestCode == FILE_SELECTION_CODE){
-            // Get the path from selected file
-            Uri selectedFilePath = data.getData();
-            // Read data
-            readDataFromFile(selectedFilePath);
-        }
-    }
-
-    /**
-     * This method read data from file
-     *
-     * @param path has the path from selected file chosen  by the user
-     */
-    public void readDataFromFile(Uri path){
-        try {
-            // Initialize BufferReader object
-            BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(getContentResolver().openInputStream(path)));
-
-            String dataFromFile = null;
-
-            // Initialize MyFile object
-            MyFile myFile = MyFile.getInstance();
-
-            while ((dataFromFile = bufferedReader.readLine()) != null) {
-                myFile.setDataFromFile(dataFromFile);
-            }
-            // Close the stream
-            bufferedReader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            // Retrieve data from intent
+            String fileData = data.getDataString();
+            // Create a new KmlFile object and add this on kmlFileList.
+            kmlFileList.add(new KmlFile(fileData));
+            // Save kmlFileList in shared preferences.
+            kmlLocalStorageProvider.saveKmlFile(kmlFileList);
         }
     }
 
@@ -288,9 +272,10 @@ public class MainActivity extends AppCompatActivity {
             return true;
 
             case R.id.insertFile_item:
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("*/*");
-                startActivityForResult(intent, FILE_SELECTION_CODE);
+                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                 intent.setType("*/*");
+                 //intent.setType("text/xml");
+                 startActivityForResult(intent, FILE_SELECTION_CODE);
             return true;
 
             default:

@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -23,9 +24,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
+import com.example.agroproject.model.KmlFile;
+import com.example.agroproject.model.KmlLocalStorageProvider;
 import com.example.agroproject.model.MonitoringArea;
 import com.example.agroproject.model.MonitoringAreaManager;
-import com.example.agroproject.model.MyFile;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -38,10 +40,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.data.kml.KmlLayer;
 
-import com.google.maps.android.data.geojson.GeoJsonLayer;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,8 +99,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** Networkutil */
     private NetworkUtil networkUtil;
 
-    /** JSONObject has data from the GeoJson file*/
-    private JSONObject jsonObject;
+    /** KmlLocalStorageProvider */
+    private KmlLocalStorageProvider kmlLocalStorageProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +120,9 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         // Instantiate a MonitoringAreaManager object
         monitoringAreaManager = new MonitoringAreaManager(this);
 
+        // Instantiate a KmlLocalStorageProvider object
+        kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
+
         // Set click listener for buttons
         binding.drawPolygon.setOnClickListener(buttonClickListener);
         binding.clearMap.setOnClickListener(buttonClickListener);
@@ -125,16 +133,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.create_area_map);
         mapFragment.getMapAsync(this);
-
-        //Initialize Singleton Object passing the existing instance
-        MyFile myFile = MyFile.getInstance();
-
-        try {
-            // Instantiate a new JSONObject
-            jsonObject = new JSONObject(myFile.getDataFromFile());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 
 
@@ -421,22 +419,38 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
      * TODO METHOD DESCRIPTION
      *
      */
-    private void addTheExistingAreasInMap(){
-        if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
-            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-                mMap.addPolygon(monitoringArea.getPolygonOptions());
-                // Get the center location of the area
-                LatLng centerLatLng = monitoringArea
-                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
-                // Add Marker on map  in the center location of area
-                mMap.addMarker(new MarkerOptions()
-                        .position(centerLatLng).title(monitoringArea.getName()));
+    private void addTheExistingAreasInMap() {
+//        if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
+//            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+//                mMap.addPolygon(monitoringArea.getPolygonOptions());
+//                // Get the center location of the area
+//                LatLng centerLatLng = monitoringArea
+//                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
+//                // Add Marker on map  in the center location of area
+//                mMap.addMarker(new MarkerOptions()
+//                        .position(centerLatLng).title(monitoringArea.getName()));
+//            }
+//        }
+
+        if(!kmlLocalStorageProvider.loadKmlFile().isEmpty()) {
+            for (KmlFile kmlFile : kmlLocalStorageProvider.loadKmlFile()) {
+                // Initialize a Uri object for each kml file
+                Uri uri = Uri.parse(kmlFile.getData());
+                try {
+                    InputStream inputStream = getContentResolver().openInputStream(uri);
+                    // Create kml layer
+                    KmlLayer layer = new KmlLayer(mMap, inputStream, this);
+                    // Add layer in map
+                    layer.addLayerToMap();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (XmlPullParserException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
-
-        // Create GeoJson layer
-        GeoJsonLayer layer = new GeoJsonLayer(mMap, jsonObject);
-        layer.addLayerToMap();
     }
 
 

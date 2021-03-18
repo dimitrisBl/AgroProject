@@ -162,12 +162,14 @@ public class MainActivity extends AppCompatActivity {
             isGpsEnable();
         }// If i returns from file explorer intent
         else if(requestCode == FILE_SELECTION_CODE){
-            // Retrieve data from intent
-            String fileData = data.getDataString();
-            // Create a new KmlFile object and add this on kmlFileList.
-            kmlFileList.add(new KmlFile(fileData));
-            // Save kmlFileList in shared preferences.
-            kmlLocalStorageProvider.saveKmlFile(kmlFileList);
+            if(resultCode == RESULT_OK){
+                // Retrieve data from intent
+                String fileData = data.getDataString();
+                // Create a new KmlFile object and add this on kmlFileList.
+                kmlFileList.add(new KmlFile(fileData));
+                // Save kmlFileList in shared preferences.
+                kmlLocalStorageProvider.saveKmlFile(kmlFileList);
+            }
         }
     }
 

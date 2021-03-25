@@ -25,6 +25,7 @@ import android.widget.Toast;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
+import com.example.agroproject.model.AreaUtilities;
 import com.example.agroproject.model.MonitoringArea;
 import com.example.agroproject.model.MonitoringAreaManager;
 import com.example.agroproject.services.LocationService;
@@ -33,13 +34,13 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.PolyUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +88,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** checkBox state */
     private boolean checkBoxIsChecked = false;
 
-    /** Polyline */
+    /** Polyline **/
     private Polyline polyline = null;
 
     /** Networkutil */
@@ -184,6 +185,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             }
         }
     };
+
 
     /**
      *  TODO description
@@ -387,11 +389,26 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 String areaNameText = areaName.getText().toString();
                 String areaDescriptionText = areaDescription.getText().toString();
 
-                // Create the monitoring area.
-                monitoringAreaManager.createMonitoringArea(
-                        new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions));
+                // Receive the center location of current Polygon
+                LatLng centerLocationOfCurrentArea = AreaUtilities
+                        .getPolygonCenterPoint(polygonOptions.getPoints());
 
-                // Save monitoring area in shared preferences.
+                if(detectInnerArea(centerLocationOfCurrentArea)){
+                    for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+                        boolean innerArea =  PolyUtil.containsLocation(centerLocationOfCurrentArea,
+                                monitoringArea.getPolygonOptions().getPoints(), true);
+                        if(innerArea){
+                            // Create inner monitoring area in farm that has same location
+                            monitoringAreaManager.createMonitoringArea(
+                                    new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions, monitoringArea.getName()));
+                        }
+                    }
+                }else{
+                    // Create farm monitoring area
+                    monitoringAreaManager.createMonitoringArea(
+                            new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions));
+                }
+                // Save farm area in shared preferences
                 monitoringAreaManager.saveMonitoringArea();
 
                 // Close dialog
@@ -410,6 +427,23 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     /**
+     *
+     *
+     * @param latLng has the center location of current area
+     */
+    public boolean detectInnerArea(LatLng latLng){
+        boolean innerArea = false;
+
+        for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+
+            //TODO to geodesic ti kanei kai ti sumbainei an anti gia true balw false
+            innerArea =  PolyUtil.containsLocation(latLng,
+                   monitoringArea.getPolygonOptions().getPoints(), true);
+        }
+        return innerArea;
+    }
+
+    /**
      * TODO METHOD DESCRIPTION
      *
      */
@@ -418,7 +452,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
                 mMap.addPolygon(monitoringArea.getPolygonOptions());
                 // Get the center location of the area
-                LatLng centerLatLng = monitoringArea
+                LatLng centerLatLng = AreaUtilities
                         .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
                 // Add Marker on map  in the center location of area
                 mMap.addMarker(new MarkerOptions()

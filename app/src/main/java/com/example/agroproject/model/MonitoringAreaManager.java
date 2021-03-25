@@ -24,12 +24,14 @@ public class MonitoringAreaManager {
     /** Name for the monitoringAreaList in shared preferences file */
     private final String MONITORING_AREA_LIST = "monitoringAreaList";
 
+    private final String FARM_AREA_LIST = "farmAreaList";
+
     /** SharedPreferences object */
     private SharedPreferences polygonStatePrefs;
 
     /** List with MonitoringArea objects */
     private List<MonitoringArea> monitoringAreaList = new ArrayList<>();
-
+    
     /**
      * This method initialize the polygonStatePrefs object.
      * @param context takes the current context application.
@@ -47,6 +49,7 @@ public class MonitoringAreaManager {
     public void createMonitoringArea(MonitoringArea monitoringArea){
         monitoringAreaList.add(monitoringArea);
     }
+
     /**
      * This method save the monitoringAreaList in shared preferences file.
      * monitoringAreaList haves the data of the monitoring areas.
@@ -69,7 +72,6 @@ public class MonitoringAreaManager {
      * @return the list monitoringAreaList it contains MonitoringArea objects from the save file.
      */
     public List<MonitoringArea> loadMonitoringArea(){
-
         Log.d(TAG,"Load area from saved file");
         String serializedObject = polygonStatePrefs.getString(MONITORING_AREA_LIST, null);
         if (serializedObject != null) {
@@ -81,4 +83,5 @@ public class MonitoringAreaManager {
         }
         return monitoringAreaList;
     }
+
 }

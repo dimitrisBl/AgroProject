@@ -1,6 +1,7 @@
 package com.example.agroproject.model;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.PolyUtil;
 
 import java.util.List;
 
@@ -27,4 +28,21 @@ public class AreaUtilities {
 
         return center;
     }
+
+
+    /**
+     *
+     *
+     * @param latLng has the center location of current area
+     */
+    public static boolean detectInnerArea(LatLng latLng, MonitoringAreaManager monitoringAreaManager){
+        boolean innerArea = false;
+
+        for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+            innerArea =  PolyUtil.containsLocation(latLng,
+                    monitoringArea.getPolygonOptions().getPoints(), false);
+        }
+        return innerArea;
+    }
+
 }

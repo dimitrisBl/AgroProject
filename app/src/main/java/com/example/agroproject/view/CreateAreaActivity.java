@@ -393,7 +393,11 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 LatLng centerLocationOfCurrentArea = AreaUtilities
                         .getPolygonCenterPoint(polygonOptions.getPoints());
 
-                if(detectInnerArea(centerLocationOfCurrentArea)){
+                // Detect if current area is inner area in other polygon
+                boolean detectInnerArea = AreaUtilities.
+                        detectInnerArea(centerLocationOfCurrentArea, monitoringAreaManager);
+
+                if(detectInnerArea){
                     for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
                         boolean innerArea =  PolyUtil.containsLocation(centerLocationOfCurrentArea,
                                 monitoringArea.getPolygonOptions().getPoints(), true);
@@ -424,23 +428,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             }
         });
         popupDialog.show();
-    }
-
-    /**
-     *
-     *
-     * @param latLng has the center location of current area
-     */
-    public boolean detectInnerArea(LatLng latLng){
-        boolean innerArea = false;
-
-        for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-
-            //TODO to geodesic ti kanei kai ti sumbainei an anti gia true balw false
-            innerArea =  PolyUtil.containsLocation(latLng,
-                   monitoringArea.getPolygonOptions().getPoints(), true);
-        }
-        return innerArea;
     }
 
     /**

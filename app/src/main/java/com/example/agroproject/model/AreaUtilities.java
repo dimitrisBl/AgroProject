@@ -4,8 +4,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.PolyUtil;
 
 import java.util.List;
+import java.util.Map;
 
 public class AreaUtilities {
+
+    private static FarmArea farmArea;
 
     /**
      * TODO METHOD DESCRIPTION
@@ -32,17 +35,23 @@ public class AreaUtilities {
 
     /**
      *
-     *
      * @param latLng has the center location of current area
      */
-    public static boolean detectInnerArea(LatLng latLng, MonitoringAreaManager monitoringAreaManager){
+    public static boolean detectInnerArea(LatLng latLng, List<FarmArea> farmAreaList){
         boolean innerArea = false;
-
-        for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+        for(FarmArea area : farmAreaList){
             innerArea =  PolyUtil.containsLocation(latLng,
-                    monitoringArea.getPolygonOptions().getPoints(), false);
+                    area.getPolygonOptions().getPoints(), true);
+            farmArea = area;
         }
         return innerArea;
     }
 
+    /**
+     *
+     * @return
+     */
+    public static FarmArea getFarmArea() {
+        return farmArea;
+    }
 }

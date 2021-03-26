@@ -6,27 +6,28 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
-import com.example.agroproject.model.AreaUtilities;
-import com.example.agroproject.model.MonitoringArea;
-import com.example.agroproject.model.MonitoringAreaManager;
+import com.example.agroproject.model.FarmArea;
+import com.example.agroproject.model.FarmAreaLocalStorage;
+import com.example.agroproject.model.FarmComposer;
+import com.example.agroproject.model.InnerFarmArea;
+import com.example.agroproject.model.InnerFarmAreaLocalStorage;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
-import com.google.maps.android.SphericalUtil;
-import com.google.maps.android.ui.IconGenerator;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -53,8 +54,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /** Polygon object */
     private Polygon polygon;
 
-    /** MonitoringAreaManager object */
-    private MonitoringAreaManager monitoringAreaManager;
+    /** FarmAreaLocalStorage object */
+    private FarmAreaLocalStorage farmAreaLocalStorage;
+
+    /** InnerFarmAreaLocalStorage object */
+    private InnerFarmAreaLocalStorage innerFarmAreaLocalStorage;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,8 +75,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
 
-        // Instantiate the monitoringAreas object.
-        monitoringAreaManager = new MonitoringAreaManager(this);
+        // Instantiate the farmAreaLocalStorage object.
+        farmAreaLocalStorage = new FarmAreaLocalStorage(this);
+
+        // Instantiate the innerFarmAreaLocalStorage object.
+        innerFarmAreaLocalStorage = new InnerFarmAreaLocalStorage(this);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -114,19 +122,28 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         @Override
         public void onPolygonClick(Polygon polygon) {
 
-            Map<String, MonitoringArea> areaMap = new HashMap<>();
 
-            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-                areaMap.put(monitoringArea.getName(), monitoringArea);
-            }
+            FarmComposer.fillMap(farmAreaLocalStorage.loadFarmArea(), innerFarmAreaLocalStorage.loadInnerFarmArea());
 
-            for(Map.Entry<String, MonitoringArea> kapa : areaMap.entrySet()){
-                if(polygon.getTag().equals(kapa.getKey())){
-                    Toast.makeText(MapActivity.this, "name: "+kapa.getKey()+
-                            " description: "+kapa.getValue().getDescription()+
-                            " farm name: "+kapa.getValue().getFarmName()+
-                            " area compute: "+ SphericalUtil.computeArea(kapa.getValue().getPolygonOptions().getPoints()), Toast.LENGTH_SHORT)
-                            .show();
+            Map<FarmArea, List<InnerFarmArea>> farmMap = FarmComposer.getFarmMap();
+
+            for(Map.Entry<FarmArea, List<InnerFarmArea>> entry : farmMap.entrySet()){
+                for(int i = 0; i < entry.getValue().size(); i++){
+                    if(polygon.getTag().equals(entry.getValue().get(i).getName())){
+
+                        Toast.makeText(MapActivity.this, "inner area: "+entry.getValue().get(i).getName()
+                                +" in the farm "+entry.getValue().get(i).getFarmArea().getName(),Toast.LENGTH_SHORT).show();
+
+                    }else if (polygon.getTag().equals(entry.getKey().getName())){
+
+                        Toast.makeText(MapActivity.this, "farm area: "+entry.getKey().getName()
+                                +" with inner areas"+entry.getValue().get(i).getName(),Toast.LENGTH_SHORT).show();
+                    }
+                }
+                for(InnerFarmArea element : entry.getValue()){
+
+
+
                 }
             }
         }
@@ -137,23 +154,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * loads the existing areas data from the shared preferences file.
      */
     private void addTheExistingAreas(){
-        if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
-            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-                // Put the area in the map
-                polygon = mMap.addPolygon(monitoringArea.getPolygonOptions().clickable(true));
-                // Set tag in the polygon
-                polygon.setTag(monitoringArea.getName());
-                // Get the center location of the area
-                LatLng centerLatLng = AreaUtilities
-                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
-                // Instantiate a IconGenerator object
-                IconGenerator iconFactory = new IconGenerator(this);
-                // Add Marker on map  in the center location of area
-                mMap.addMarker(new MarkerOptions().position(centerLatLng)
-                        .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(monitoringArea.getName())))
-                        .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV()));
+
+        if(!farmAreaLocalStorage.loadFarmArea().isEmpty()){
+            for(FarmArea area : farmAreaLocalStorage.loadFarmArea()){
+                polygon = mMap.addPolygon(area.getPolygonOptions().clickable(true));
+                polygon.setTag(area.getName());
             }
         }
+
+        if(!innerFarmAreaLocalStorage.loadInnerFarmArea().isEmpty()){
+            for(InnerFarmArea innerFarmArea : innerFarmAreaLocalStorage.loadInnerFarmArea()){
+                polygon = mMap.addPolygon(innerFarmArea.getPolygonOptions().clickable(true));
+                polygon.setTag(innerFarmArea.getName());
+            }
+        }
+
     }
 
     @Override

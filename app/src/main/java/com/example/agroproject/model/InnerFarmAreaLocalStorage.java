@@ -29,8 +29,6 @@ public class InnerFarmAreaLocalStorage {
     /** List with FarmArea objects */
     private List<InnerFarmArea> innerFarmAreaList = new ArrayList<>();
 
-
-
     /**
      * This method initialize the polygonStatePrefs object.
      * @param context takes the current context application.
@@ -43,8 +41,6 @@ public class InnerFarmAreaLocalStorage {
     public void createInnerFarmArea(InnerFarmArea innerFarmArea){
         innerFarmAreaList.add(innerFarmArea);
     }
-
-
 
     /**
      * This method save the monitoringAreaList in shared preferences file.

@@ -15,30 +15,28 @@ public class MultiMap<K,V> {
 
     private Map<K, Collection<V>> map = new HashMap<>();
 
-
     /**
      * Add the specified value with the specified key in this multimap.
      */
-    public void putTheFarm(K key) {
+    public void put(K key, V value) {
+        if(map.keySet().contains(key)){
+            Log.d("TAG","Have the keys "+key);
+        }
         if (map.get(key) == null)
             map.put(key, new ArrayList<V>());
+
+        map.get(key).add(value);
+
+
+
     }
 
-//    /**
-//     * Add the specified value with the specified key in this multimap.
-//     */
-//    public void put(K key, V value) {
-//        if (map.get(key) == null)
-//            map.put(key, new ArrayList<V>());
-//
-////        map.get(key).add(value);
-//    }
 
-//    /**
-//     * Associate the specified key with the given value if not
-//     * already associated with a value
-//     */
-//    public void putIfAbsent(K key, V value) {
+    /**
+     * Associate the specified key with the given value if not
+     * already associated with a value
+     */
+    public void putIfAbsent(K key, V value) {
 //        if (map.get(key) == null)
 //            map.put(key, new ArrayList<>());
 //
@@ -46,18 +44,9 @@ public class MultiMap<K,V> {
 //        if (!map.get(key).contains(value)) {
 //            map.get(key).add(value);
 //        }
-//    }
 
-    /**
-     * Associate the specified key with the given value if not
-     * already associated with a value
-     */
-    public void putIfAbsent(K key, V value) {
-        if(map.containsKey(key)) {
-            map.get(key).add(value);
-        }
+
     }
-
 
     /**
      * Returns the Collection of values to which the specified key is mapped,
@@ -67,7 +56,6 @@ public class MultiMap<K,V> {
         return map.get(key);
     }
 
-
     /**
      * Returns a Set view of the keys contained in this multimap.
      */
@@ -75,14 +63,12 @@ public class MultiMap<K,V> {
         return map.keySet();
     }
 
-
     /**
      * Returns a Set view of the mappings contained in this multimap.
      */
     public Set<Map.Entry<K, Collection<V>>> entrySet() {
         return map.entrySet();
     }
-
 
     /**
      * Returns a Collection view of Collection of the values present in

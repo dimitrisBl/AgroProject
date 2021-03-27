@@ -45,9 +45,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -101,9 +99,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** Networkutil */
     private NetworkUtil networkUtil;
 
-    /** create a Multimap from past US presidents list */
-    //private MultiMap<FarmArea, InnerFarmArea> multimap;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,9 +113,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
         // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
-
-        // Create a MultiMap object
-        //multimap = new MultiMap();
 
         // Instantiate a FarmAreaLocalStorage object
         farmAreaLocalStorage = new FarmAreaLocalStorage(this);
@@ -402,7 +394,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         submitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(TAG,"Submit button pressed");
+                Log.d(TAG, "Submit button pressed");
                 String areaNameText = areaName.getText().toString();
                 String areaDescriptionText = areaDescription.getText().toString();
 
@@ -414,40 +406,23 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 boolean detectInnerArea = AreaUtilities.detectInnerArea
                         (centerLocationOfCurrentArea, farmAreaLocalStorage.loadFarmArea());
 
-                if(detectInnerArea){
+
+                if (detectInnerArea) {
+
                     // Get the current farm
                     FarmArea farmArea = AreaUtilities.getFarmArea();
-                    //innerAreaList.add(new InnerFarmArea(areaNameText, areaDescriptionText, polygonOptions, farmArea));
-                    InnerFarmArea innerFarmArea = new InnerFarmArea(areaNameText, areaDescriptionText, polygonOptions, farmArea);
 
-                    innerFarmAreaLocalStorage.createInnerFarmArea(innerFarmArea);
+                    innerFarmAreaLocalStorage.createInnerFarmArea(new InnerFarmArea(areaNameText, areaDescriptionText, polygonOptions, farmArea));
                     innerFarmAreaLocalStorage.saveFarmArea();
 
-                    //multimap.putIfAbsent(farmArea, innerFarmArea);
+                    Log.d(TAG, "create inner area in farm " + farmArea.getName());
 
-                    Log.d(TAG,"create inner area in the farm: "+farmArea.getName());
-                }else {
-                    Log.d(TAG,"create farm area");
-                    FarmArea farmArea = new FarmArea(areaNameText, areaDescriptionText, polygonOptions);
-
-                    farmAreaLocalStorage.createFarmAre(farmArea);
+                } else {
+                    Log.d(TAG, "create farm area");
+                    // Local save
+                    farmAreaLocalStorage.createFarmAre(new FarmArea(areaNameText, areaDescriptionText, polygonOptions));
                     farmAreaLocalStorage.saveFarmArea();
-
-//                    multimap.putTheFarm(farmArea);
                 }
-
-
-//                for(FarmArea element : multimap.keySet()){
-//
-//                    Collection<InnerFarmArea> kapa = multimap.get(element);
-//
-//                    for(InnerFarmArea current : kapa){
-//
-//                        Toast.makeText(CreateAreaActivity.this,
-//                                "farm name "+element.getName()+" inner area "+current.getName(),Toast.LENGTH_LONG).show();
-//                    }
-//
-//                }
 
                 // Close dialog
                 popupDialog.dismiss();
@@ -478,21 +453,21 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
         if(!innerFarmAreaLocalStorage.loadInnerFarmArea().isEmpty()){
             for(InnerFarmArea innerFarmArea : innerFarmAreaLocalStorage.loadInnerFarmArea()){
+                //FarmArea farmArea = innerFarmArea.getFarmArea();
+                //mMap.addPolygon(farmArea.getPolygonOptions());
                 mMap.addPolygon(innerFarmArea.getPolygonOptions());
+                // addd ------------------------------------------
+                //multimap.put(innerFarmArea.getFarmArea(), innerFarmArea);
             }
         }
 
 
 
-//        if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
-//            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-//                mMap.addPolygon(monitoringArea.getPolygonOptions());
-//                // Get the center location of the area
-//                LatLng centerLatLng = AreaUtilities
-//                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
-//                // Add Marker on map  in the center location of area
-//                mMap.addMarker(new MarkerOptions()
-//                        .position(centerLatLng).title(monitoringArea.getName()));
+//        for(Collection<InnerFarmArea> current : multimap.values()){
+//
+//            for(InnerFarmArea element : current){
+//
+//                Toast.makeText(CreateAreaActivity.this, "farm name: "+element.getFarmArea().getName()+" inners: "+element.getName(), Toast.LENGTH_LONG).show();
 //            }
 //        }
     }

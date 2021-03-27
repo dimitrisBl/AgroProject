@@ -6,17 +6,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
 import com.example.agroproject.model.FarmArea;
 import com.example.agroproject.model.FarmAreaLocalStorage;
-import com.example.agroproject.model.FarmComposer;
+import com.example.agroproject.model.MultiMap;
 import com.example.agroproject.model.InnerFarmArea;
 import com.example.agroproject.model.InnerFarmAreaLocalStorage;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -123,29 +121,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         public void onPolygonClick(Polygon polygon) {
 
 
-            FarmComposer.fillMap(farmAreaLocalStorage.loadFarmArea(), innerFarmAreaLocalStorage.loadInnerFarmArea());
-
-            Map<FarmArea, List<InnerFarmArea>> farmMap = FarmComposer.getFarmMap();
-
-            for(Map.Entry<FarmArea, List<InnerFarmArea>> entry : farmMap.entrySet()){
-                for(int i = 0; i < entry.getValue().size(); i++){
-                    if(polygon.getTag().equals(entry.getValue().get(i).getName())){
-
-                        Toast.makeText(MapActivity.this, "inner area: "+entry.getValue().get(i).getName()
-                                +" in the farm "+entry.getValue().get(i).getFarmArea().getName(),Toast.LENGTH_SHORT).show();
-
-                    }else if (polygon.getTag().equals(entry.getKey().getName())){
-
-                        Toast.makeText(MapActivity.this, "farm area: "+entry.getKey().getName()
-                                +" with inner areas"+entry.getValue().get(i).getName(),Toast.LENGTH_SHORT).show();
-                    }
-                }
-                for(InnerFarmArea element : entry.getValue()){
-
-
-
-                }
-            }
         }
     };
 

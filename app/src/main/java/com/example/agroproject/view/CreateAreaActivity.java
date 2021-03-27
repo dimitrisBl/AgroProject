@@ -27,10 +27,10 @@ import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
 import com.example.agroproject.model.FarmArea;
 import com.example.agroproject.model.AreaUtilities;
-import com.example.agroproject.model.FarmComposer;
 import com.example.agroproject.model.InnerFarmArea;
 import com.example.agroproject.model.FarmAreaLocalStorage;
 import com.example.agroproject.model.InnerFarmAreaLocalStorage;
+import com.example.agroproject.model.MultiMap;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -45,9 +45,9 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -101,6 +101,9 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** Networkutil */
     private NetworkUtil networkUtil;
 
+    /** create a Multimap from past US presidents list */
+    //private MultiMap<FarmArea, InnerFarmArea> multimap;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,6 +118,9 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
         // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
+
+        // Create a MultiMap object
+        //multimap = new MultiMap();
 
         // Instantiate a FarmAreaLocalStorage object
         farmAreaLocalStorage = new FarmAreaLocalStorage(this);
@@ -412,16 +418,36 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     // Get the current farm
                     FarmArea farmArea = AreaUtilities.getFarmArea();
                     //innerAreaList.add(new InnerFarmArea(areaNameText, areaDescriptionText, polygonOptions, farmArea));
-                    innerFarmAreaLocalStorage.createInnerFarmArea(
-                            new InnerFarmArea(areaNameText, areaDescriptionText, polygonOptions, farmArea));
+                    InnerFarmArea innerFarmArea = new InnerFarmArea(areaNameText, areaDescriptionText, polygonOptions, farmArea);
+
+                    innerFarmAreaLocalStorage.createInnerFarmArea(innerFarmArea);
                     innerFarmAreaLocalStorage.saveFarmArea();
+
+                    //multimap.putIfAbsent(farmArea, innerFarmArea);
+
                     Log.d(TAG,"create inner area in the farm: "+farmArea.getName());
                 }else {
                     Log.d(TAG,"create farm area");
-                    farmAreaLocalStorage.createFarmAre(
-                            new FarmArea(areaNameText, areaDescriptionText, polygonOptions));
+                    FarmArea farmArea = new FarmArea(areaNameText, areaDescriptionText, polygonOptions);
+
+                    farmAreaLocalStorage.createFarmAre(farmArea);
                     farmAreaLocalStorage.saveFarmArea();
+
+//                    multimap.putTheFarm(farmArea);
                 }
+
+
+//                for(FarmArea element : multimap.keySet()){
+//
+//                    Collection<InnerFarmArea> kapa = multimap.get(element);
+//
+//                    for(InnerFarmArea current : kapa){
+//
+//                        Toast.makeText(CreateAreaActivity.this,
+//                                "farm name "+element.getName()+" inner area "+current.getName(),Toast.LENGTH_LONG).show();
+//                    }
+//
+//                }
 
                 // Close dialog
                 popupDialog.dismiss();

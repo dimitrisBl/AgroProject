@@ -1,6 +1,12 @@
 package com.example.agroproject.model;
 
-import com.example.agroproject.model.area.Area;
+
+import android.content.Context;
+import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
+
+import com.example.agroproject.model.area.FarmArea;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.PolyUtil;
 
@@ -9,7 +15,7 @@ import java.util.List;
 public class AreaUtilities {
 
 
-    private static Area farmArea;
+    private static FarmArea farmArea;
 
 
     /**
@@ -28,7 +34,7 @@ public class AreaUtilities {
         int totalPoints = points.size();
         centroid[0] = centroid[0] / totalPoints;
         centroid[1] = centroid[1] / totalPoints;
-
+        Log.d("mesa edw re", "efafa");
         LatLng center = new LatLng(centroid[0], centroid[1]);
 
         return center;
@@ -38,22 +44,32 @@ public class AreaUtilities {
     /**
      *
      * @param latLng has the center location of current area
+     * @param farmAreaList
+     * @param context
      */
-    public static boolean detectInnerArea(LatLng latLng, List<Area> farmAreaList){
+    public static boolean detectInnerArea(LatLng latLng, FarmArea farmAreaList, View.OnClickListener context){
         boolean innerArea = false;
-        for(Area area : farmAreaList){
-            innerArea =  PolyUtil.containsLocation(latLng,
-                    area.getPolygonOptions().getPoints(), true);
-            farmArea =  area;
-        }
-        return innerArea;
+////        for(FarmArea area : farmAreaList){
+////
+////            if(!latLng.equals(getPolygonCenterPoint(area.getPolygonOptions().getPoints()))){
+////                innerArea =  PolyUtil.containsLocation(latLng,
+////                        area.getPolygonOptions().getPoints(), false);
+////                farmArea =  area;
+////            }
+////
+////            Log.d("mesa edw re", String.valueOf(innerArea));
+////        }
+////
+////        Toast.makeText(context,"state "+String.valueOf(innerArea)+" "+farmAreaList.size(),Toast.LENGTH_LONG).show();
+//
+//        return innerArea;
     }
 
     /**
      *
      * @return
      */
-    public static Area getFarmArea() {
+    public static FarmArea getFarmArea() {
         return farmArea;
     }
 }

@@ -26,15 +26,17 @@ import android.widget.Toast;
 
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMainBinding;
-import com.example.agroproject.model.area.Area;
-import com.example.agroproject.model.area.AreaService;
+
+import com.example.agroproject.model.AreaLocalStorage;
 import com.example.agroproject.model.area.FarmArea;
 import com.example.agroproject.model.area.InnerArea;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 /**
  * TODO IS NETWORK ENABLE METHOD
@@ -67,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
     private double latitude;
     private double longitude;
 
+    static Map<FarmArea, List<InnerArea>> farmMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,12 +84,21 @@ public class MainActivity extends AppCompatActivity {
         // Permission check service
         checkPermissions();
 
-        for(FarmArea farmArea : AreaService.getMultimap().keySet()){
+        AreaLocalStorage areaLocalStorage = new AreaLocalStorage(this);
 
-            List<InnerArea> values = AreaService.getMultimap().get(farmArea);
+        for(FarmArea farmArea : areaLocalStorage.loadFarmArea()){
+            farmMap.put(farmArea, areaLocalStorage.loadHoleArea());
+        }
 
-            for(InnerArea innerArea : values){
-                Log.d(TAG,"farm area "+farmArea.getName()+" inners "+innerArea.getName());
+        for(Map.Entry<FarmArea, List<InnerArea>> entry : farmMap.entrySet()){
+
+            List<InnerArea> innerObjects = entry.getValue();
+
+            for(InnerArea innerArea : innerObjects){
+
+                if(entry.getKey().getName().equals(innerArea.getFarmArea().getName())){
+                    Toast.makeText(this,"farm name "+entry.getKey().getName()+" inners: "+innerArea.getName(),Toast.LENGTH_SHORT).show();
+                }
             }
         }
     }

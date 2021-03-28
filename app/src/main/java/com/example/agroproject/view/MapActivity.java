@@ -8,18 +8,27 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.widget.Toast;
 
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
+
+import com.example.agroproject.model.AreaLocalStorage;
+import com.example.agroproject.model.AreaUtilities;
+import com.example.agroproject.model.area.FarmArea;
 import com.example.agroproject.model.area.InnerArea;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
+import com.google.maps.android.ui.IconGenerator;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -45,6 +54,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /** Polygon object */
     private Polygon polygon;
 
+    private AreaLocalStorage areaLocalStorage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +69,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
+
+        areaLocalStorage = new AreaLocalStorage(this);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -101,6 +113,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         @Override
         public void onPolygonClick(Polygon polygon) {
 
+            Map<FarmArea, List<List<LatLng>>> farmMap = new HashMap<>();
+
+
+            for(FarmArea area : areaLocalStorage.loadFarmArea()){
+                farmMap.put((FarmArea) area, area.getPolygonOptions().getHoles());
+            }
 
 
 
@@ -128,25 +146,22 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void addTheExistingAreas(){
 
 
-
-
-
-//        if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
-//            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-//                // Put the area in the map
-//                polygon = mMap.addPolygon(monitoringArea.getPolygonOptions().clickable(true));
-//                // Set tag in the polygon
-//                polygon.setTag(monitoringArea.getName());
-//                // Get the center location of the area
-//                LatLng centerLatLng = monitoringArea
-//                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
-//                // Instantiate a IconGenerator object
-//                IconGenerator iconFactory = new IconGenerator(this);
-//                // Add Marker on map  in the center location of area
-//                mMap.addMarker(new MarkerOptions().position(centerLatLng)
-//                        .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(monitoringArea.getName())))
+//        for(FarmArea farmArea : areaLocalStorage.loadFarmArea()){
+//                mMap.addPolygon(farmArea.getPolygonOptions());
+//
+//                for(InnerArea hole : areaLocalStorage.loadHoleArea()){
+//
+//                    mMap.addPolygon(hole.getPolygonOptions());
+//                    // Instantiate a IconGenerator object
+//                    IconGenerator iconFactory = new IconGenerator(this);
+//                    // Get the center location of the area
+//                    LatLng centerLatLng = AreaUtilities
+//                        .getPolygonCenterPoint(hole.getPolygonOptions().getPoints());
+//                    // Add Marker on map  in the center location of area
+//                    mMap.addMarker(new MarkerOptions().position(centerLatLng)
+//                        .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(hole.getName())))
 //                        .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV()));
-//            }
+//                }
 //        }
     }
 

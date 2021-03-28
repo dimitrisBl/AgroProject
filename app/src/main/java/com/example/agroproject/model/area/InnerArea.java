@@ -1,34 +1,37 @@
 package com.example.agroproject.model.area;
 
-
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
 
-public class InnerArea extends Area {
+import java.util.List;
 
-
+public class InnerArea {
 
     private String name;
     private String description;
     private PolygonOptions polygonOptions;
+    private FarmArea farmArea;
 
-    public InnerArea(String name, String description, PolygonOptions polygonOptions) {
+    public InnerArea(String name, String description, PolygonOptions polygonOptions, FarmArea farmArea) {
         this.name = name;
-        this.polygonOptions=polygonOptions;
-        this.description=description;
+        this.description = description;
+        this.polygonOptions = polygonOptions;
+        this.farmArea = farmArea;
     }
 
 
-    @Override
+    public FarmArea getFarmArea() {
+        return farmArea;
+    }
+
     public String getName() {
         return name;
     }
 
-    @Override
     public String getDescription() {
         return description;
     }
 
-    @Override
     public PolygonOptions getPolygonOptions() {
         return polygonOptions;
     }

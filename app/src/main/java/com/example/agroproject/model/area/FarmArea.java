@@ -2,12 +2,7 @@ package com.example.agroproject.model.area;
 
 import com.google.android.gms.maps.model.PolygonOptions;
 
-/**
- * The MonitoringArea class will represent a monitoring area in the map
- * will include constructor as well as getter methods for important information about the MonitoringArea objects.
- */
-
-public class FarmArea extends Area {
+public class FarmArea {
 
     /** The name */
     private String name;
@@ -56,5 +51,4 @@ public class FarmArea extends Area {
     public PolygonOptions getPolygonOptions() {
         return polygonOptions;
     }
-
 }

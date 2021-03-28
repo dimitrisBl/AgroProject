@@ -25,15 +25,18 @@ import android.widget.Toast;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
-import com.example.agroproject.model.MonitoringArea;
-import com.example.agroproject.model.MonitoringAreaManager;
+import com.example.agroproject.model.AreaUtilities;
+import com.example.agroproject.model.area.Area;
+import com.example.agroproject.model.area.AreaService;
+import com.example.agroproject.model.area.FarmArea;
+import com.example.agroproject.model.area.InnerArea;
+import com.example.agroproject.model.storage.AreaLocalStorage;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -42,7 +45,9 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -81,9 +86,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** Initialize List with LatLng objects */
     private List<LatLng> latLngList = new ArrayList<>();
 
-    /** MonitoringAreaManager object */
-    private MonitoringAreaManager monitoringAreaManager;
-
     /** checkBox state */
     private boolean checkBoxIsChecked = false;
 
@@ -92,6 +94,11 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
     /** Networkutil */
     private NetworkUtil networkUtil;
+
+    private AreaService areaService;
+
+    private AreaLocalStorage areaLocalStorage;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,8 +115,9 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
 
-        // Instantiate a MonitoringAreaManager object
-        monitoringAreaManager = new MonitoringAreaManager(this);
+        areaLocalStorage = new AreaLocalStorage(this);
+
+        areaService = new AreaService();
 
         // Set click listener for buttons
         binding.drawPolygon.setOnClickListener(buttonClickListener);
@@ -347,6 +355,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         .show();
     }
 
+    List<InnerArea> innerAreaList = new ArrayList<>();
     /**
      * TODO method description
      */
@@ -387,13 +396,23 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 String areaNameText = areaName.getText().toString();
                 String areaDescriptionText = areaDescription.getText().toString();
 
-                // Create the monitoring area.
-                monitoringAreaManager.createMonitoringArea(
-                        new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions));
+                // Receive the center location of current Polygon
+                LatLng centerLocationOfCurrentArea = AreaUtilities
+                        .getPolygonCenterPoint(polygonOptions.getPoints());
 
-                // Save monitoring area in shared preferences.
-                monitoringAreaManager.saveMonitoringArea();
+                // Detect if current area is inner area in other polygon
+                boolean detectInnerArea = AreaUtilities.detectInnerArea
+                                (centerLocationOfCurrentArea, areaService.getAreas());
 
+                if(detectInnerArea){
+                    Area currentFarm = AreaUtilities.getFarmArea();
+                    areaService.createArea(new InnerArea(areaNameText, areaDescriptionText, polygonOptions));
+                    //Toast.makeText(CreateAreaActivity.this,"create inner area "+areaNameText+" in the farm "+currentFarm.getName(),Toast.LENGTH_LONG).show();
+                    areaService.put((FarmArea) currentFarm, new InnerArea(areaNameText, areaDescriptionText, polygonOptions));
+                }else{
+                    areaService.createArea(new FarmArea(areaNameText, areaDescriptionText, polygonOptions));
+                   // Toast.makeText(CreateAreaActivity.this,"create farm area"+areaNameText,Toast.LENGTH_LONG).show();
+                }
                 // Close dialog
                 popupDialog.dismiss();
             }
@@ -414,19 +433,12 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
      *
      */
     private void addTheExistingAreasInMap(){
-        if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
-            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-                mMap.addPolygon(monitoringArea.getPolygonOptions());
-                // Get the center location of the area
-                LatLng centerLatLng = monitoringArea
-                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
-                // Add Marker on map  in the center location of area
-                mMap.addMarker(new MarkerOptions()
-                        .position(centerLatLng).title(monitoringArea.getName()));
+        if(!areaService.getAreas().isEmpty()){
+            for(Area area : areaService.getAreas()){
+                mMap.addPolygon(area.getPolygonOptions());
             }
         }
     }
-
 
 
     @Override
@@ -455,6 +467,9 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         unregisterReceiver(GpsStatusReceiver);
         unregisterReceiver(networkUtil);
     }
+
+
+
 
     /**
      *  Our handler for received Intents. This will be called whenever an Intent

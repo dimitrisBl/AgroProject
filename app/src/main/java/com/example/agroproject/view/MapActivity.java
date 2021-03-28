@@ -2,33 +2,24 @@ package com.example.agroproject.view;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.widget.Toast;
 
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
-import com.example.agroproject.model.MonitoringArea;
-import com.example.agroproject.model.MonitoringAreaManager;
+import com.example.agroproject.model.area.InnerArea;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
-import com.google.maps.android.SphericalUtil;
-import com.google.maps.android.ui.IconGenerator;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -54,8 +45,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /** Polygon object */
     private Polygon polygon;
 
-    /** MonitoringAreaManager object */
-    private MonitoringAreaManager monitoringAreaManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,9 +59,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
-
-        // Instantiate the monitoringAreas object.
-        monitoringAreaManager = new MonitoringAreaManager(this);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -115,20 +101,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         @Override
         public void onPolygonClick(Polygon polygon) {
 
-            Map<String, MonitoringArea> areaMap = new HashMap<>();
 
-            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-                areaMap.put(monitoringArea.getName(), monitoringArea);
-            }
 
-            for(Map.Entry<String, MonitoringArea> kapa : areaMap.entrySet()){
-                if(polygon.getTag().equals(kapa.getKey())){
-                    Toast.makeText(MapActivity.this, "name: "+kapa.getKey()+
-                            " description: "+kapa.getValue().getDescription()+
-                            " area compute: "+ SphericalUtil.computeArea(kapa.getValue().getPolygonOptions().getPoints()), Toast.LENGTH_SHORT)
-                            .show();
-                }
-            }
+
+//            Map<String, Farm> areaMap = new HashMap<>();
+//
+////            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+////                areaMap.put(monitoringArea.getName(), monitoringArea);
+////            }
+//
+//            for(Map.Entry<String, Farm> kapa : areaMap.entrySet()){
+//                if(polygon.getTag().equals(kapa.getKey())){
+//                    Toast.makeText(MapActivity.this, "name: "+kapa.getKey()+
+//                            " description: "+kapa.getValue().getDescription()+
+//                            " area compute: "+ SphericalUtil.computeArea(kapa.getValue().getPolygonOptions().getPoints()), Toast.LENGTH_SHORT)
+//                            .show();
+//                }
+//            }
         }
     };
 
@@ -137,23 +126,28 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * loads the existing areas data from the shared preferences file.
      */
     private void addTheExistingAreas(){
-        if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
-            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-                // Put the area in the map
-                polygon = mMap.addPolygon(monitoringArea.getPolygonOptions().clickable(true));
-                // Set tag in the polygon
-                polygon.setTag(monitoringArea.getName());
-                // Get the center location of the area
-                LatLng centerLatLng = monitoringArea
-                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
-                // Instantiate a IconGenerator object
-                IconGenerator iconFactory = new IconGenerator(this);
-                // Add Marker on map  in the center location of area
-                mMap.addMarker(new MarkerOptions().position(centerLatLng)
-                        .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(monitoringArea.getName())))
-                        .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV()));
-            }
-        }
+
+
+
+
+
+//        if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
+//            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
+//                // Put the area in the map
+//                polygon = mMap.addPolygon(monitoringArea.getPolygonOptions().clickable(true));
+//                // Set tag in the polygon
+//                polygon.setTag(monitoringArea.getName());
+//                // Get the center location of the area
+//                LatLng centerLatLng = monitoringArea
+//                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
+//                // Instantiate a IconGenerator object
+//                IconGenerator iconFactory = new IconGenerator(this);
+//                // Add Marker on map  in the center location of area
+//                mMap.addMarker(new MarkerOptions().position(centerLatLng)
+//                        .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(monitoringArea.getName())))
+//                        .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV()));
+//            }
+//        }
     }
 
     @Override

@@ -26,8 +26,15 @@ import android.widget.Toast;
 
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMainBinding;
+import com.example.agroproject.model.area.Area;
+import com.example.agroproject.model.area.AreaService;
+import com.example.agroproject.model.area.FarmArea;
+import com.example.agroproject.model.area.InnerArea;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * TODO IS NETWORK ENABLE METHOD
@@ -73,6 +80,15 @@ public class MainActivity extends AppCompatActivity {
                 getSystemService(Context.LOCATION_SERVICE);
         // Permission check service
         checkPermissions();
+
+        for(FarmArea farmArea : AreaService.getMultimap().keySet()){
+
+            List<InnerArea> values = AreaService.getMultimap().get(farmArea);
+
+            for(InnerArea innerArea : values){
+                Log.d(TAG,"farm area "+farmArea.getName()+" inners "+innerArea.getName());
+            }
+        }
     }
 
     /**

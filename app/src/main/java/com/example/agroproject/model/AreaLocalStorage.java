@@ -54,6 +54,10 @@ public class AreaLocalStorage {
      */
     public void createArea(FarmArea area){
         areaList.add(area);
+        Log.d("ADA","EXWTERIKI "+ String.valueOf(areaList.size()));
+        for(int i=0;i<areaList.size();i++){
+            Log.d("ADA",areaList.get(i).getName());
+        }
     }
 
     /**
@@ -96,6 +100,10 @@ public class AreaLocalStorage {
 
     public void createHole(InnerArea area){
         holeList.add(area);
+        Log.d("ADA","ESWTERIKIES: "+ String.valueOf(holeList.size()));
+      for(int i=0;i<holeList.size();i++){
+        Log.d("ADA",holeList.get(i).getName());
+      }
     }
 
 

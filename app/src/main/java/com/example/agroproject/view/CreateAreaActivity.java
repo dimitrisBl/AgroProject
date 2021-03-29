@@ -42,7 +42,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.maps.android.PolyUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -394,49 +393,20 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 LatLng centerLocationOfCurrentArea = AreaUtilities
                         .getPolygonCenterPoint(polygonOptions.getPoints());
 
-//                // Detect if current area is inner area in other polygon
-//                boolean detectInnerArea = AreaUtilities.detectInnerArea
-//                                (centerLocationOfCurrentArea, areaLocalStorage.loadFarmArea(),CreateAreaActivity.this);
+                // Detect if current area is inner area in other polygon
+                boolean detectInnerArea = AreaUtilities.detectInnerArea
+                                (centerLocationOfCurrentArea, areaLocalStorage.loadFarmArea());
 
 
-//                if(detectInnerArea){
-//                    FarmArea farmArea = AreaUtilities.getFarmArea();
-//
-//                    areaLocalStorage.createHole(new InnerArea(areaNameText, areaDescriptionText, polygonOptions, farmArea));
-//                    areaLocalStorage.saveHole();
-//                    //Toast.makeText(CreateAreaActivity.this,"create inner area "+areaNameText+" in farm "+farmArea.getName(),Toast.LENGTH_LONG).show();
-//                }else {
-//                   // Toast.makeText(CreateAreaActivity.this,"create farm "+areaNameText,Toast.LENGTH_LONG).show();
-//                    areaLocalStorage.createArea(new FarmArea(areaNameText, areaDescriptionText, polygonOptions));
-//                    areaLocalStorage.saveFarmArea();
-//                }
-//
+                if(detectInnerArea){
+                    FarmArea farmArea = AreaUtilities.getFarmArea();
 
-                areaLocalStorage.createArea(new FarmArea(areaNameText, areaDescriptionText, polygonOptions));
-                areaLocalStorage.saveFarmArea();
-
-
-                for(FarmArea farmArea : areaLocalStorage.loadFarmArea()){
-
-                   //boolean innerArea =  PolyUtil.containsLocation(
-                    //        centerLocationOfCurrentArea, farmArea.getPolygonOptions().getPoints(), false);
-
-                    if(AreaUtilities.detectInnerArea(centerLocationOfCurrentArea, farmArea, this)){
-
-
-
-                    }
+                    areaLocalStorage.createHole(new InnerArea(areaNameText, areaDescriptionText, polygonOptions, farmArea));
+                    areaLocalStorage.saveHole();
+                }else {
+                    areaLocalStorage.createArea(new FarmArea(areaNameText, areaDescriptionText, polygonOptions));
+                    areaLocalStorage.saveFarmArea();
                 }
-
-
-
-
-//                // Detect if current area is inner area in other polygon
-//                boolean detectInnerArea = AreaUtilities.detectInnerArea
-//                        (centerLocationOfCurrentArea, areaLocalStorage.loadFarmArea(),CreateAreaActivity.this);
-
-
-
                 // Close dialog
                 popupDialog.cancel();
             }
@@ -450,24 +420,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             }
         });
         popupDialog.show();
-    }
-
-
-    /**
-     *
-     *
-     * @param center has the center location of current area
-     */
-    public boolean detectInnerArea(LatLng center){
-        boolean innerArea = false;
-
-        for(FarmArea monitoringArea : areaLocalStorage.loadFarmArea()){
-
-            //TODO to geodesic ti kanei kai ti sumbainei an anti gia true balw false
-            innerArea =  PolyUtil.containsLocation(center,
-                    monitoringArea.getPolygonOptions().getPoints(), true);
-        }
-        return innerArea;
     }
 
     /**

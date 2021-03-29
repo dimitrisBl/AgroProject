@@ -1,11 +1,7 @@
 package com.example.agroproject.model;
 
 
-import android.content.Context;
 import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
-
 import com.example.agroproject.model.area.FarmArea;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.PolyUtil;
@@ -14,9 +10,7 @@ import java.util.List;
 
 public class AreaUtilities {
 
-
     private static FarmArea farmArea;
-
 
     /**
      * TODO METHOD DESCRIPTION
@@ -45,24 +39,23 @@ public class AreaUtilities {
      *
      * @param latLng has the center location of current area
      * @param farmAreaList
-     * @param context
+     *
      */
-    public static boolean detectInnerArea(LatLng latLng, FarmArea farmAreaList, View.OnClickListener context){
+    public static boolean detectInnerArea(LatLng latLng, List<FarmArea> farmAreaList){
         boolean innerArea = false;
-////        for(FarmArea area : farmAreaList){
-////
-////            if(!latLng.equals(getPolygonCenterPoint(area.getPolygonOptions().getPoints()))){
-////                innerArea =  PolyUtil.containsLocation(latLng,
-////                        area.getPolygonOptions().getPoints(), false);
-////                farmArea =  area;
-////            }
-////
-////            Log.d("mesa edw re", String.valueOf(innerArea));
-////        }
-////
-////        Toast.makeText(context,"state "+String.valueOf(innerArea)+" "+farmAreaList.size(),Toast.LENGTH_LONG).show();
-//
-//        return innerArea;
+            for (FarmArea area : farmAreaList) {
+                //Don't check the same polygon
+                if (!latLng.equals(getPolygonCenterPoint(area.getPolygonOptions().getPoints()))) {
+                    innerArea = PolyUtil.containsLocation(latLng,
+                            area.getPolygonOptions().getPoints(), false);
+                    //The farmArea in which our current polygon exists
+                    farmArea = area;
+                    if(innerArea){
+                        return  innerArea;
+                    }
+                }
+            }
+        return innerArea;
     }
 
     /**

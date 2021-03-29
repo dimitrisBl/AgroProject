@@ -25,7 +25,7 @@ import android.widget.Toast;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
-import com.example.agroproject.model.AreaLocalStorage;
+import com.example.agroproject.model.area.AreaLocalStorage;
 import com.example.agroproject.model.AreaUtilities;
 import com.example.agroproject.model.area.FarmArea;
 
@@ -400,11 +400,10 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
                 if(detectInnerArea){
                     FarmArea farmArea = AreaUtilities.getFarmArea();
-
-                    areaLocalStorage.createHole(new InnerArea(areaNameText, areaDescriptionText, polygonOptions, farmArea));
-                    areaLocalStorage.saveHole();
+                    areaLocalStorage.createInnerArea(new InnerArea(areaNameText, areaDescriptionText, polygonOptions, farmArea));
+                    areaLocalStorage.saveInnerArea();
                 }else {
-                    areaLocalStorage.createArea(new FarmArea(areaNameText, areaDescriptionText, polygonOptions));
+                    areaLocalStorage.createFarmArea(new FarmArea(areaNameText, areaDescriptionText, polygonOptions));
                     areaLocalStorage.saveFarmArea();
                 }
                 // Close dialog
@@ -431,7 +430,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         for(FarmArea farmArea : areaLocalStorage.loadFarmArea()){
             mMap.addPolygon(farmArea.getPolygonOptions());
         }
-        for(InnerArea hole : areaLocalStorage.loadHoleArea()){
+        for(InnerArea hole : areaLocalStorage.loadInnerArea()){
             mMap.addPolygon(hole.getPolygonOptions());
         }
     }

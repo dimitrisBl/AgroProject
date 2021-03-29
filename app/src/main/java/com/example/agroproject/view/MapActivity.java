@@ -12,19 +12,15 @@ import android.view.MenuInflater;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
 
-import com.example.agroproject.model.AreaLocalStorage;
-import com.example.agroproject.model.AreaUtilities;
+import com.example.agroproject.model.area.AreaLocalStorage;
 import com.example.agroproject.model.area.FarmArea;
-import com.example.agroproject.model.area.InnerArea;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
-import com.google.maps.android.ui.IconGenerator;
 
 import java.util.HashMap;
 import java.util.List;

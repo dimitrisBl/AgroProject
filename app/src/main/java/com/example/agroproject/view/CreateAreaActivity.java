@@ -18,12 +18,15 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
+import com.example.agroproject.databinding.SaveFilePopupStyleBinding;
 import com.example.agroproject.model.KmlFile;
 import com.example.agroproject.model.KmlLocalStorageProvider;
 import com.example.agroproject.model.MonitoringArea;
@@ -47,8 +50,11 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -59,6 +65,10 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
     /** Class TAG */
     private final String TAG = "CreateAreaActivity";
+
+
+    /** Intent code for file selection */
+    private final int FILE_SELECTION_CODE = 4;
 
     /** Activity view binding */
     private ActivityCreateAreaBinding binding;
@@ -102,6 +112,13 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** KmlLocalStorageProvider */
     private KmlLocalStorageProvider kmlLocalStorageProvider;
 
+    /** Insert file PopUp View binding */
+    private SaveFilePopupStyleBinding showSaveFilePopUpBinding;
+
+    private String filePath;
+
+    private Map<String, KmlFile> kmlFileMap = new HashMap<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -122,22 +139,20 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
         // Instantiate a KmlLocalStorageProvider object
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
+        kmlFileMap = kmlLocalStorageProvider.loadFile();
 
         // Set click listener for buttons
         binding.drawPolygon.setOnClickListener(buttonClickListener);
         binding.clearMap.setOnClickListener(buttonClickListener);
+        binding.insertFile.setOnClickListener(buttonClickListener);
         // Set checked listener for checkbox
-        binding.checkBox.setOnCheckedChangeListener(checkBoxListener);
+        //binding.checkBox.setOnCheckedChangeListener(checkBoxListener);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.create_area_map);
         mapFragment.getMapAsync(this);
     }
-
-
-
-
 
     /**
      * Manipulates the map once available.
@@ -154,7 +169,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         // Set Map click listener method
         mMap.setOnMapClickListener(mapClickListener);
         // Move the camera in current location
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18.5f));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 5f));
         //Add the existing monitoring areas in the map
         addTheExistingAreasInMap();
     }
@@ -171,30 +186,22 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 // Create MarkerOptions
                 MarkerOptions markerOptions = new MarkerOptions()
                         .position(latLng).title("" + latLng.latitude + " " + latLng.longitude);
-
                 if (marker != null) {
                     // Remove the previous marker
                     marker.remove();
                 }
                 // Create Marker in the map
                 marker = mMap.addMarker(markerOptions);
-
                 // Add LatLng in latLngList
                 latLngList.add(latLng);
-
                 // Add Marker in markerList
                 markerList.add(marker);
-
                 if (markerList.size() > 1) {
-
                     latitude = latLng.latitude;
                     longitude = latLng.longitude;
-
                     marker.setPosition(new LatLng(latitude, longitude));
-
                     PolylineOptions polylineOptions = new PolylineOptions()
                             .addAll(latLngList).color(Color.RED);
-
                     mMap.addPolyline(polylineOptions);
                 }
             }
@@ -210,6 +217,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             // Get current button click
             Button currentButton = (Button) view;
 
+            Toast.makeText(CreateAreaActivity.this,"name "+currentButton.getText(),Toast.LENGTH_SHORT).show();
             // Get text from current button
             String currentButtonText =
                     String.valueOf(currentButton.getText());
@@ -245,6 +253,11 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                                 "Tap in the map and mark your area first", Toast.LENGTH_LONG).show();
                     }
                 break;
+
+                case "insert file":
+                    showSaveFilePopUp();
+                break;
+
                 case "clear":
                     latLngList.clear();
                     markerList.clear();
@@ -256,6 +269,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         }
     };
 
+
+
     /**
      *  TODO description
      */
@@ -265,7 +280,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         public void onCheckedChanged(CompoundButton compoundButton, boolean state) {
             // get the checkBox state
             checkBoxIsChecked = state;
-
+            //Coordinates
             if (checkBoxIsChecked) {
                 marker = null;
                 markerList.clear();
@@ -290,21 +305,15 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
      *
      **/
     public void refreshMapForNewLocation(){
-
         if(checkBoxIsChecked){
-
             // Add LatLng in latLngList
             latLngList.add(currentLocation);
-
             if(polyline!=null){
-
                 polyline.setPoints(latLngList);
-
             }else{
                 // Create MarkerOptions
                 MarkerOptions markerOptions = new MarkerOptions()
                         .position(currentLocation).title("Your location: " +latitude + " " + longitude);
-
                 if (marker != null) {
                     // Remove the previous marker
                     marker.remove();
@@ -313,14 +322,10 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 marker = mMap.addMarker(markerOptions);
                 // Add Marker in markerList
                 markerList.add(marker);
-
                 if (markerList.size() > 1){
-
                     marker.setPosition(new LatLng(latitude, longitude));
-
                     PolylineOptions polylineOptions = new PolylineOptions()
                             .addAll(latLngList).color(Color.RED);
-
                     mMap.addPolyline(polylineOptions);
                 }
             }
@@ -356,8 +361,81 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         .show();
     }
 
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == FILE_SELECTION_CODE){
+            if(resultCode == RESULT_OK){
+                // Retrieve data from intent
+                filePath = data.getDataString();
+                // Set text
+                showSaveFilePopUpBinding.filePath.setText(filePath);
+            }
+        }
+    }
+
+    /**
+     * AUTH KALEITAI OTAN PATAW TO KOUMPI INSERT FILE
+     */
+    private void showSaveFilePopUp(){
+        showSaveFilePopUpBinding = SaveFilePopupStyleBinding.inflate(getLayoutInflater());
+        View popUpView = showSaveFilePopUpBinding.getRoot();
+
+        // Instantiate a Dialog
+        Dialog popupDialog = new Dialog(this);
+        popupDialog.setContentView(popUpView);
+        popupDialog.setCanceledOnTouchOutside(false);
+            // Close btn
+            ImageView closeBtn = showSaveFilePopUpBinding.btnCLose;
+            closeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mMap.clear();
+                //Add the existing polygons in the map
+                addTheExistingAreasInMap();
+                // Close dialog
+                popupDialog.dismiss();
+            }
+        });
+            // TextView
+            TextView name = showSaveFilePopUpBinding.areaName;
+            TextView description = showSaveFilePopUpBinding.areaDescription;
+            // Choose file btn
+            Button chooseFileButton = showSaveFilePopUpBinding.chooseFileBtn;
+            chooseFileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.setType("*/*");
+                    //intent.setType("text/xml");
+                startActivityForResult(intent, FILE_SELECTION_CODE);
+            }
+        });
+            // Save btn
+            Button saveBtn = showSaveFilePopUpBinding.saveFileBtn;
+            saveBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    String areaName = name.getText().toString();
+                    String areaDescription = description.getText().toString();
+                    // Put in the map
+                    kmlFileMap.put(areaName, new KmlFile(areaName, areaDescription, filePath));
+                    //Add the existing polygons in the map
+                    addTheExistingAreasInMap();
+                    // Close dialog
+                    popupDialog.dismiss();
+                }
+            });
+        // Show dialog
+        popupDialog.show();
+    }
+
+
+
     /**
      * TODO method description
+     * AUTH KALEITAI OTAN KANEIS POLYGONO PANW APO TON XARTI
      */
     private void showSaveAreaPopup(){
         // Binding
@@ -420,22 +498,10 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
      *
      */
     private void addTheExistingAreasInMap() {
-//        if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
-//            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-//                mMap.addPolygon(monitoringArea.getPolygonOptions());
-//                // Get the center location of the area
-//                LatLng centerLatLng = monitoringArea
-//                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
-//                // Add Marker on map  in the center location of area
-//                mMap.addMarker(new MarkerOptions()
-//                        .position(centerLatLng).title(monitoringArea.getName()));
-//            }
-//        }
-
-        if(!kmlLocalStorageProvider.loadKmlFile().isEmpty()) {
-            for (KmlFile kmlFile : kmlLocalStorageProvider.loadKmlFile()) {
+        //mMap.clear();
+        for(Map.Entry<String,KmlFile> entry : kmlFileMap.entrySet()){
                 // Initialize a Uri object for each kml file
-                Uri uri = Uri.parse(kmlFile.getData());
+                Uri uri = Uri.parse(entry.getValue().getPath());
                 try {
                     InputStream inputStream = getContentResolver().openInputStream(uri);
                     // Create kml layer
@@ -449,7 +515,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
         }
     }
 
@@ -480,6 +545,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         unregisterReceiver(locationReceiver);
         unregisterReceiver(GpsStatusReceiver);
         unregisterReceiver(networkUtil);
+        // save the kmlFileMap in shared preferences.
+        kmlLocalStorageProvider.saveFile(kmlFileMap);
     }
 
     /**

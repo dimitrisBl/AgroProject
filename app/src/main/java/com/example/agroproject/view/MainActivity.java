@@ -161,16 +161,16 @@ public class MainActivity extends AppCompatActivity {
             // Check status of the GPS
             isGpsEnable();
         }// If i returns from file explorer intent
-        else if(requestCode == FILE_SELECTION_CODE){
-            if(resultCode == RESULT_OK){
-                // Retrieve data from intent
-                String fileData = data.getDataString();
-                // Create a new KmlFile object and add this on kmlFileList.
-                kmlFileList.add(new KmlFile(fileData));
-                // Save kmlFileList in shared preferences.
-                kmlLocalStorageProvider.saveKmlFile(kmlFileList);
-            }
-        }
+//        else if(requestCode == FILE_SELECTION_CODE){
+//            if(resultCode == RESULT_OK){
+//                // Retrieve data from intent
+//                String fileData = data.getDataString();
+//                // Create a new KmlFile object and add this on kmlFileList.
+//                kmlFileList.add(new KmlFile(fileData));
+//                // Save kmlFileList in shared preferences.
+//                kmlLocalStorageProvider.saveKmlFile(kmlFileList);
+//            }
+//        }
     }
 
     /**
@@ -235,13 +235,6 @@ public class MainActivity extends AppCompatActivity {
         s1.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s1.length(), 0);
         item1.setTitle(s1);
 
-        // set title alignment for each item is center
-        int positionOfMenuItem2 = 2; //or any other postion
-        MenuItem item2 = menu.getItem(positionOfMenuItem2);
-        SpannableString s2 = new SpannableString(item2.getTitle());
-        s2.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s2.length(), 0);
-        item2.setTitle(s2);
-
         // Calling super after populating the menu is necessary here to ensure that the
         // action bar helpers have a chance to handle this event.
         return true;
@@ -271,13 +264,6 @@ public class MainActivity extends AppCompatActivity {
                     createAreaIntent.putExtra("longitude", longitude);
                     startActivityForResult(createAreaIntent,CREATE_AREA_ACTIVITY_CODE);
                 }
-            return true;
-
-            case R.id.insertFile_item:
-                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                 intent.setType("*/*");
-                 //intent.setType("text/xml");
-                 startActivityForResult(intent, FILE_SELECTION_CODE);
             return true;
 
             default:

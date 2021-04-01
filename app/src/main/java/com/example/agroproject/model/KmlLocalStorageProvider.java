@@ -3,13 +3,12 @@ package com.example.agroproject.model;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class KmlLocalStorageProvider {
 
@@ -23,50 +22,45 @@ public class KmlLocalStorageProvider {
     private final String KML_FILE_LIST = "kmlFileList";
 
     /** SharedPreferences object */
-    private SharedPreferences kmlStatePrefs;
+    private SharedPreferences sharedPreferences;
+
+    /** Map with KmlFile objects */
+    private Map<String, KmlFile> kmlFileMap = new HashMap<>();
 
     /**
      * This method initialize the KmlLocalStorageProvider object.
      * @param context takes the current context application.
      */
     public KmlLocalStorageProvider(Context context){
-        kmlStatePrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     }
 
     /**
-     * This method save the kmlFileList in shared preferences file.
-     *
-     * kmlFileList has objects of the KmlFile class.
+     * This method save the famMap in shared preferences file.
+     * @param famMap has objects of the KmlFile class.
      */
-    public void saveKmlFile(List<KmlFile> kmlFileList){
-        Log.d(TAG,"Kml file save executed");
-        // Instantiate the gson object.
-        Gson gson = new Gson();
-        //Convert java object as a json string.
-        String json = gson.toJson(kmlFileList);
-
-        SharedPreferences.Editor editor = kmlStatePrefs.edit();
-        // Put json string in shared preferences.
-        editor.putString(KML_FILE_LIST, json);
-        editor.commit();
+    public void saveFile(Map<String, KmlFile> famMap){
+        Log.d(TAG,"Area save executed");
+        String converted = new Gson().toJson(famMap);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(KML_FILE_LIST, converted);
+        editor.apply();
     }
 
 
     /**
-     * This method receives kmlFileList from the shared preferences saved file.
-     * @return the list kmlFileList it contains KmlFile objects from the save file.
+     * This method load the Map with KmlFile objects from shared preferences.
+     * @return the Map kmlFileMap it contains KmlFile objects from the save file.
      */
-    public List<KmlFile> loadKmlFile(){
-        Log.d(TAG,"Load kml file from saved file");
-        List<KmlFile> kmlFileList = null;
-        String serializedObject = kmlStatePrefs.getString(KML_FILE_LIST, null);
-        if (serializedObject != null) {
-            // Instantiate the gson object.
+    public Map<String, KmlFile> loadFile(){
+        Log.d(TAG,"load area save executed");
+        String defaultValue = new Gson().toJson(new HashMap<String, MonitoringArea>());
+        String json = sharedPreferences.getString(KML_FILE_LIST, defaultValue);
+        if(json != null){
             Gson gson = new Gson();
-            Type type = new TypeToken<List<KmlFile>>(){}.getType();
-            kmlFileList = gson.fromJson(serializedObject, type);
+            Type type = new TypeToken<Map<String, KmlFile>>() {}.getType();
+            kmlFileMap = gson.fromJson(json, type);
         }
-        return kmlFileList;
+        return kmlFileMap;
     }
-
 }

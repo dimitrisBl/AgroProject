@@ -18,9 +18,9 @@
             android:title="Create Area"/>
 
 
-        <item
-            android:id="@+id/insertFile_item"
-            android:title="Insert file"/>
+<!--        <item-->
+<!--            android:id="@+id/insertFile_item"-->
+<!--            android:title="Insert file"/>-->
 
     </item>
 

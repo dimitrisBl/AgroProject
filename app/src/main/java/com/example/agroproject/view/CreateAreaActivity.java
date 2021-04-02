@@ -1,6 +1,7 @@
 package com.example.agroproject.view;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
@@ -28,6 +29,7 @@ import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
 import com.example.agroproject.databinding.SaveFilePopupStyleBinding;
 import com.example.agroproject.model.KmlFile;
+import com.example.agroproject.model.KmlFileParser;
 import com.example.agroproject.model.KmlLocalStorageProvider;
 import com.example.agroproject.model.MonitoringArea;
 import com.example.agroproject.model.MonitoringAreaManager;
@@ -117,7 +119,10 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
     private String filePath;
 
-    private Map<String, KmlFile> kmlFileMap = new HashMap<>();
+   // private Map<String, KmlFile> kmlFileMap = new HashMap<>();
+
+    private KmlFileParser kmlFileParser;
+    private String dataFromFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,7 +144,10 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
         // Instantiate a KmlLocalStorageProvider object
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
-        kmlFileMap = kmlLocalStorageProvider.loadFile();
+        //kmlFileMap = kmlLocalStorageProvider.loadFile();
+
+
+        kmlFileParser = new KmlFileParser(this);
 
         // Set click listener for buttons
         binding.drawPolygon.setOnClickListener(buttonClickListener);
@@ -378,9 +386,23 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 }
                 // Set text
                 showSaveFilePopUpBinding.filePath.setText(fileName);
+
+                dataFromFile = kmlFileParser.parseFile(uri);
+
+//
+//
+//                for(List<LatLng> el : latLngList){
+//                     //Create PolygonOptions
+//                polygonOptions = new PolygonOptions()
+//                        .strokeWidth(5f).addAll(el).strokeColor(Color.RED)
+//                        .fillColor(Color.argb(70, 50, 255, 0));
+//                mMap.addPolygon(polygonOptions);
+//                }
             }
         }
     }
+
+
 
     /**
      * AUTH KALEITAI OTAN PATAW TO KOUMPI INSERT FILE
@@ -427,7 +449,13 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     String areaName = name.getText().toString();
                     String areaDescription = description.getText().toString();
                     // Put in the map
-                    kmlFileMap.put(areaName, new KmlFile(areaName, areaDescription, filePath));
+                    //kmlFileMap.put(areaName, new KmlFile(areaName, areaDescription, filePath));
+
+                    List<List<LatLng>> latLngList =
+                            kmlFileParser.findCoordinatesSegment(dataFromFile);
+
+                    
+
                     //Add the existing polygons in the map
                     addTheExistingAreasInMap();
                     // Close dialog
@@ -485,9 +513,9 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 String areaNameText = areaName.getText().toString();
                 String areaDescriptionText = areaDescription.getText().toString();
 
-                // Create the monitoring area.
-                monitoringAreaManager.createMonitoringArea(
-                        new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions));
+//                // Create the monitoring area.
+//                monitoringAreaManager.createMonitoringArea(
+//                        new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions));
                 // Save monitoring area in shared preferences.
                 monitoringAreaManager.saveMonitoringArea();
                 //Add the existing polygons in the map
@@ -506,23 +534,23 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
      */
     private void addTheExistingAreasInMap() {
         //mMap.clear();
-        for(Map.Entry<String,KmlFile> entry : kmlFileMap.entrySet()){
-                // Initialize a Uri object for each kml file
-                Uri uri = Uri.parse(entry.getValue().getPath());
-                try {
-                    InputStream inputStream = getContentResolver().openInputStream(uri);
-                    // Create kml layer
-                    KmlLayer layer = new KmlLayer(mMap, inputStream, this);
-                    // Add layer in map
-                    layer.addLayerToMap();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (XmlPullParserException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-        }
+//        for(Map.Entry<String,KmlFile> entry : kmlFileMap.entrySet()){
+//                // Initialize a Uri object for each kml file
+//                Uri uri = Uri.parse(entry.getValue().getPath());
+//                try {
+//                    InputStream inputStream = getContentResolver().openInputStream(uri);
+//                    // Create kml layer
+//                    KmlLayer layer = new KmlLayer(mMap, inputStream, this);
+//                    // Add layer in map
+//                    layer.addLayerToMap();
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                } catch (XmlPullParserException e) {
+//                    e.printStackTrace();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//        }
     }
 
 

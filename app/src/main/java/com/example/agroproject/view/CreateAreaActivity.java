@@ -369,8 +369,15 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             if(resultCode == RESULT_OK){
                 // Retrieve data from intent
                 filePath = data.getDataString();
+                // Get the name of the file
+                Uri uri = Uri.parse(data.getDataString());
+                String fileName = uri.getPath();
+                int cut = fileName.lastIndexOf('/');
+                if(cut != -1){
+                    fileName = fileName.substring(cut + 1);
+                }
                 // Set text
-                showSaveFilePopUpBinding.filePath.setText(filePath);
+                showSaveFilePopUpBinding.filePath.setText(fileName);
             }
         }
     }

@@ -28,6 +28,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,8 +58,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private Polygon polygon;
 
     private KmlLocalStorageProvider kmlLocalStorageProvider;
-    private PolygonOptions polygonOptions = null;
-    Placemark tempPlaceMark;
+
+    private Map<String, List<Placemark>> kmlFileMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +75,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
 
-    kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
+        kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
+        kmlFileMap = kmlLocalStorageProvider.loadLayers();
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -116,7 +120,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         public void onPolygonClick(Polygon polygon) {
             for (Map.Entry<String, List<Placemark>> entry : kmlLocalStorageProvider.loadLayers().entrySet()) {
                 for (Placemark placemark : entry.getValue()) {
-
                    if (polygon.getTag().equals(placemark.getName())) {
                         showAreaPopUp(placemark.getName());
                     }
@@ -125,20 +128,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         };
 
-        @SuppressLint("NewApi")
-        private void showAreaPopUp(String areaName) {
-            // Binding
-            AreaClickPopupStyleBinding popupBinding;
-            // Initialize popup view
-            popupBinding = AreaClickPopupStyleBinding.inflate(getLayoutInflater());
-            // Get view
-            View popupView = popupBinding.getRoot();
+    @SuppressLint("NewApi")
+    private void showAreaPopUp(String areaName) {
+        // Binding
+        AreaClickPopupStyleBinding popupBinding;
+        // Initialize popup view
+        popupBinding = AreaClickPopupStyleBinding.inflate(getLayoutInflater());
+        // Get view
+        View popupView = popupBinding.getRoot();
 
-            // Instantiate a Dialog
-            Dialog popUpDialog = new Dialog(this);
-            popUpDialog.setContentView(popupView);
-            popUpDialog.setCancelable(true);
-
+        // Instantiate a Dialog
+        Dialog popUpDialog = new Dialog(this);
+        popUpDialog.setContentView(popupView);
+        popUpDialog.setCancelable(true);
             // title
             TextView farmAreaName = popupBinding.farmName;
             farmAreaName.setText(areaName);
@@ -156,82 +158,81 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             // delete button
             Button deleteButton = popupBinding.deleteBtn;
             deleteButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    new AlertDialog.Builder(MapActivity.this)
-                            .setIcon(R.drawable.ic_baseline_delete_24)
-                            .setTitle("Delete")
-                            .setMessage("You want to delete this area?")
-                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Map<String, List<Placemark>> kmlFileMap = kmlLocalStorageProvider.loadLayers();
-
-                                    for (List<Placemark> entry : kmlFileMap.values()) {
-                                        for (Placemark placemark : entry) {
-                                                if(placemark.getName().equals(areaName)){
-                                                    tempPlaceMark= placemark;
-                                                }
+            @Override
+            public void onClick(View view) {
+                new AlertDialog.Builder(MapActivity.this)
+                       .setIcon(R.drawable.ic_baseline_delete_24)
+                       .setTitle("Delete")
+                       .setMessage("You want to delete this area?")
+                       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                           @Override
+                           public void onClick(DialogInterface dialog, int which) {
+                               Placemark tempPlaceMark=null;
+                               for (List<Placemark> entry : kmlFileMap.values()) {
+                                   for (Placemark placemark : entry) {
+                                        if(placemark.getName().equals(areaName)){
+                                            tempPlaceMark = placemark;
                                         }
-                                        entry.remove(tempPlaceMark);
-                                    }
+                                   }
+                                   entry.remove(tempPlaceMark);
+                               }
 
 
-                                    kmlLocalStorageProvider.saveLayers(kmlFileMap);
-                                    addTheExistingAreas();
-                                    popUpDialog.dismiss();
-                                }
-                            })
-                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    // do nothing
-                                    popUpDialog.dismiss();
-                                }
-                            })
-                            .setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                @Override
-                                public void onDismiss(DialogInterface dialogInterface) {
-                                    mMap.clear();
-                                    //Add the existing polygons in the map
-                                    addTheExistingAreas();
-                                }
-                            })
-                            .show();
+                               kmlLocalStorageProvider.saveLayers(kmlFileMap);
+                               addTheExistingAreas();
+                               popUpDialog.dismiss();
+                           }
+                       })
+                       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                          @Override
+                          public void onClick(DialogInterface dialogInterface, int i) {
+                               // do nothing
+                               popUpDialog.dismiss();
+                          }
+                       })
+                       .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                           @Override
+                           public void onDismiss(DialogInterface dialogInterface) {
+                                mMap.clear();
+                                //Add the existing polygons in the map
+                                addTheExistingAreas();
+                           }
+                       })
+                .show();
                 }
             });
-
-            popUpDialog.show();
+        // Show popUp
+        popUpDialog.show();
         }
 
-        /**
-         * This method put the existing monitoring areas in the map
-         * loads the existing areas data from the shared preferences file.
-         */
-        private void addTheExistingAreas() {
-            mMap.clear();
-            for (Map.Entry<String, List<Placemark>> entry : kmlLocalStorageProvider.loadLayers().entrySet()) {
-                for (Placemark placemark : entry.getValue()) {
-
-                    polygonOptions = new PolygonOptions()
-                            .strokeWidth(5f).addAll(placemark.getLatLngList()).strokeColor(Color.RED)
-                            .fillColor(Color.argb(70, 50, 255, 0)).clickable(true);
-                    polygon = mMap.addPolygon(polygonOptions);
-                    polygon.setTag(placemark.getName());
-                }
+    /**
+    * This method put the existing monitoring areas in the map
+    * loads the existing areas data from the shared preferences file.
+    */
+    private void addTheExistingAreas() {
+        mMap.clear();
+        for (Map.Entry<String, List<Placemark>> entry : kmlFileMap.entrySet()) {
+            for (Placemark placemark : entry.getValue()) {
+                PolygonOptions polygonOptions = new PolygonOptions()
+                       .strokeWidth(5f).addAll(placemark.getLatLngList()).strokeColor(Color.RED)
+                       .fillColor(Color.argb(70, 50, 255, 0)).clickable(true);
+                polygon = mMap.addPolygon(polygonOptions);
+                polygon.setTag(placemark.getName());
             }
         }
-        @Override
-        public boolean onCreateOptionsMenu(Menu menu) {
-            // Initiating Menu XML file (activity_map_menu.xml)
-            MenuInflater menuInflater = getMenuInflater();
-            menuInflater.inflate(R.menu.activity_map_menu, menu);
-            // Enable back button in menu
-            ActionBar actionBar = getSupportActionBar();
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            // Calling super after populating the menu is necessary here to ensure that the
-            // action bar helpers have a chance to handle this event.
-            return true;
-        }
-
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Initiating Menu XML file (activity_map_menu.xml)
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.activity_map_menu, menu);
+        // Enable back button in menu
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        // Calling super after populating the menu is necessary here to ensure that the
+        // action bar helpers have a chance to handle this event.
+        return true;
+    }
+
+}

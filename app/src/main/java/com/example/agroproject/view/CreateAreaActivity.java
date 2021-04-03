@@ -113,8 +113,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
     private KmlFileParser kmlFileParser;
 
-    private Uri uri;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -358,7 +356,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         if(requestCode == FILE_SELECTION_CODE){
             if(resultCode == RESULT_OK){
                 // Create a Uri path
-                 uri = Uri.parse(data.getDataString());
+                 Uri uri = Uri.parse(data.getDataString());
                 // Get the name of the file
                 String fileName = uri.getPath();
                 int cut = fileName.lastIndexOf('/');
@@ -375,11 +373,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 List<Placemark> placemarks = kmlFileParser.parseDataFromFile(dataFromFile);
                 // Put data into Map
                 kmlFileMap.put(uri.getPath(), placemarks);
-
-
-                KmlFileWriter kmlFileWriter = new KmlFileWriter(CreateAreaActivity.this);
-                kmlFileWriter.fileToWrite(uri);
-
                 //Add the existing polygons in the map
                 addTheExistingAreasInMap();
 

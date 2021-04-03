@@ -31,6 +31,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
+import com.example.agroproject.model.file.KmlFileWriter;
 import com.example.agroproject.model.file.Placemark;
 import com.example.agroproject.model.file.KmlFileParser;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
@@ -106,7 +107,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
     private Map<String, List<Placemark>> kmlFileMap = new HashMap<>();
 
-    private String fileName;
     private KmlFileParser kmlFileParser;
 
     @Override
@@ -352,9 +352,9 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         if(requestCode == FILE_SELECTION_CODE){
             if(resultCode == RESULT_OK){
                 // Create a Uri path
-                Uri uri = Uri.parse(data.getDataString());
+                 Uri uri = Uri.parse(data.getDataString());
                 // Get the name of the file
-                fileName = uri.getPath();
+                String fileName = uri.getPath();
                 int cut = fileName.lastIndexOf('/');
                 if(cut != -1){
                     fileName = fileName.substring(cut + 1);
@@ -362,7 +362,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 // Show message
                 Toast.makeText(CreateAreaActivity.this,
                         "The file "+fileName+" was succesfully added",Toast.LENGTH_LONG).show();
-
 
                 // Open file and get the data in String type
                 String dataFromFile = kmlFileParser.getFileData(uri);
@@ -372,6 +371,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 kmlFileMap.put(uri.getPath(), placemarks);
                 //Add the existing polygons in the map
                 addTheExistingAreasInMap();
+
             }
         }
     }
@@ -462,6 +462,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             @Override
             public void onClick(View view) {
                 Log.d(TAG,"Submit button pressed");
+
                 //Add the existing polygons in the map
                 addTheExistingAreasInMap();
                 // Close dialog

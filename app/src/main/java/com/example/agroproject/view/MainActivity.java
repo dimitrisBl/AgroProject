@@ -30,6 +30,7 @@ import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMainBinding;
 
 import com.example.agroproject.model.KmlFile;
+import com.example.agroproject.model.file.KmlFileParser;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
@@ -55,9 +56,6 @@ public class MainActivity extends AppCompatActivity {
 
     /** CreateAreaActivity intent code */
     private static final int CREATE_AREA_ACTIVITY_CODE = 3;
-
-    /** Intent code for file selection */
-    private final int FILE_SELECTION_CODE = 4;
 
     /** LocationManager */
     private LocationManager locationManager;

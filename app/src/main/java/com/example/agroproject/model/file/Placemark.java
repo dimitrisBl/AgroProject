@@ -11,12 +11,11 @@ public class Placemark {
     private List<LatLng> coordinates;
 
 
-    public Placemark(String fileName, String description, List<LatLng> coordinates) {
-        this.name = fileName;
+    public Placemark(String name, String description, List<LatLng> coordinates) {
+        this.name = name;
         this.description = description;
         this.coordinates = coordinates;
     }
-
 
     public String getName() {
         return name;

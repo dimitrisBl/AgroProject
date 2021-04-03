@@ -34,7 +34,6 @@ import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
 import com.example.agroproject.model.file.Placemark;
 import com.example.agroproject.model.file.KmlFileParser;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
-import com.example.agroproject.model.MonitoringAreaManager;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -92,9 +91,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
     /** Initialize List with LatLng objects */
     private List<LatLng> latLngList = new ArrayList<>();
-
-    /** MonitoringAreaManager object */
-    private MonitoringAreaManager monitoringAreaManager;
 
     /** checkBox state */
     private boolean checkBoxIsChecked = false;
@@ -466,14 +462,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             @Override
             public void onClick(View view) {
                 Log.d(TAG,"Submit button pressed");
-                String areaNameText = areaName.getText().toString();
-                String areaDescriptionText = areaDescription.getText().toString();
-
-//                // Create the monitoring area.
-//                monitoringAreaManager.createMonitoringArea(
-//                        new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions));
-                // Save monitoring area in shared preferences.
-                monitoringAreaManager.saveMonitoringArea();
                 //Add the existing polygons in the map
                 addTheExistingAreasInMap();
                 // Close dialog

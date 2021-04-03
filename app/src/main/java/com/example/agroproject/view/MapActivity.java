@@ -1,33 +1,34 @@
 package com.example.agroproject.view;
 
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
-
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.widget.Toast;
-
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
-import com.example.agroproject.model.MonitoringArea;
-import com.example.agroproject.model.MonitoringAreaManager;
+import com.example.agroproject.databinding.AreaClickPopupStyleBinding;
+import com.example.agroproject.model.file.KmlLocalStorageProvider;
+import com.example.agroproject.model.file.Placemark;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
-import com.google.maps.android.SphericalUtil;
-import com.google.maps.android.ui.IconGenerator;
-
-import java.util.HashMap;
+import com.google.android.gms.maps.model.PolygonOptions;
+import java.util.List;
 import java.util.Map;
 
 
@@ -54,8 +55,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /** Polygon object */
     private Polygon polygon;
 
-    /** MonitoringAreaManager object */
-    private MonitoringAreaManager monitoringAreaManager;
+    private KmlLocalStorageProvider kmlLocalStorageProvider;
+    private PolygonOptions polygonOptions = null;
+    Placemark tempPlaceMark;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,9 +73,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
 
-        // Instantiate the monitoringAreas object.
-        monitoringAreaManager = new MonitoringAreaManager(this);
-
+    kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -114,58 +114,124 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public GoogleMap.OnPolygonClickListener polygonClickListener = new GoogleMap.OnPolygonClickListener() {
         @Override
         public void onPolygonClick(Polygon polygon) {
+            for (Map.Entry<String, List<Placemark>> entry : kmlLocalStorageProvider.loadLayers().entrySet()) {
+                for (Placemark placemark : entry.getValue()) {
 
-            Map<String, MonitoringArea> areaMap = new HashMap<>();
-
-            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-                areaMap.put(monitoringArea.getName(), monitoringArea);
+                   if (polygon.getTag().equals(placemark.getName())) {
+                        showAreaPopUp(placemark.getName());
+                    }
+                }
             }
+            }
+        };
 
-            for(Map.Entry<String, MonitoringArea> kapa : areaMap.entrySet()){
-                if(polygon.getTag().equals(kapa.getKey())){
-                    Toast.makeText(MapActivity.this, "name: "+kapa.getKey()+
-                            " description: "+kapa.getValue().getDescription()+
-                            " area compute: "+ SphericalUtil.computeArea(kapa.getValue().getPolygonOptions().getPoints()), Toast.LENGTH_SHORT)
+        @SuppressLint("NewApi")
+        private void showAreaPopUp(String areaName) {
+            // Binding
+            AreaClickPopupStyleBinding popupBinding;
+            // Initialize popup view
+            popupBinding = AreaClickPopupStyleBinding.inflate(getLayoutInflater());
+            // Get view
+            View popupView = popupBinding.getRoot();
+
+            // Instantiate a Dialog
+            Dialog popUpDialog = new Dialog(this);
+            popUpDialog.setContentView(popupView);
+            popUpDialog.setCancelable(true);
+
+            // title
+            TextView farmAreaName = popupBinding.farmName;
+            farmAreaName.setText(areaName);
+            // description
+            //TextView farmAreaDescription = popupBinding.areaDescription;
+            // farmAreaDescription.setText(areaDescription);
+            // close image
+            ImageView btnClose = popupBinding.btnCLose;
+            btnClose.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    popUpDialog.dismiss();
+                }
+            });
+            // delete button
+            Button deleteButton = popupBinding.deleteBtn;
+            deleteButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    new AlertDialog.Builder(MapActivity.this)
+                            .setIcon(R.drawable.ic_baseline_delete_24)
+                            .setTitle("Delete")
+                            .setMessage("You want to delete this area?")
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Map<String, List<Placemark>> kmlFileMap = kmlLocalStorageProvider.loadLayers();
+
+                                    for (List<Placemark> entry : kmlFileMap.values()) {
+                                        for (Placemark placemark : entry) {
+                                                if(placemark.getName().equals(areaName)){
+                                                    tempPlaceMark= placemark;
+                                                }
+                                        }
+                                        entry.remove(tempPlaceMark);
+                                    }
+
+
+                                    kmlLocalStorageProvider.saveLayers(kmlFileMap);
+                                    addTheExistingAreas();
+                                    popUpDialog.dismiss();
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    // do nothing
+                                    popUpDialog.dismiss();
+                                }
+                            })
+                            .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialogInterface) {
+                                    mMap.clear();
+                                    //Add the existing polygons in the map
+                                    addTheExistingAreas();
+                                }
+                            })
                             .show();
+                }
+            });
+
+            popUpDialog.show();
+        }
+
+        /**
+         * This method put the existing monitoring areas in the map
+         * loads the existing areas data from the shared preferences file.
+         */
+        private void addTheExistingAreas() {
+            mMap.clear();
+            for (Map.Entry<String, List<Placemark>> entry : kmlLocalStorageProvider.loadLayers().entrySet()) {
+                for (Placemark placemark : entry.getValue()) {
+
+                    polygonOptions = new PolygonOptions()
+                            .strokeWidth(5f).addAll(placemark.getLatLngList()).strokeColor(Color.RED)
+                            .fillColor(Color.argb(70, 50, 255, 0)).clickable(true);
+                    polygon = mMap.addPolygon(polygonOptions);
+                    polygon.setTag(placemark.getName());
                 }
             }
         }
-    };
-
-    /**
-     * This method put the existing monitoring areas in the map
-     * loads the existing areas data from the shared preferences file.
-     */
-    private void addTheExistingAreas(){
-        if(!monitoringAreaManager.loadMonitoringArea().isEmpty()){
-            for(MonitoringArea monitoringArea : monitoringAreaManager.loadMonitoringArea()){
-                // Put the area in the map
-                polygon = mMap.addPolygon(monitoringArea.getPolygonOptions().clickable(true));
-                // Set tag in the polygon
-                polygon.setTag(monitoringArea.getName());
-                // Get the center location of the area
-                LatLng centerLatLng = monitoringArea
-                        .getPolygonCenterPoint(monitoringArea.getPolygonOptions().getPoints());
-                // Instantiate a IconGenerator object
-                IconGenerator iconFactory = new IconGenerator(this);
-                // Add Marker on map  in the center location of area
-                mMap.addMarker(new MarkerOptions().position(centerLatLng)
-                        .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(monitoringArea.getName())))
-                        .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV()));
-            }
+        @Override
+        public boolean onCreateOptionsMenu(Menu menu) {
+            // Initiating Menu XML file (activity_map_menu.xml)
+            MenuInflater menuInflater = getMenuInflater();
+            menuInflater.inflate(R.menu.activity_map_menu, menu);
+            // Enable back button in menu
+            ActionBar actionBar = getSupportActionBar();
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            // Calling super after populating the menu is necessary here to ensure that the
+            // action bar helpers have a chance to handle this event.
+            return true;
         }
-    }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Initiating Menu XML file (activity_map_menu.xml)
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.activity_map_menu, menu);
-        // Enable back button in menu
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        // Calling super after populating the menu is necessary here to ensure that the
-        // action bar helpers have a chance to handle this event.
-        return true;
     }
-}

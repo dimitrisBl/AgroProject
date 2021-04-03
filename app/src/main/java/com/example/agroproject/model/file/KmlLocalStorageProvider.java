@@ -4,11 +4,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-import com.example.agroproject.model.MonitoringArea;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +56,7 @@ public class KmlLocalStorageProvider {
      */
     public Map<String,List<Placemark>> loadLayers(){
         Log.d(TAG,"load area save executed");
-        String defaultValue = new Gson().toJson(new HashMap<String, MonitoringArea>());
+        String defaultValue = new Gson().toJson(new HashMap<String, List<Placemark>>());
         String json = sharedPreferences.getString(KML_FILE_LIST, defaultValue);
         if(json != null){
             Gson gson = new Gson();

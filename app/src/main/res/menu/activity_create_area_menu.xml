@@ -8,13 +8,10 @@
         app:showAsAction="never">
 
         <!---   sub items    -->
-        <item
-            android:id="@+id/yourMap_item"
-            android:title="Open Map"/>
 
         <item
-            android:id="@+id/createArea_item"
-            android:title="Create Area"/>
+            android:id="@+id/insert_file"
+            android:title="Insert File"/>
 
     </item>
 

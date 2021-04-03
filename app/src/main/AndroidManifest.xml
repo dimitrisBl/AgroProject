@@ -50,10 +50,10 @@
             android:name=".view.MapActivity"
             android:label="@string/title_activity_map"
             android:parentActivityName=".view.MainActivity" />
+
         <activity android:name=".view.MainActivity">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
-
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>

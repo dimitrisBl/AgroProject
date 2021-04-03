@@ -40,7 +40,7 @@ public class KmlFileParser {
      * @param uri
      * @return
      */
-    public  String parseFile(Uri uri){
+    public  String getFileData(Uri uri){
         String data="";
         try {
             InputStream inputStream = context.getContentResolver().openInputStream(uri);

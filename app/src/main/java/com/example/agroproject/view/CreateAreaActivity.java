@@ -31,6 +31,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
+import com.example.agroproject.model.file.KmlFileWriter;
 import com.example.agroproject.model.file.Placemark;
 import com.example.agroproject.model.file.KmlFileParser;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
@@ -110,8 +111,9 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
     private Map<String, List<Placemark>> kmlFileMap = new HashMap<>();
 
-    private String fileName;
     private KmlFileParser kmlFileParser;
+
+    private Uri uri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -356,9 +358,9 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         if(requestCode == FILE_SELECTION_CODE){
             if(resultCode == RESULT_OK){
                 // Create a Uri path
-                Uri uri = Uri.parse(data.getDataString());
+                 uri = Uri.parse(data.getDataString());
                 // Get the name of the file
-                fileName = uri.getPath();
+                String fileName = uri.getPath();
                 int cut = fileName.lastIndexOf('/');
                 if(cut != -1){
                     fileName = fileName.substring(cut + 1);
@@ -367,15 +369,20 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 Toast.makeText(CreateAreaActivity.this,
                         "The file "+fileName+" was succesfully added",Toast.LENGTH_LONG).show();
 
-
                 // Open file and get the data in String type
                 String dataFromFile = kmlFileParser.getFileData(uri);
                 // Parse data from the file and create a List with Placemark objects
                 List<Placemark> placemarks = kmlFileParser.parseDataFromFile(dataFromFile);
                 // Put data into Map
                 kmlFileMap.put(uri.getPath(), placemarks);
+
+
+                KmlFileWriter kmlFileWriter = new KmlFileWriter(CreateAreaActivity.this);
+                kmlFileWriter.fileToWrite(uri);
+
                 //Add the existing polygons in the map
                 addTheExistingAreasInMap();
+
             }
         }
     }
@@ -468,12 +475,11 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 Log.d(TAG,"Submit button pressed");
                 String areaNameText = areaName.getText().toString();
                 String areaDescriptionText = areaDescription.getText().toString();
-
 //                // Create the monitoring area.
 //                monitoringAreaManager.createMonitoringArea(
 //                        new MonitoringArea(areaNameText, areaDescriptionText, polygonOptions));
                 // Save monitoring area in shared preferences.
-                monitoringAreaManager.saveMonitoringArea();
+                //monitoringAreaManager.saveMonitoringArea();
                 //Add the existing polygons in the map
                 addTheExistingAreasInMap();
                 // Close dialog

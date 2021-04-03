@@ -33,7 +33,6 @@ public class KmlFileParser {
         this.context = context;
     }
 
-
     /**
      * TODO DESCRIPTION
      *

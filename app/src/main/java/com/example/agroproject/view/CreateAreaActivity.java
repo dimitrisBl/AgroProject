@@ -1,7 +1,6 @@
 package com.example.agroproject.view;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
@@ -28,10 +27,9 @@ import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
 import com.example.agroproject.databinding.SaveFilePopupStyleBinding;
-import com.example.agroproject.model.KmlFile;
-import com.example.agroproject.model.KmlFileParser;
-import com.example.agroproject.model.KmlLocalStorageProvider;
-import com.example.agroproject.model.MonitoringArea;
+import com.example.agroproject.model.file.Placemark;
+import com.example.agroproject.model.file.KmlFileParser;
+import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.model.MonitoringAreaManager;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
@@ -45,15 +43,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.maps.android.data.kml.KmlLayer;
 
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,12 +109,15 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** Insert file PopUp View binding */
     private SaveFilePopupStyleBinding showSaveFilePopUpBinding;
 
-    private String filePath;
 
-   // private Map<String, KmlFile> kmlFileMap = new HashMap<>();
+    private List<Placemark> myKmlLayerList = new ArrayList<>();
 
+    private Map<String, List<Placemark>> kmlFileMap = new HashMap<>();
+
+    private String fileName;
     private KmlFileParser kmlFileParser;
     private String dataFromFile;
+    private Uri uri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,14 +134,11 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
 
-        // Instantiate a MonitoringAreaManager object
-        monitoringAreaManager = new MonitoringAreaManager(this);
-
         // Instantiate a KmlLocalStorageProvider object
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
-        //kmlFileMap = kmlLocalStorageProvider.loadFile();
-
-
+        // Load the Map from shared preferences
+        kmlFileMap = kmlLocalStorageProvider.loadLayers();
+        // Instantiate a KmlFileParse object
         kmlFileParser = new KmlFileParser(this);
 
         // Set click listener for buttons
@@ -375,29 +367,16 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == FILE_SELECTION_CODE){
             if(resultCode == RESULT_OK){
-                // Retrieve data from intent
-                filePath = data.getDataString();
+                // Create a Uri path
+                uri = Uri.parse(data.getDataString());
                 // Get the name of the file
-                Uri uri = Uri.parse(data.getDataString());
-                String fileName = uri.getPath();
+                fileName = uri.getPath();
                 int cut = fileName.lastIndexOf('/');
                 if(cut != -1){
                     fileName = fileName.substring(cut + 1);
                 }
                 // Set text
                 showSaveFilePopUpBinding.filePath.setText(fileName);
-
-                dataFromFile = kmlFileParser.parseFile(uri);
-
-//
-//
-//                for(List<LatLng> el : latLngList){
-//                     //Create PolygonOptions
-//                polygonOptions = new PolygonOptions()
-//                        .strokeWidth(5f).addAll(el).strokeColor(Color.RED)
-//                        .fillColor(Color.argb(70, 50, 255, 0));
-//                mMap.addPolygon(polygonOptions);
-//                }
             }
         }
     }
@@ -433,29 +412,26 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             // Choose file btn
             Button chooseFileButton = showSaveFilePopUpBinding.chooseFileBtn;
             chooseFileButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent.setType("*/*");
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.setType("*/*");
                     //intent.setType("text/xml");
-                startActivityForResult(intent, FILE_SELECTION_CODE);
-            }
-        });
+                    startActivityForResult(intent, FILE_SELECTION_CODE);
+                }
+            });
+
             // Save btn
             Button saveBtn = showSaveFilePopUpBinding.saveFileBtn;
             saveBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    String areaName = name.getText().toString();
-                    String areaDescription = description.getText().toString();
-                    // Put in the map
-                    //kmlFileMap.put(areaName, new KmlFile(areaName, areaDescription, filePath));
-
-                    List<List<LatLng>> latLngList =
-                            kmlFileParser.findCoordinatesSegment(dataFromFile);
-
-                    
-
+                    // Open file and get the data in String type
+                    dataFromFile = kmlFileParser.parseFile(uri);
+                    // Parse data from the file and create a List with Placemark objects
+                    List<Placemark> placemarks = kmlFileParser.parseDataFromFile(dataFromFile);
+                    // Put data into Map
+                    kmlFileMap.put(uri.getPath(), placemarks);
                     //Add the existing polygons in the map
                     addTheExistingAreasInMap();
                     // Close dialog
@@ -528,32 +504,21 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         popupDialog.show();
     }
 
+
     /**
      * TODO METHOD DESCRIPTION
      *
      */
     private void addTheExistingAreasInMap() {
-        //mMap.clear();
-//        for(Map.Entry<String,KmlFile> entry : kmlFileMap.entrySet()){
-//                // Initialize a Uri object for each kml file
-//                Uri uri = Uri.parse(entry.getValue().getPath());
-//                try {
-//                    InputStream inputStream = getContentResolver().openInputStream(uri);
-//                    // Create kml layer
-//                    KmlLayer layer = new KmlLayer(mMap, inputStream, this);
-//                    // Add layer in map
-//                    layer.addLayerToMap();
-//                } catch (FileNotFoundException e) {
-//                    e.printStackTrace();
-//                } catch (XmlPullParserException e) {
-//                    e.printStackTrace();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//        }
+        for(Map.Entry<String, List<Placemark>> entry : kmlFileMap.entrySet()){
+            for(Placemark placemark : entry.getValue()){
+                polygonOptions = new PolygonOptions()
+                    .strokeWidth(5f).addAll(placemark.getLatLngList()).strokeColor(Color.RED)
+                    .fillColor(Color.argb(70, 50, 255, 0));
+                mMap.addPolygon(polygonOptions);
+            }
+        }
     }
-
-
 
     @Override
     protected void onResume() {
@@ -580,8 +545,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         unregisterReceiver(locationReceiver);
         unregisterReceiver(GpsStatusReceiver);
         unregisterReceiver(networkUtil);
-        // save the kmlFileMap in shared preferences.
-        kmlLocalStorageProvider.saveFile(kmlFileMap);
+        // Save the kmlFileMap in shared preferences.
+        kmlLocalStorageProvider.saveLayers(kmlFileMap);
     }
 
     /**

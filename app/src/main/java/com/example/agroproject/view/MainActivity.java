@@ -14,7 +14,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Layout;
@@ -31,7 +30,7 @@ import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMainBinding;
 
 import com.example.agroproject.model.KmlFile;
-import com.example.agroproject.model.KmlLocalStorageProvider;
+import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
 

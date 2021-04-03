@@ -1,12 +1,16 @@
-package com.example.agroproject.model;
+package com.example.agroproject.model.file;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+
+import com.example.agroproject.model.MonitoringArea;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -25,7 +29,7 @@ public class KmlLocalStorageProvider {
     private SharedPreferences sharedPreferences;
 
     /** Map with KmlFile objects */
-    private Map<String, KmlFile> kmlFileMap = new HashMap<>();
+    private Map<String, List<Placemark>> kmlFileMap = new HashMap<>();
 
     /**
      * This method initialize the KmlLocalStorageProvider object.
@@ -39,7 +43,7 @@ public class KmlLocalStorageProvider {
      * This method save the famMap in shared preferences file.
      * @param famMap has objects of the KmlFile class.
      */
-    public void saveFile(Map<String, KmlFile> famMap){
+    public void saveLayers(Map<String, List<Placemark>> famMap){
         Log.d(TAG,"Area save executed");
         String converted = new Gson().toJson(famMap);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -52,13 +56,13 @@ public class KmlLocalStorageProvider {
      * This method load the Map with KmlFile objects from shared preferences.
      * @return the Map kmlFileMap it contains KmlFile objects from the save file.
      */
-    public Map<String, KmlFile> loadFile(){
+    public Map<String,List<Placemark>> loadLayers(){
         Log.d(TAG,"load area save executed");
         String defaultValue = new Gson().toJson(new HashMap<String, MonitoringArea>());
         String json = sharedPreferences.getString(KML_FILE_LIST, defaultValue);
         if(json != null){
             Gson gson = new Gson();
-            Type type = new TypeToken<Map<String, KmlFile>>() {}.getType();
+            Type type = new TypeToken<Map<String, List<Placemark>>>() {}.getType();
             kmlFileMap = gson.fromJson(json, type);
         }
         return kmlFileMap;

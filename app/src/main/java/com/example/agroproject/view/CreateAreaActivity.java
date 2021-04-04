@@ -48,6 +48,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.PolyUtil;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -113,6 +115,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
     private List<Placemark> placemarkList = new ArrayList<>();
 
+    boolean detectInnerArea = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -175,28 +179,38 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         @Override
         public void onMapClick(LatLng latLng) {
             Log.d(TAG, "OnMapClickListener function running");
+
+            // Detect if current area is inner area in other polygon
+            detectInnerArea = AreaUtilities
+                    .detectInnerArea(latLng, placemarkList);
+
              // If checkBox state is false
             if (!checkBoxIsChecked) {
-                // Create MarkerOptions
-                MarkerOptions markerOptions = new MarkerOptions()
-                        .position(latLng).title("" + latLng.latitude + " " + latLng.longitude);
-                if (marker != null) {
-                    // Remove the previous marker
-                    marker.remove();
-                }
-                // Create Marker in the map
-                marker = mMap.addMarker(markerOptions);
-                // Add LatLng in latLngList
-                latLngList.add(latLng);
-                // Add Marker in markerList
-                markerList.add(marker);
-                if (markerList.size() > 1) {
-                    latitude = latLng.latitude;
-                    longitude = latLng.longitude;
-                    marker.setPosition(new LatLng(latitude, longitude));
-                    PolylineOptions polylineOptions = new PolylineOptions()
-                            .addAll(latLngList).color(Color.RED);
-                    mMap.addPolyline(polylineOptions);
+                if(detectInnerArea){
+                    // Create MarkerOptions
+                    MarkerOptions markerOptions = new MarkerOptions()
+                            .position(latLng).title("" + latLng.latitude + " " + latLng.longitude);
+                    if (marker != null) {
+                        // Remove the previous marker
+                        marker.remove();
+                    }
+                    // Create Marker in the map
+                    marker = mMap.addMarker(markerOptions);
+                    // Add LatLng in latLngList
+                    latLngList.add(latLng);
+                    // Add Marker in markerList
+                    markerList.add(marker);
+                    if (markerList.size() > 1) {
+                        latitude = latLng.latitude;
+                        longitude = latLng.longitude;
+                        marker.setPosition(new LatLng(latitude, longitude));
+                        PolylineOptions polylineOptions = new PolylineOptions()
+                                .addAll(latLngList).color(Color.RED);
+                        mMap.addPolyline(polylineOptions);
+                    }
+                }else{
+                    Toast.makeText(CreateAreaActivity.this,
+                            "Please create your area inside in "+AreaUtilities.getOutsiderArea().getName(),Toast.LENGTH_LONG).show();
                 }
             }
         }
@@ -470,15 +484,13 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 String areaNameText = areaName.getText().toString();
                 String areaDescriptionText = areaDescription.getText().toString();
 
-                Log.d(TAG,"name "+areaNameText);
-
-                // Receive the center location of current area
-                LatLng centerLocationOfCurrentArea = AreaUtilities
-                         .getAreaCenterPoint(polygonOptions.getPoints());
-
-                // Detect if current area is inner area in other polygon
-                boolean detectInnerArea = AreaUtilities.detectInnerArea
-                          (centerLocationOfCurrentArea, placemarkList);
+//                // Receive the center location of current area
+//                LatLng centerLocationOfCurrentArea = AreaUtilities
+//                         .getAreaCenterPoint(polygonOptions.getPoints());
+//
+//                // Detect if current area is inner area in other polygon
+//                boolean detectInnerArea = AreaUtilities.detectInnerArea
+//                          (centerLocationOfCurrentArea, placemarkList);
 
                 if(detectInnerArea){
                     // Get the outsider area

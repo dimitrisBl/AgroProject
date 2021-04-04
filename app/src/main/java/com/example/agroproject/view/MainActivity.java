@@ -29,8 +29,6 @@ import android.widget.Toast;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMainBinding;
 
-import com.example.agroproject.model.KmlFile;
-import com.example.agroproject.model.file.KmlFileParser;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
@@ -66,12 +64,6 @@ public class MainActivity extends AppCompatActivity {
     /** NetworkUtil */
     private NetworkUtil networkUtil;
 
-    /** Shared preferences storage for kml files */
-    private KmlLocalStorageProvider kmlLocalStorageProvider;
-
-    /** List with KmlFile objects  */
-    private List<KmlFile> kmlFileList = new ArrayList<>();
-
     /** Device coordinates */
     private double latitude;
     private double longitude;
@@ -81,8 +73,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        // Instantiate a KmlLocalStorageProvider object
-        kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
         // Instantiate a NetworkUtil object
         networkUtil = new NetworkUtil(this);
         // Initialize a LocationManager object
@@ -144,7 +134,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         // If i returns from location source settings intent
         if(requestCode == LOCATION_SOURCE_SETTINGS_CODE){
             // Check status of the GPS
@@ -157,17 +146,7 @@ public class MainActivity extends AppCompatActivity {
         else if (requestCode == CREATE_AREA_ACTIVITY_CODE){
             // Check status of the GPS
             isGpsEnable();
-        }// If i returns from file explorer intent
-//        else if(requestCode == FILE_SELECTION_CODE){
-//            if(resultCode == RESULT_OK){
-//                // Retrieve data from intent
-//                String fileData = data.getDataString();
-//                // Create a new KmlFile object and add this on kmlFileList.
-//                kmlFileList.add(new KmlFile(fileData));
-//                // Save kmlFileList in shared preferences.
-//                kmlLocalStorageProvider.saveKmlFile(kmlFileList);
-//            }
-//        }
+        }
     }
 
     /**

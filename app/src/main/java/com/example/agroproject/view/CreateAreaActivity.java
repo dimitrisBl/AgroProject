@@ -31,6 +31,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
+import com.example.agroproject.model.AreaUtilities;
 import com.example.agroproject.model.file.KmlFileWriter;
 import com.example.agroproject.model.file.Placemark;
 import com.example.agroproject.model.file.KmlFileParser;
@@ -105,9 +106,12 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** KmlLocalStorageProvider */
     private KmlLocalStorageProvider kmlLocalStorageProvider;
 
+    /** KmlFileParser */
+    private KmlFileParser kmlFileParser;
+
     private Map<String, List<Placemark>> kmlFileMap = new HashMap<>();
 
-    private KmlFileParser kmlFileParser;
+    private List<Placemark> placemarkList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,6 +132,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
         // Load the Map from shared preferences
         kmlFileMap = kmlLocalStorageProvider.loadLayers();
+
         // Instantiate a KmlFileParse object
         kmlFileParser = new KmlFileParser(this);
 
@@ -462,7 +467,32 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             @Override
             public void onClick(View view) {
                 Log.d(TAG,"Submit button pressed");
+                String areaNameText = areaName.getText().toString();
+                String areaDescriptionText = areaDescription.getText().toString();
 
+                Log.d(TAG,"name "+areaNameText);
+
+                // Receive the center location of current area
+                LatLng centerLocationOfCurrentArea = AreaUtilities
+                         .getAreaCenterPoint(polygonOptions.getPoints());
+
+                // Detect if current area is inner area in other polygon
+                boolean detectInnerArea = AreaUtilities.detectInnerArea
+                          (centerLocationOfCurrentArea, placemarkList);
+
+                if(detectInnerArea){
+                    // Get the outsider area
+                    Placemark outsiderArea = AreaUtilities.getOutsiderArea();
+                    for(Map.Entry<String, List<Placemark>> entry : kmlFileMap.entrySet()){
+                        if(entry.getValue().contains(outsiderArea)){
+                            entry.getValue().add(new Placemark
+                                    (areaNameText, areaDescriptionText, polygonOptions.getPoints()));
+                        }
+                    }
+                }else{
+                    Toast.makeText(CreateAreaActivity.this,
+                            "Please draw you area inside in other area",Toast.LENGTH_LONG).show();
+                }
                 //Add the existing polygons in the map
                 addTheExistingAreasInMap();
                 // Close dialog
@@ -486,6 +516,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     .strokeWidth(5f).addAll(placemark.getLatLngList()).strokeColor(Color.RED)
                     .fillColor(Color.argb(70, 50, 255, 0));
                 mMap.addPolygon(polygonOptions);
+                // Fill the placemarkList
+                placemarkList.add(placemark);
             }
         }
     }

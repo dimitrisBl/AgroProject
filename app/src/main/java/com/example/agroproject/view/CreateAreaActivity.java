@@ -188,7 +188,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             // Detect if current click is inner in other area
             detectInnerArea = AreaUtilities
                     .detectInnerArea(latLng, placemarkList);
-            
+
             if(currentOuterArea == null){
                 // Get the name from current outer area only in the first time
                 currentOuterArea = AreaUtilities.getOutsiderArea().getName();
@@ -197,7 +197,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             if (!checkBoxIsChecked) {
                 // if current click is inside in other area
                 if(detectInnerArea){
-                    // if current outer area is same with the previous outer area
+                    // If the current marker has the same outer area as the previous marker
                     if(currentOuterArea.equals(AreaUtilities.getOutsiderArea().getName())){
                         // Create MarkerOptions
                         MarkerOptions markerOptions = new MarkerOptions()

@@ -65,7 +65,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** Class TAG */
     private final String TAG = "CreateAreaActivity";
 
-
     /** Intent code for file selection */
     private final int FILE_SELECTION_CODE = 4;
 
@@ -111,11 +110,17 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** KmlFileParser */
     private KmlFileParser kmlFileParser;
 
+    /** This Map has a List with placemarks objects, the key is the file path for each List */
     private Map<String, List<Placemark>> kmlFileMap = new HashMap<>();
 
+    /** List with Placemark objects */
     private List<Placemark> placemarkList = new ArrayList<>();
 
-    boolean detectInnerArea = false;
+    /** Auxiliary variable for the inner area detection */
+    private boolean detectInnerArea = false;
+
+    /** Auxiliary variable for the inner area detection */
+    private String currentOuterArea = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -172,6 +177,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         addTheExistingAreasInMap();
     }
 
+
     /**
      * TODO description
      */
@@ -179,38 +185,50 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         @Override
         public void onMapClick(LatLng latLng) {
             Log.d(TAG, "OnMapClickListener function running");
-
-            // Detect if current area is inner area in other polygon
+            // Detect if current click is inner in other area
             detectInnerArea = AreaUtilities
                     .detectInnerArea(latLng, placemarkList);
-
+            
+            if(currentOuterArea == null){
+                // Get the name from current outer area only in the first time
+                currentOuterArea = AreaUtilities.getOutsiderArea().getName();
+            }
              // If checkBox state is false
             if (!checkBoxIsChecked) {
+                // if current click is inside in other area
                 if(detectInnerArea){
-                    // Create MarkerOptions
-                    MarkerOptions markerOptions = new MarkerOptions()
-                            .position(latLng).title("" + latLng.latitude + " " + latLng.longitude);
-                    if (marker != null) {
-                        // Remove the previous marker
-                        marker.remove();
-                    }
-                    // Create Marker in the map
-                    marker = mMap.addMarker(markerOptions);
-                    // Add LatLng in latLngList
-                    latLngList.add(latLng);
-                    // Add Marker in markerList
-                    markerList.add(marker);
-                    if (markerList.size() > 1) {
-                        latitude = latLng.latitude;
-                        longitude = latLng.longitude;
-                        marker.setPosition(new LatLng(latitude, longitude));
-                        PolylineOptions polylineOptions = new PolylineOptions()
-                                .addAll(latLngList).color(Color.RED);
-                        mMap.addPolyline(polylineOptions);
+                    // if current outer area is same with the previous outer area
+                    if(currentOuterArea.equals(AreaUtilities.getOutsiderArea().getName())){
+                        // Create MarkerOptions
+                        MarkerOptions markerOptions = new MarkerOptions()
+                                .position(latLng).title("" + latLng.latitude + " " + latLng.longitude);
+                        if (marker != null) {
+                            // Remove the previous marker
+                            marker.remove();
+                        }
+                        // Create Marker in the map
+                        marker = mMap.addMarker(markerOptions);
+                        // Add LatLng in latLngList
+                        latLngList.add(latLng);
+                        // Add Marker in markerList
+                        markerList.add(marker);
+                        if (markerList.size() > 1) {
+                            latitude = latLng.latitude;
+                            longitude = latLng.longitude;
+                            marker.setPosition(new LatLng(latitude, longitude));
+                            PolylineOptions polylineOptions = new PolylineOptions()
+                                    .addAll(latLngList).color(Color.RED);
+                            mMap.addPolyline(polylineOptions);
+                        }
+                    }else{
+                        // Show message
+                        Toast.makeText(CreateAreaActivity.this,
+                                "Please keep your marks in the same area or clean the map.",Toast.LENGTH_LONG).show();
                     }
                 }else{
+                    // Show message
                     Toast.makeText(CreateAreaActivity.this,
-                            "Please create your area inside in "+AreaUtilities.getOutsiderArea().getName(),Toast.LENGTH_LONG).show();
+                            "You can not create a mark outside from areas ",Toast.LENGTH_LONG).show();
                 }
             }
         }
@@ -232,24 +250,23 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             switch (currentButtonText){
                 case "draw area":
                     if(!latLngList.isEmpty() && markerList.size() >= 4 ) {
+                        // Do null the currentOuterArea after area creation
+                        currentOuterArea = null;
                         // Create PolygonOptions
                         polygonOptions = new PolygonOptions()
                                 .strokeWidth(5f).addAll(latLngList).strokeColor(Color.RED)
                                 .fillColor(Color.argb(70, 50, 255, 0));
-
                         // Draw area on the Map
                         mMap.addPolygon(polygonOptions);
-
                         // Remove markers from the map
                         for (Marker marker : markerList) {
                             marker.remove();
                         }
                         // Show dialog
                         showSaveAlertDialog();
-
+                        // Clean the lists
                         markerList.clear();
                         latLngList.clear();
-
                     }else if(!markerList.isEmpty() && markerList.size() <= 3 ){
                         // Show message
                         Toast.makeText(CreateAreaActivity.this,
@@ -262,6 +279,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 break;
 
                 case "clear":
+                    currentOuterArea = null;
                     latLngList.clear();
                     markerList.clear();
                     mMap.clear();
@@ -484,14 +502,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 String areaNameText = areaName.getText().toString();
                 String areaDescriptionText = areaDescription.getText().toString();
 
-//                // Receive the center location of current area
-//                LatLng centerLocationOfCurrentArea = AreaUtilities
-//                         .getAreaCenterPoint(polygonOptions.getPoints());
-//
-//                // Detect if current area is inner area in other polygon
-//                boolean detectInnerArea = AreaUtilities.detectInnerArea
-//                          (centerLocationOfCurrentArea, placemarkList);
-
                 if(detectInnerArea){
                     // Get the outsider area
                     Placemark outsiderArea = AreaUtilities.getOutsiderArea();
@@ -501,6 +511,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                                     (areaNameText, areaDescriptionText, polygonOptions.getPoints()));
                         }
                     }
+                    Log.d(TAG,"create inner area in "+AreaUtilities.getOutsiderArea().getName());
                 }else{
                     Toast.makeText(CreateAreaActivity.this,
                             "Please draw you area inside in other area",Toast.LENGTH_LONG).show();

@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -517,28 +518,23 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     private void showSaveAreaPopup(){
         // Binding
         SaveAreaPopupStyleBinding popupBinding;
-
+        // Initialize a view for saveAreaPopup
         popupBinding = SaveAreaPopupStyleBinding.inflate(getLayoutInflater());
         View popupView = popupBinding.getRoot();
-
-        ImageView imageViewClose;
-        EditText areaName;
-        EditText areaDescription;
-        Button submitBtn;
 
         // Instantiate a Dialog
         Dialog popupDialog = new Dialog(this);
         popupDialog.setContentView(popupView);
         popupDialog.setCanceledOnTouchOutside(false);
 
-        // Initialize ui components
-        imageViewClose = popupBinding.btnCLose;
-        areaName = popupBinding.areaName;
-        areaDescription = popupBinding.areaDescription;
-        submitBtn = popupBinding.btnSubmit;
+            // Initialize ui components
+            ImageView imageViewClose = popupBinding.btnCLose;
+            EditText areaName = popupBinding.areaName;
+            EditText areaDescription = popupBinding.areaDescription;
+            Button submitBtn = popupBinding.btnSubmit;
 
-        // Close Button ClickEvent
-        imageViewClose.setOnClickListener(new View.OnClickListener() {
+            // Close Button ClickEvent
+            imageViewClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mMap.clear();
@@ -548,7 +544,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 popupDialog.dismiss();
             }
         });// Save Button ClickEvent
-        submitBtn.setOnClickListener(new View.OnClickListener() {
+            submitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.d(TAG,"Submit button pressed");
@@ -575,6 +571,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 popupDialog.dismiss();
             }
         });
+
         // Show dialog
         popupDialog.show();
     }

@@ -125,8 +125,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     }
                 }
             }
-            }
-        };
+        }
+    };
 
     @SuppressLint("NewApi")
     private void showAreaPopUp(String areaName) {
@@ -176,8 +176,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                    }
                                    entry.remove(tempPlaceMark);
                                }
-
-
                                kmlLocalStorageProvider.saveLayers(kmlFileMap);
                                addTheExistingAreas();
                                popUpDialog.dismiss();

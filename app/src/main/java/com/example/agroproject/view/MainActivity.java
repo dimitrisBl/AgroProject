@@ -31,10 +31,13 @@ import com.example.agroproject.databinding.ActivityMainBinding;
 
 import com.example.agroproject.model.KmlFile;
 import com.example.agroproject.model.file.KmlFileParser;
+import com.example.agroproject.model.file.KmlFileWriter;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     /** Device coordinates */
     private double latitude;
     private double longitude;
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +93,20 @@ public class MainActivity extends AppCompatActivity {
                 getSystemService(Context.LOCATION_SERVICE);
         // Permission check service
         checkPermissions();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        KmlFileWriter kmlFileWriter = new KmlFileWriter(this);
+            kmlFileWriter.fileToWrite();
+        File file = new File("test5.kml");
+        if (file.exists()) {
+            Toast.makeText(this, "FILE EXISTS", Toast.LENGTH_SHORT).show();
+
+        } else {
+            Toast.makeText(this, "FILE not not!! EXISTS", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
@@ -168,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
 //                kmlLocalStorageProvider.saveKmlFile(kmlFileList);
 //            }
 //        }
+
     }
 
     /**
@@ -290,6 +308,8 @@ public class MainActivity extends AppCompatActivity {
         // Unregister since the activity is about to be closed.
         unregisterReceiver(locationReceiver);
         unregisterReceiver(networkUtil);
+
+
     }
 
 
@@ -328,4 +348,6 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "receive coordinates: " +latitude+" "+longitude);
         }
     };
+
+
 }

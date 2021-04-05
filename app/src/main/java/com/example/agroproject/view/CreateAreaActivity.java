@@ -109,6 +109,10 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
     private KmlFileParser kmlFileParser;
 
+    private KmlFileWriter  kmlFileWriter;
+
+    public static  Uri uri;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -141,6 +145,12 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.create_area_map);
         mapFragment.getMapAsync(this);
+
+
+
+
+
+
     }
 
     /**
@@ -352,14 +362,14 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         if(requestCode == FILE_SELECTION_CODE){
             if(resultCode == RESULT_OK){
                 // Create a Uri path
-                 Uri uri = Uri.parse(data.getDataString());
+                uri = Uri.parse(data.getDataString());
                 // Get the name of the file
                 String fileName = uri.getPath();
                 int cut = fileName.lastIndexOf('/');
                 if(cut != -1){
                     fileName = fileName.substring(cut + 1);
                 }
-                // Show message
+                // Show message"
                 Toast.makeText(CreateAreaActivity.this,
                         "The file "+fileName+" was succesfully added",Toast.LENGTH_LONG).show();
 
@@ -371,6 +381,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 kmlFileMap.put(uri.getPath(), placemarks);
                 //Add the existing polygons in the map
                 addTheExistingAreasInMap();
+
 
             }
         }

@@ -121,7 +121,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             for (Map.Entry<String, List<Placemark>> entry : kmlLocalStorageProvider.loadLayers().entrySet()) {
                 for (Placemark placemark : entry.getValue()) {
                    if (polygon.getTag().equals(placemark.getName())) {
-                        showAreaPopUp(placemark.getName());
+                        showAreaPopUp(placemark);
                     }
                 }
             }
@@ -129,7 +129,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     };
 
     @SuppressLint("NewApi")
-    private void showAreaPopUp(String areaName) {
+    private void showAreaPopUp(Placemark placemarkParam) {
         // Binding
         AreaClickPopupStyleBinding popupBinding;
         // Initialize popup view
@@ -143,10 +143,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         popUpDialog.setCancelable(true);
             // title
             TextView farmAreaName = popupBinding.farmName;
-            farmAreaName.setText(areaName);
+            farmAreaName.setText(placemarkParam.getName());
             // description
-            //TextView farmAreaDescription = popupBinding.areaDescription;
-            // farmAreaDescription.setText(areaDescription);
+            TextView farmAreaDescription = popupBinding.areaDescription;
+            farmAreaDescription.setText(placemarkParam.getDescription());
             // close image
             ImageView btnClose = popupBinding.btnCLose;
             btnClose.setOnClickListener(new View.OnClickListener() {
@@ -170,7 +170,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                Placemark tempPlaceMark=null;
                                for (List<Placemark> entry : kmlFileMap.values()) {
                                    for (Placemark placemark : entry) {
-                                        if(placemark.getName().equals(areaName)){
+                                        if(placemark.getName().equals(placemarkParam.getName())){
                                             tempPlaceMark = placemark;
                                         }
                                    }

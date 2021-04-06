@@ -9,9 +9,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
-import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Layout;
 import android.text.SpannableString;
@@ -28,6 +28,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.agroproject.R;
@@ -35,8 +36,8 @@ import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.InsertFilePopupStyleBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
 import com.example.agroproject.model.AreaUtilities;
-import com.example.agroproject.model.file.KmlFileWriter;
-import com.example.agroproject.model.file.Placemark;
+import com.example.agroproject.model.file.KmlFile;
+import com.example.agroproject.model.Placemark;
 import com.example.agroproject.model.file.KmlFileParser;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.services.LocationService;
@@ -51,9 +52,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.maps.android.PolyUtil;
-
-import org.w3c.dom.Text;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -118,8 +118,15 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     /** This Map has a List with placemarks objects, the key is the file path for each List */
     private Map<String, List<Placemark>> kmlFileMap = new HashMap<>();
 
+   // private ListMultimap<String, String> farmMap =  ArrayListMultimap.create();
+
+    private Map<String, List<String >> farmMap = new HashMap<>();
+    
     /** List with Placemark objects */
     private List<Placemark> placemarkList = new ArrayList<>();
+
+    /** List with KmlFile objects */
+    private List<KmlFile> kmlFileList = new ArrayList<>();
 
     /** Auxiliary variable for the inner area detection */
     private boolean detectInnerArea = false;
@@ -132,6 +139,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
     /** Uri */
     private Uri uri;
+
+    private String fileName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,6 +161,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
         // Load the Map from shared preferences
         kmlFileMap = kmlLocalStorageProvider.loadLayers();
+        farmMap = kmlLocalStorageProvider.loadFarmMap();
 
         // Instantiate a KmlFileParse object
         kmlFileParser = new KmlFileParser(this);
@@ -402,7 +412,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 // Create a Uri path
                 uri = Uri.parse(data.getDataString());
                 // Get the name of the file
-                String fileName = uri.getPath();
+                fileName = uri.getPath();
                 int cut = fileName.lastIndexOf('/');
                 if(cut != -1){
                     fileName = fileName.substring(cut + 1);
@@ -457,7 +467,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 Dialog popupDialog = new Dialog(this);
                 popupDialog.setContentView(popupView);
                 popupDialog.setCanceledOnTouchOutside(false);
-
+                    TextView farmName = insertFilePopupBinding.areaName;
                     // Close image
                     ImageView imageViewClose = insertFilePopupBinding.btnCLose;
                     imageViewClose.setOnClickListener(new View.OnClickListener() {
@@ -484,14 +494,23 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     // Submit button
                     Button submit = insertFilePopupBinding.saveFileBtn;
                     submit.setOnClickListener(new View.OnClickListener() {
+                        @RequiresApi(api = Build.VERSION_CODES.R)
                         @Override
                         public void onClick(View view) {
                             // Open file and get the data in String type
                             String dataFromFile = kmlFileParser.getFileData(uri);
                             // Parse data from the file and create a List with Placemark objects
                             List<Placemark> placemarks = kmlFileParser.parseDataFromFile(dataFromFile);
+                            // Create a new KmlFile object
+                            kmlFileList.add(new KmlFile(fileName, uri.getPath(), dataFromFile));
                             // Put data into Map
-                            kmlFileMap.put(uri.getPath(), placemarks);
+                            kmlFileMap.put(fileName, placemarks);
+                            //
+                            if(farmMap.containsKey(farmName.getText().toString())) {
+                                farmMap.get(farmName.getText().toString()).add(fileName);
+                            }else{
+                                farmMap.put(farmName.getText().toString(),new ArrayList<>(List.of(fileName)));
+                            }
                             // Add the existing polygons in the map
                             addTheExistingAreasInMap();
                             // Close dialog
@@ -516,6 +535,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
      * AUTH KALEITAI OTAN KANEIS POLYGONO PANW APO TON XARTI
      */
     private void showSaveAreaPopup(){
+
+
         // Binding
         SaveAreaPopupStyleBinding popupBinding;
         // Initialize a view for saveAreaPopup
@@ -535,15 +556,16 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
 
             // Close Button ClickEvent
             imageViewClose.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mMap.clear();
-                //Add the existing polygons in the map
-                addTheExistingAreasInMap();
-                // Close dialog
-                popupDialog.dismiss();
-            }
-        });// Save Button ClickEvent
+                @Override
+                public void onClick(View view) {
+                    mMap.clear();
+                    //Add the existing polygons in the map
+                    addTheExistingAreasInMap();
+                    // Close dialog
+                    popupDialog.dismiss();
+                }
+            });
+            // Save Button ClickEvent
             submitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -594,6 +616,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 placemarkList.add(placemark);
             }
         }
+        for(Map.Entry<String, List<String>> entry : farmMap.entrySet())
+        Log.d(TAG,"  FILEISTS "+entry.getKey()+" HAS "+entry.getValue().toString());
     }
 
     @Override
@@ -623,6 +647,10 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         unregisterReceiver(networkUtil);
         // Save the kmlFileMap in shared preferences.
         kmlLocalStorageProvider.saveLayers(kmlFileMap);
+        // Save the kmlFileList in shared preferences.
+        kmlLocalStorageProvider.saveKmlFiles(kmlFileList);
+        // Save the farmMap in shared preferences.
+        kmlLocalStorageProvider.saveFarmMap(farmMap);
     }
 
     /**

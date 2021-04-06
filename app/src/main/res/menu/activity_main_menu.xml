@@ -16,6 +16,11 @@
             android:id="@+id/createArea_item"
             android:title="Create Area"/>
 
+        <item
+            android:id="@+id/yourFarms_item"
+            android:title="Your farms"/>
+
+
     </item>
 
 </menu>

@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.util.Log;
 
 
+import com.example.agroproject.model.Placemark;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.jsoup.Jsoup;

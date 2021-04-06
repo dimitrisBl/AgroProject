@@ -1,8 +1,5 @@
 package com.example.agroproject.model;
 
-import android.util.Log;
-
-import com.example.agroproject.model.file.Placemark;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.PolyUtil;
 

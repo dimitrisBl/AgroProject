@@ -19,7 +19,7 @@ import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
 import com.example.agroproject.databinding.AreaClickPopupStyleBinding;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
-import com.example.agroproject.model.file.Placemark;
+import com.example.agroproject.model.Placemark;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;

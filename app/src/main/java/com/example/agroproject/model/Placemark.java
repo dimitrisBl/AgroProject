@@ -1,4 +1,4 @@
-package com.example.agroproject.model.file;
+package com.example.agroproject.model;
 
 import com.google.android.gms.maps.model.LatLng;
 

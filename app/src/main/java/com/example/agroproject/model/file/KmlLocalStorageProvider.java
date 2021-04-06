@@ -5,8 +5,6 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.example.agroproject.model.Placemark;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;

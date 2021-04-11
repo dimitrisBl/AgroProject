@@ -17,20 +17,17 @@ import java.util.Map;
 public class ListViewAdapter extends BaseAdapter {
 
     private List<String> placemarkList = new ArrayList<>();
-    private Map<String , List <String>> farmMap;
 
     /**
      * Instantiate a new RecyclerViewAdapter
      *
      * @param
      */
-    public ListViewAdapter(Map<String , List <String>> farmMap) {
-       //this.placemarkList.addAll(farmMap.values());
-        for(Map.Entry<String, List<String >> entry : farmMap.entrySet()){
-             for(String file : entry.getValue()){
-                 this.placemarkList.add(file);
+    public ListViewAdapter(Map<String , List <KmlFile>> farmMap) {
+        for(Map.Entry<String, List<KmlFile >> entry : farmMap.entrySet()){
+             for(KmlFile file : entry.getValue()){
+                 this.placemarkList.add(file.getName());
              }
-
         }
     }
 

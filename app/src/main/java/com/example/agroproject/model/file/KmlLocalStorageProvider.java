@@ -8,7 +8,6 @@ import com.example.agroproject.model.Placemark;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,10 +21,9 @@ public class KmlLocalStorageProvider {
     /** Name of the Shared preferences file */
     private final String PREFS_NAME ="KmlLocalStorage";
 
+
     private final String KML_FILE_MAP = "kmlFileMap";
 
-    /** Name for the monitoringAreaList in shared preferences file */
-    private final String KML_FILE_LIST = "kmlFileList";
 
     private final String FARM_MAP = "farmMap";
 
@@ -35,11 +33,8 @@ public class KmlLocalStorageProvider {
     /** Map with KmlFile objects */
     private Map<String, List<Placemark>> kmlFileMap = new HashMap<>();
 
-    /** List with KmlFile objects */
-    private List<KmlFile> kmlFileList = new ArrayList<>();
 
-
-    private Map<String, List<String>> farmMap = new HashMap<>();
+    private Map<String, List<KmlFile>> farmMap = new HashMap<>();
 
     /**
      * This method initialize the KmlLocalStorageProvider object.
@@ -81,39 +76,9 @@ public class KmlLocalStorageProvider {
     /**
      * TODO DESCRIPTION
      *
-     * @param kmlFileList
-     */
-    public void saveKmlFiles(List<KmlFile> kmlFileList){
-        Log.d(TAG,"Kml file save executed");
-        String converted = new Gson().toJson(kmlFileList);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(KML_FILE_LIST, converted);
-        editor.apply();
-    }
-
-    /**
-     * TODO DESCRIPTION
-     *
-     * @return
-     */
-    public  List<KmlFile> loadKmlFiles(){
-        Log.d(TAG,"load kml file save executed");
-        String defaultValue = new Gson().toJson(new ArrayList<KmlFile>());
-        String json = sharedPreferences.getString(KML_FILE_LIST, defaultValue);
-        if(json != null){
-            Gson gson = new Gson();
-            Type type = new TypeToken<List<KmlFile>>() {}.getType();
-            kmlFileList = gson.fromJson(json, type);
-        }
-        return kmlFileList;
-    }
-
-    /**
-     * TODO DESCRIPTION
-     *
      * @param multimap
      */
-    public void saveFarmMap(Map<String, List<String>> multimap){
+    public void saveFarmMap(Map<String, List<KmlFile>> multimap){
         Log.d(TAG,"farm map save executed");
         String converted = new Gson().toJson(multimap);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -126,13 +91,13 @@ public class KmlLocalStorageProvider {
      *
      * @return
      */
-    public Map<String, List<String>> loadFarmMap(){
-        Log.d(TAG,"load kml file save executed");
-        String defaultValue = new Gson().toJson(new HashMap<String, List<String>>());
+    public Map<String, List<KmlFile>> loadFarmMap(){
+        Log.d(TAG,"farm map load executed");
+        String defaultValue = new Gson().toJson(new HashMap<String, List<KmlFile>>());
         String json = sharedPreferences.getString(FARM_MAP, defaultValue);
         if(json != null){
             Gson gson = new Gson();
-            Type type = new TypeToken<Map<String, List<String>>>() {}.getType();
+            Type type = new TypeToken<Map<String, List<KmlFile>>>() {}.getType();
             farmMap = gson.fromJson(json, type);
         }
         return farmMap;

@@ -57,8 +57,8 @@ public class ListViewActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String text = filter.getText().toString();
-                List<String> newListForAdapter = kmlLocalStorageProvider.loadFarmMap().get(text);
-                Map<String, List<String>> tempMap = new HashMap<>();
+                List<KmlFile> newListForAdapter = kmlLocalStorageProvider.loadFarmMap().get(text);
+                Map<String, List<KmlFile>> tempMap = new HashMap<>();
                 tempMap.put(text,kmlLocalStorageProvider.loadFarmMap().get(text));
                 myAdapter = new ListViewAdapter(tempMap);
                 listView.setAdapter(myAdapter);

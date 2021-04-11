@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "FILE EXISTS", Toast.LENGTH_SHORT).show();
 
         } else {
-            Toast.makeText(this, "FILE not not!! EXISTS", Toast.LENGTH_SHORT).show();
+           // Toast.makeText(this, "FILE not not!! EXISTS", Toast.LENGTH_SHORT).show();
         }
     }
 

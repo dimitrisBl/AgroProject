@@ -118,7 +118,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public GoogleMap.OnPolygonClickListener polygonClickListener = new GoogleMap.OnPolygonClickListener() {
         @Override
         public void onPolygonClick(Polygon polygon) {
-            for (Map.Entry<String, List<Placemark>> entry : kmlLocalStorageProvider.loadLayers().entrySet()) {
+            for (Map.Entry<String, List<Placemark>> entry : kmlFileMap.entrySet()) {
                 for (Placemark placemark : entry.getValue()) {
                    if (polygon.getTag().equals(placemark.getName())) {
                         showAreaPopUp(placemark);

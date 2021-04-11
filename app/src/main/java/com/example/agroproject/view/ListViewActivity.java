@@ -1,10 +1,15 @@
 package com.example.agroproject.view;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -16,17 +21,31 @@ import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.view.adapters.ListViewAdapter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ListViewActivity extends AppCompatActivity {
 
+    /** Class TAG */
+    private final String TAG = "ListViewActivity";
+
+    /** Binding */
     private ActivityListViewBinding binding;
 
+    /** ListView */
     private ListView listView;
 
-    private ListViewAdapter myAdapter;
+    /** Adapter for ListView */
+    private ListViewAdapter listViewAdapter;
+
+    /** Adapter for drop down menu */
+    private ArrayAdapter<String> dropDownAdapter;
+
+    /** KmlLocalStorageProvider */
     private KmlLocalStorageProvider kmlLocalStorageProvider;
 
     @Override
@@ -34,34 +53,61 @@ public class ListViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityListViewBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        // Instantiate a KmlLocalStorageProvider object
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
+        // Set data in the listViewAdapter from shared preferences
+        listViewAdapter = new ListViewAdapter(new ArrayList<>
+                (kmlLocalStorageProvider.loadLayers().keySet()));
+        // Convert Set<String> to String array
+        String[] dropDownData = kmlLocalStorageProvider.
+                loadFarmMap().keySet().toArray(new String[0]);
+        // Set data in the dropDownAdapter
+        dropDownAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_list_item_1, dropDownData);
+        // Initialize ui components
+        initializeComponents();
+    }
 
-        myAdapter = new ListViewAdapter(kmlLocalStorageProvider.loadFarmMap());
 
+    /**
+     * TODO DESCRIPTION
+     *
+     */
+    private void initializeComponents(){
+        //---- ListView ----- //
         listView = binding.listView;
-        listView.setAdapter(myAdapter);
-
+        listView.setAdapter(listViewAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Toast.makeText(ListViewActivity.this,
-                        "clicked item name "+myAdapter.getItem(position), Toast.LENGTH_SHORT).show();
+                        "clicked item name "+listViewAdapter.getItem(position), Toast.LENGTH_SHORT).show();
             }
         });
 
-        TextView filter = binding.filter;
-
-        Button submitBtn = binding.submit;
-        submitBtn.setOnClickListener(new View.OnClickListener() {
+        //---- DropDown menu ----- //
+        try{
+            binding.autoCompleteTextView.setText(dropDownAdapter.getItem(0));
+        }catch (ArrayIndexOutOfBoundsException e){
+            e.printStackTrace();
+        }
+        binding.autoCompleteTextView.setAdapter(dropDownAdapter);
+        binding.autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
-            public void onClick(View view) {
-                String text = filter.getText().toString();
-                List<KmlFile> newListForAdapter = kmlLocalStorageProvider.loadFarmMap().get(text);
-                Map<String, List<KmlFile>> tempMap = new HashMap<>();
-                tempMap.put(text,kmlLocalStorageProvider.loadFarmMap().get(text));
-                myAdapter = new ListViewAdapter(tempMap);
-                listView.setAdapter(myAdapter);
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                // Current clicked item
+                String clickedItem = dropDownAdapter.getItem(position);
+                for(Map.Entry<String, List<KmlFile>> entry : kmlLocalStorageProvider.loadFarmMap().entrySet()){
+                    if(entry.getKey().equals(clickedItem)){
+                        List<String> kmlFileNames = new ArrayList<>();
+                        for(KmlFile kmlFile : entry.getValue()){
+                            kmlFileNames.add(kmlFile.getName());
+                        }
+                        listViewAdapter = new ListViewAdapter(kmlFileNames);
+                        listView.setAdapter(listViewAdapter);
+                    }
+                }
             }
         });
     }

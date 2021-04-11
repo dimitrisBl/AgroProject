@@ -637,8 +637,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         unregisterReceiver(networkUtil);
         // Save the kmlFileMap in shared preferences.
         kmlLocalStorageProvider.saveLayers(kmlFileMap);
-        // Save the kmlFileList in shared preferences.
-        //kmlLocalStorageProvider.saveKmlFiles(kmlFileList);
         // Save the farmMap in shared preferences.
         kmlLocalStorageProvider.saveFarmMap(farmMap);
     }

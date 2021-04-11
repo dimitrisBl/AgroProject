@@ -104,8 +104,8 @@ public class KmlFileParser {
             List<String> oneTrackString = new ArrayList<>(Arrays.asList(coordinates.get(i).split("\\s+")));
             for(int k = 1; k < oneTrackString.size(); k++){
                 // Convert current object
-                LatLng latLng = new LatLng(Double.parseDouble(oneTrackString.get(k).split(",")[0]),
-                         Double.parseDouble(oneTrackString.get(k).split(",")[1]));
+                LatLng latLng = new LatLng(Double.parseDouble(oneTrackString.get(k).split(",")[1]),
+                         Double.parseDouble(oneTrackString.get(k).split(",")[0]));
                 // Add to list
                 convertedList.add(latLng);
             }

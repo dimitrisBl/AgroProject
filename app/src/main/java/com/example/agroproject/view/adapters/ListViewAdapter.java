@@ -16,19 +16,15 @@ import java.util.Map;
 
 public class ListViewAdapter extends BaseAdapter {
 
-    private List<String> placemarkList = new ArrayList<>();
+    private List<String> placemarkList;
 
     /**
      * Instantiate a new RecyclerViewAdapter
      *
-     * @param
+     * @param placemarkList
      */
-    public ListViewAdapter(Map<String , List <KmlFile>> farmMap) {
-        for(Map.Entry<String, List<KmlFile >> entry : farmMap.entrySet()){
-             for(KmlFile file : entry.getValue()){
-                 this.placemarkList.add(file.getName());
-             }
-        }
+    public ListViewAdapter(List<String> placemarkList) {
+        this.placemarkList = placemarkList;
     }
 
 
@@ -44,7 +40,7 @@ public class ListViewAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        //return placemarkList.get(position);
+        // nothing
         return 0;
     }
 

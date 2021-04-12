@@ -35,7 +35,7 @@ public class ListViewAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int position) {
+    public KmlFile getItem(int position) {
         return kmlFileList.get(position);
     }
 
@@ -44,6 +44,7 @@ public class ListViewAdapter extends BaseAdapter {
         // nothing
         return 0;
     }
+
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {

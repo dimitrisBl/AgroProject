@@ -7,64 +7,64 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
+
 public class JsonBuilder {
+    /** Class TAG */
+    private static final String TAG = "JsonBuilder";
 
     /**
-     * TODO DESCRIPTION
+     * Create a JSONObject for each Placemark to contained in placemarkList
      *
-     * @param placemarkList
-     * @return
+     * @param placemarkList has the Placemark objects
+     * @return a List with JSONObjects
      */
-    public  static JSONObject build(List<Placemark> placemarkList){
+     public static List<JSONObject> build(List<Placemark> placemarkList){
 
-        JSONObject jsonObject = new JSONObject();
+        List<JSONObject> jsonObjectList = new ArrayList<>();
 
-        JSONObject geometryObject = new JSONObject();
-
-        JSONObject geoJsonObject = new JSONObject();
-
-        JSONObject propertiesObject = new JSONObject();
-
-        JSONArray coords = new JSONArray();
-
-
-        for(Placemark placemark : placemarkList) {
-
-            JSONArray coordinatesJsonArray   = new JSONArray();
-
-            for (LatLng latLng : placemark.getLatLngList()) {
-                // BUILD JSON ARRAY
-                JSONArray innerArray = null;
+        for(Placemark placemark : placemarkList){
+            // Initialize the Json Objects - Json Arrays for each placemark
+            JSONObject jsonObject = new JSONObject();
+            JSONObject geometryObject = new JSONObject();
+            JSONObject geoJsonObject = new JSONObject();
+            JSONArray coordinatesJsonArray = new JSONArray();
+            JSONObject propertiesObject = new JSONObject();
+            // Build a jsonArray for each coordinate of the Placemark
+            for(LatLng latLng : placemark.getLatLngList()){
+                JSONArray innerArray  = null;
                 try {
                     innerArray = new JSONArray(
                             "[\n" +
-                                    latLng.longitude + ", " +
-                                    latLng.latitude +
+                                    latLng.longitude+", "+
+                                    latLng.latitude+
                                     "          ]"
                     );
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                // Put each inner jsonArray on coordinatesJsonArray
                 coordinatesJsonArray.put(innerArray);
             }
-            coords.put(coordinatesJsonArray);
+
+            try {
+                // Build a jsonObject
+                jsonObject.put("name", placemark.getName());
+                geoJsonObject.put("type","Feature");
+                geoJsonObject.put("properties", propertiesObject);
+                geoJsonObject.put("geometry",geometryObject);
+                geometryObject.put("type","Polygon");
+                geometryObject.put("coordinates",new JSONArray().put(coordinatesJsonArray));
+                jsonObject.put("geo_json",geoJsonObject);
+
+                // add jsonObject to List
+                jsonObjectList.add(jsonObject);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
-
-        try {
-            jsonObject.put("name","dgdfgdf");
-            geoJsonObject.put("type","Feature");
-            geoJsonObject.put("properties",propertiesObject);
-            geoJsonObject.put("geometry",geometryObject);
-            geometryObject.put("type","Polygon");
-            geometryObject.put("coordinates",coords);
-            jsonObject.put("geo_json",geoJsonObject);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return jsonObject;
+        return jsonObjectList;
     }
 }

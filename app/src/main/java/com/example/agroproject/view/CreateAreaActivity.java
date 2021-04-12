@@ -499,10 +499,10 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                             // Parse data from the file and create a List with Placemark objects
                             List<Placemark> placemarks = kmlFileParser.parseDataFromFile(dataFromFile);
                             // Create a JSONObject for Agro Api request,
-                            // variable json has the data in JSON type of the current file
-                            JSONObject json = JsonBuilder.build(placemarks);
+                            // List jsonObjectList has the data in JSON type of the current file
+                            List<JSONObject> jsonObjectList = JsonBuilder.build(placemarks);
                             // Post data in Agro Api TODO EINAI SXOLIO TO POST GIA NA MHN TREXEI SUNEXEIA
-                            //HttpRequest.postRequest(json);
+                            //HttpRequest.postRequest(jsonObjectList);
                             // Put data into Map
                             placemarkMap.put(fileName, placemarks);
                             // Get the text from farmName TextView in String type

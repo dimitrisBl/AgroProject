@@ -4,6 +4,8 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,7 +17,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityListViewBinding;
+import com.example.agroproject.model.Placemark;
 import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.view.adapters.ListViewAdapter;
@@ -68,7 +72,6 @@ public class ListViewActivity extends AppCompatActivity {
         initializeComponents();
     }
 
-
     /**
      * TODO DESCRIPTION
      *
@@ -77,11 +80,32 @@ public class ListViewActivity extends AppCompatActivity {
         //---- ListView ----- //
         listView = binding.listView;
         listView.setAdapter(listViewAdapter);
+        // Item click listener
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Toast.makeText(ListViewActivity.this,
                         "clicked item name "+listViewAdapter.getItem(position), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Item long click listener
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long l) {
+                new AlertDialog.Builder(ListViewActivity.this)
+                        .setTitle("Are you sure?")
+                        .setIcon(R.drawable.ic_baseline_delete_24)
+                        .setMessage("Do you want to delete this item?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Toast.makeText(ListViewActivity.this,"name of item: " +
+                                    ""+listViewAdapter.getItem(position).toString(),Toast.LENGTH_LONG).show();
+                            //TODO delete from Maps
+                        }
+                }).setNegativeButton("No",null).show();
+                return true;
             }
         });
 

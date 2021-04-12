@@ -35,6 +35,7 @@ import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.InsertFilePopupStyleBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
+import com.example.agroproject.model.agro_api.JsonBuilder;
 import com.example.agroproject.model.AreaUtilities;
 import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.Placemark;
@@ -52,6 +53,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -113,7 +117,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     private KmlFileParser kmlFileParser;
 
     /** This Map has a List with placemarks objects, the key is the file name for each List */
-    private Map<String, List<Placemark>> kmlFileMap = new HashMap<>();
+    private Map<String, List<Placemark>> placemarkMap = new HashMap<>();
 
     /** This Map has a List with placemarks objects, the key is the farm name for each List */
     private Map<String, List<KmlFile>> farmMap = new HashMap<>();
@@ -153,7 +157,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         // Instantiate a KmlLocalStorageProvider object
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
         // Load the Map from shared preferences
-        kmlFileMap = kmlLocalStorageProvider.loadLayers();
+        placemarkMap = kmlLocalStorageProvider.loadPlacemarkMap();
         farmMap = kmlLocalStorageProvider.loadFarmMap();
 
         // Instantiate a KmlFileParse object
@@ -483,7 +487,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                             startActivityForResult(intent, FILE_SELECTION_CODE);
                         }
                     });
-
                     // Submit button
                     Button submit = insertFilePopupBinding.saveFileBtn;
                     submit.setOnClickListener(new View.OnClickListener() {
@@ -494,16 +497,23 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                             String dataFromFile = kmlFileParser.getFileData(uri);
                             // Parse data from the file and create a List with Placemark objects
                             List<Placemark> placemarks = kmlFileParser.parseDataFromFile(dataFromFile);
+                            // Create a JSONObject for Agro Api request,
+                            // variable json has the data in JSON type of the current file
+                            JSONObject json = JsonBuilder.build(placemarks);
+                            // Post data in Agro Api TODO EINAI SXOLIO TO POST GIA NA MHN TREXEI SUNEXEIA
+                            //HttpRequest.postRequest(json);
                             // Put data into Map
-                            kmlFileMap.put(fileName, placemarks);
-                            // Create a new KmlFile object
-                            KmlFile kmlFile = new KmlFile(fileName, uri.getPath(), dataFromFile);
+                            placemarkMap.put(fileName, placemarks);
                             // Get the text from farmName TextView in String type
                             String farmNameText = farmName.getText().toString();
-                            //
+                            // Create a new KmlFile object
+                            KmlFile kmlFile = new KmlFile(fileName, uri.getPath(), dataFromFile);
+                            // Add a new kmlFile object in the farmMap
                             if(farmMap.containsKey(farmNameText)) {
+                                // Add a new KmlFile value in the farmNameText key
                                 farmMap.get(farmNameText).add(kmlFile);
                             }else{
+                                // Put a new rec in the farmMap
                                 farmMap.put(farmNameText, new ArrayList<>(List.of(kmlFile)));
                             }
                             // Add the existing polygons in the map
@@ -512,17 +522,14 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                             popupDialog.dismiss();
                         }
                     });
-
                 // Show dialog
                 popupDialog.show();
-
             return true;
 
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
-
 
 
     /**
@@ -568,7 +575,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 if(detectInnerArea){
                     // Get the outsider area
                     Placemark outsiderArea = AreaUtilities.getOutsiderArea();
-                    for(Map.Entry<String, List<Placemark>> entry : kmlFileMap.entrySet()){
+                    for(Map.Entry<String, List<Placemark>> entry : placemarkMap.entrySet()){
                         if(entry.getValue().contains(outsiderArea)){
                             entry.getValue().add(new Placemark
                                     (areaNameText, areaDescriptionText, polygonOptions.getPoints()));
@@ -598,7 +605,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     private void addTheExistingAreasInMap() {
         // Clear the map
         mMap.clear();
-        for(Map.Entry<String, List<Placemark>> entry : kmlFileMap.entrySet()){
+        for(Map.Entry<String, List<Placemark>> entry : placemarkMap.entrySet()){
             for(Placemark placemark : entry.getValue()){
                 polygonOptions = new PolygonOptions()
                     .strokeWidth(5f).addAll(placemark.getLatLngList()).strokeColor(Color.RED)
@@ -636,7 +643,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         unregisterReceiver(GpsStatusReceiver);
         unregisterReceiver(networkUtil);
         // Save the kmlFileMap in shared preferences.
-        kmlLocalStorageProvider.saveLayers(kmlFileMap);
+        kmlLocalStorageProvider.savePlacemarkMap(placemarkMap);
         // Save the farmMap in shared preferences.
         kmlLocalStorageProvider.saveFarmMap(farmMap);
     }

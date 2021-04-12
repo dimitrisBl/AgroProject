@@ -4,38 +4,33 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.EditText;
 import android.widget.TextView;
 import com.example.agroproject.R;
-import com.example.agroproject.model.file.KmlFile;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 
 public class ListViewAdapter extends BaseAdapter {
 
-    private List<String> placemarkList;
+    private List<String> dataOfAdapter;
 
     /**
-     * Instantiate a new RecyclerViewAdapter
+     * Instantiate a new ListViewAdapter
      *
-     * @param placemarkList
+     * @param dataForAdapter
      */
-    public ListViewAdapter(List<String> placemarkList) {
-        this.placemarkList = placemarkList;
+    public ListViewAdapter(List<String> dataForAdapter) {
+        this.dataOfAdapter = dataForAdapter;
     }
 
 
     @Override
     public int getCount() {
-        return placemarkList.size();
+        return dataOfAdapter.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return placemarkList.get(position);
+        return dataOfAdapter.get(position);
     }
 
     @Override
@@ -56,11 +51,9 @@ public class ListViewAdapter extends BaseAdapter {
         }
         // UI COMPONENTS
         TextView title = viewResult.findViewById(R.id.title);
-        title.setText(placemarkList.get(position));
-        TextView description = viewResult.findViewById(R.id.description);
+        title.setText(dataOfAdapter.get(position));
+        //TextView description = viewResult.findViewById(R.id.description);
         //description.setText(placemarkList.get(position).getDescription());
-
-
         return viewResult;
     }
 }

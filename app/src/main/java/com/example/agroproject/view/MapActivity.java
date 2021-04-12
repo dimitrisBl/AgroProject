@@ -57,9 +57,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /** Polygon object */
     private Polygon polygon;
 
+    /** KmlLocalStorageProvider */
     private KmlLocalStorageProvider kmlLocalStorageProvider;
 
-    private Map<String, List<Placemark>> kmlFileMap = new HashMap<>();
+    private Map<String, List<Placemark>> placemarkMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +77,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         currentLocation = new LatLng(latitude, longitude);
 
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
-        kmlFileMap = kmlLocalStorageProvider.loadLayers();
+        placemarkMap = kmlLocalStorageProvider.loadPlacemarkMap();
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -118,7 +119,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public GoogleMap.OnPolygonClickListener polygonClickListener = new GoogleMap.OnPolygonClickListener() {
         @Override
         public void onPolygonClick(Polygon polygon) {
-            for (Map.Entry<String, List<Placemark>> entry : kmlFileMap.entrySet()) {
+            for (Map.Entry<String, List<Placemark>> entry : placemarkMap.entrySet()) {
                 for (Placemark placemark : entry.getValue()) {
                    if (polygon.getTag().equals(placemark.getName())) {
                         showAreaPopUp(placemark);
@@ -168,7 +169,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                            @Override
                            public void onClick(DialogInterface dialog, int which) {
                                Placemark tempPlaceMark=null;
-                               for (List<Placemark> entry : kmlFileMap.values()) {
+                               for (List<Placemark> entry : placemarkMap.values()) {
                                    for (Placemark placemark : entry) {
                                         if(placemark.getName().equals(placemarkParam.getName())){
                                             tempPlaceMark = placemark;
@@ -176,7 +177,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                    }
                                    entry.remove(tempPlaceMark);
                                }
-                               kmlLocalStorageProvider.saveLayers(kmlFileMap);
+                               kmlLocalStorageProvider.savePlacemarkMap(placemarkMap);
                                addTheExistingAreas();
                                popUpDialog.dismiss();
                            }
@@ -209,7 +210,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     */
     private void addTheExistingAreas() {
         mMap.clear();
-        for (Map.Entry<String, List<Placemark>> entry : kmlFileMap.entrySet()) {
+        for (Map.Entry<String, List<Placemark>> entry : placemarkMap.entrySet()) {
             for (Placemark placemark : entry.getValue()) {
                 PolygonOptions polygonOptions = new PolygonOptions()
                        .strokeWidth(5f).addAll(placemark.getLatLngList()).strokeColor(Color.RED)

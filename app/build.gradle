@@ -53,10 +53,5 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.google.maps.android:android-maps-utils:0.6.2'
     implementation 'org.jsoup:jsoup:1.8.1'
-
-    //Maven dependency
-    //compile files('2.2.0-SNAPSHOT')
-    //implementation 'de.micromata.jak:JavaAPIforKml:2.2.1'
-    //implementation group:'de.micromata.jak', name:'Java.net Maven 2 Repository', version:'2.2.0'
-    //implementation group: 'de.micromata.jak', url:'http://download.java.net/maven/2', name: 'Java.net Maven 2 Repository', version: '2.2.0-SNAPSHOT'
+    implementation 'com.squareup.okhttp3:okhttp:3.14.6'
 }

@@ -2,17 +2,12 @@ package com.example.agroproject.view;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.agroproject.databinding.ActivityListViewBinding;
@@ -21,19 +16,15 @@ import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.view.adapters.ListViewAdapter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ListViewActivity extends AppCompatActivity {
 
     /** Class TAG */
     private final String TAG = "ListViewActivity";
 
-    /** Binding */
+    /** Activity view binding */
     private ActivityListViewBinding binding;
 
     /** ListView */
@@ -57,7 +48,7 @@ public class ListViewActivity extends AppCompatActivity {
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
         // Set data in the listViewAdapter from shared preferences
         listViewAdapter = new ListViewAdapter(new ArrayList<>
-                (kmlLocalStorageProvider.loadLayers().keySet()));
+                (kmlLocalStorageProvider.loadPlacemarkMap().keySet()));
         // Convert Set<String> to String array
         String[] dropDownData = kmlLocalStorageProvider.
                 loadFarmMap().keySet().toArray(new String[0]);

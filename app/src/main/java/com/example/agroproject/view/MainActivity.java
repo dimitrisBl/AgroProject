@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     /** LocationManager */
     private LocationManager locationManager;
 
-    /** Binding */
+    /** Activity view binding */
     private ActivityMainBinding binding;
 
     /** NetworkUtil */

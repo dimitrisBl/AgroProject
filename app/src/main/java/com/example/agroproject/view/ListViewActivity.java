@@ -26,11 +26,15 @@ import com.example.agroproject.view.adapters.ListViewAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
 
 public class ListViewActivity extends AppCompatActivity {
 
@@ -52,6 +56,10 @@ public class ListViewActivity extends AppCompatActivity {
     /** KmlLocalStorageProvider */
     private KmlLocalStorageProvider kmlLocalStorageProvider;
 
+    /** List with Placemark objects */
+    private List<KmlFile> kmlFileList = new ArrayList<>();
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,9 +67,10 @@ public class ListViewActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         // Instantiate a KmlLocalStorageProvider object
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
+        // Fill data in the kmlFileList
+        fillTheKmlFileList();
         // Set data in the listViewAdapter from shared preferences
-        listViewAdapter = new ListViewAdapter(new ArrayList<>
-                (kmlLocalStorageProvider.loadLayers().keySet()));
+        listViewAdapter = new ListViewAdapter(new ArrayList<>(kmlFileList));
         // Convert Set<String> to String array
         String[] dropDownData = kmlLocalStorageProvider.
                 loadFarmMap().keySet().toArray(new String[0]);
@@ -70,6 +79,19 @@ public class ListViewActivity extends AppCompatActivity {
                 android.R.layout.simple_list_item_1, dropDownData);
         // Initialize ui components
         initializeComponents();
+    }
+
+
+    /**
+     * Add the stored data from the
+     * shared preferences in the kmlFileList.
+     */
+    private void fillTheKmlFileList(){
+        for(Map.Entry<String, List<KmlFile>> entry: kmlLocalStorageProvider.loadFarmMap().entrySet()){
+            for(KmlFile kmlFile: entry.getValue()){
+                kmlFileList.add(kmlFile);
+            }
+        }
     }
 
     /**
@@ -124,11 +146,7 @@ public class ListViewActivity extends AppCompatActivity {
                 String clickedItem = dropDownAdapter.getItem(position);
                 for(Map.Entry<String, List<KmlFile>> entry : kmlLocalStorageProvider.loadFarmMap().entrySet()){
                     if(entry.getKey().equals(clickedItem)){
-                        List<String> kmlFileNames = new ArrayList<>();
-                        for(KmlFile kmlFile : entry.getValue()){
-                            kmlFileNames.add(kmlFile.getName());
-                        }
-                        listViewAdapter = new ListViewAdapter(kmlFileNames);
+                        listViewAdapter = new ListViewAdapter(entry.getValue());
                         listView.setAdapter(listViewAdapter);
                     }
                 }

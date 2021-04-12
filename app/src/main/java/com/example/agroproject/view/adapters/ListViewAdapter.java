@@ -7,6 +7,7 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.TextView;
 import com.example.agroproject.R;
+import com.example.agroproject.model.Placemark;
 import com.example.agroproject.model.file.KmlFile;
 
 import java.util.ArrayList;
@@ -16,26 +17,26 @@ import java.util.Map;
 
 public class ListViewAdapter extends BaseAdapter {
 
-    private List<String> placemarkList;
+    private List<KmlFile> kmlFileList;
 
     /**
      * Instantiate a new RecyclerViewAdapter
      *
-     * @param placemarkList
+     * @param kmlFileList have the KmlFile objects
      */
-    public ListViewAdapter(List<String> placemarkList) {
-        this.placemarkList = placemarkList;
+    public ListViewAdapter(List<KmlFile> kmlFileList) {
+        this.kmlFileList = kmlFileList;
     }
 
 
     @Override
     public int getCount() {
-        return placemarkList.size();
+        return kmlFileList.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return placemarkList.get(position);
+        return kmlFileList.get(position);
     }
 
     @Override
@@ -56,10 +57,9 @@ public class ListViewAdapter extends BaseAdapter {
         }
         // UI COMPONENTS
         TextView title = viewResult.findViewById(R.id.title);
-        title.setText(placemarkList.get(position));
-        TextView description = viewResult.findViewById(R.id.description);
-        //description.setText(placemarkList.get(position).getDescription());
-
+        title.setText(kmlFileList.get(position).getName());
+//        TextView description = viewResult.findViewById(R.id.description);
+//        description.setText(placemarkList.get(position).getDescription());
 
         return viewResult;
     }

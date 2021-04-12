@@ -53,7 +53,7 @@ public class JsonBuilder {
         }
 
         try {
-            jsonObject.put("name","");
+            jsonObject.put("name","dgdfgdf");
             geoJsonObject.put("type","Feature");
             geoJsonObject.put("properties",propertiesObject);
             geoJsonObject.put("geometry",geometryObject);

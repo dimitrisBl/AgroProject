@@ -15,9 +15,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
 import com.example.agroproject.databinding.AreaClickPopupStyleBinding;
+import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.model.Placemark;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -160,6 +163,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close area pop up
+                popUpDialog.dismiss();
+                // Show new pop up for the delete question
                 new AlertDialog.Builder(MapActivity.this)
                        .setIcon(R.drawable.ic_baseline_delete_24)
                        .setTitle("Delete")
@@ -167,18 +173,39 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                            @Override
                            public void onClick(DialogInterface dialog, int which) {
-                               Placemark tempPlaceMark=null;
-                               for (List<Placemark> entry : kmlFileMap.values()) {
-                                   for (Placemark placemark : entry) {
-                                        if(placemark.getName().equals(placemarkParam.getName())){
-                                            tempPlaceMark = placemark;
-                                        }
+                               // Load farm Map from shared preferences
+                               Map<String, List<KmlFile>> farmMap = kmlLocalStorageProvider.loadFarmMap();
+                               for(Map.Entry<String, List<Placemark>> entry : kmlFileMap.entrySet()){
+                                   // Remove the Placemark
+                                   if(entry.getValue().remove(placemarkParam)) {
+                                       // Save the changes about the placemarkMap
+                                       kmlLocalStorageProvider.saveLayers(kmlFileMap);
+                                       // Remove the file which contained this placemark
+                                       for (Map.Entry<String, List<KmlFile>> entry2 : farmMap.entrySet()) {
+                                           for (KmlFile kmlFile : entry2.getValue()) {
+                                               // If this placemark belongs to this file
+                                               if (entry.getKey().equals(kmlFile.getName())) {
+                                                   // If this record have only one file
+                                                   if (entry2.getValue().size() == 1) {
+                                                       // Remove all record
+                                                       farmMap.remove(entry2.getKey());
+                                                   } else {
+                                                       // Remove value only
+                                                       entry2.getValue().remove(kmlFile);
+                                                   }
+                                                   // Save the changes about the farmMap
+                                                   kmlLocalStorageProvider.saveFarmMap(farmMap);
+                                                   // Show message
+                                                   Toast.makeText(MapActivity.this, "The area "+
+                                                   placemarkParam.getName() +" was removed ",Toast.LENGTH_LONG).show();
+                                                   break;
+                                               }
+                                           }
+                                       }
                                    }
-                                   entry.remove(tempPlaceMark);
                                }
-                               kmlLocalStorageProvider.saveLayers(kmlFileMap);
+                               // Add the existing polygons in the map
                                addTheExistingAreas();
-                               popUpDialog.dismiss();
                            }
                        })
                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -189,12 +216,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                           }
                        })
                        .setOnDismissListener(new DialogInterface.OnDismissListener() {
-                           @Override
-                           public void onDismiss(DialogInterface dialogInterface) {
-                                mMap.clear();
-                                //Add the existing polygons in the map
-                                addTheExistingAreas();
-                           }
+                          @Override
+                          public void onDismiss(DialogInterface dialogInterface) {
+                               // Add the existing polygons in the map
+                               addTheExistingAreas();
+                          }
                        })
                 .show();
                 }

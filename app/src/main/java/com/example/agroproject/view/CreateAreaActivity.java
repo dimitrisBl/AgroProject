@@ -21,10 +21,13 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
@@ -53,9 +56,12 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /**
@@ -155,9 +161,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         // Load the Map from shared preferences
         kmlFileMap = kmlLocalStorageProvider.loadLayers();
         farmMap = kmlLocalStorageProvider.loadFarmMap();
-
-        // Instantiate a KmlFileParse object
-        kmlFileParser = new KmlFileParser(this);
 
         // Set click listener for buttons
         binding.drawPolygon.setOnClickListener(buttonClickListener);
@@ -413,9 +416,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 // Set file name in TextView of inertFilePopUp
                 EditText name = insertFilePopupBinding.fileName;
                 name.setText(fileName);
-                // Show message"
-                Toast.makeText(CreateAreaActivity.this,
-                        "The file "+fileName+" was succesfully added",Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -460,7 +460,15 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 Dialog popupDialog = new Dialog(this);
                 popupDialog.setContentView(popupView);
                 popupDialog.setCanceledOnTouchOutside(false);
-                    TextView farmName = insertFilePopupBinding.areaName;
+                    // Farm name TextView
+                    AutoCompleteTextView farmName = insertFilePopupBinding.AutoCompleteTextView;
+                    // Convert Set<String> to String array
+                    String[] dropDownData = farmMap.keySet().toArray(new String[0]);
+                    // Set data in the dropDownAdapter
+                    ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this,
+                            android.R.layout.simple_list_item_1, dropDownData);
+                    // Set dara in farmName TextView
+                    farmName.setAdapter(spinnerAdapter);
                     // Close image
                     ImageView imageViewClose = insertFilePopupBinding.btnCLose;
                     imageViewClose.setOnClickListener(new View.OnClickListener() {
@@ -470,7 +478,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                             popupDialog.dismiss();
                         }
                     });
-
                     // Choose file button
                     Button chooseFileBtn = insertFilePopupBinding.chooseFileBtn;
                     chooseFileBtn.setOnClickListener(new View.OnClickListener() {
@@ -483,33 +490,52 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                             startActivityForResult(intent, FILE_SELECTION_CODE);
                         }
                     });
-
                     // Submit button
                     Button submit = insertFilePopupBinding.saveFileBtn;
                     submit.setOnClickListener(new View.OnClickListener() {
                         @RequiresApi(api = Build.VERSION_CODES.R)
                         @Override
                         public void onClick(View view) {
-                            // Open file and get the data in String type
-                            String dataFromFile = kmlFileParser.getFileData(uri);
-                            // Parse data from the file and create a List with Placemark objects
-                            List<Placemark> placemarks = kmlFileParser.parseDataFromFile(dataFromFile);
-                            // Put data into Map
-                            kmlFileMap.put(fileName, placemarks);
-                            // Create a new KmlFile object
-                            KmlFile kmlFile = new KmlFile(fileName, uri.getPath(), dataFromFile);
                             // Get the text from farmName TextView in String type
                             String farmNameText = farmName.getText().toString();
-                            //
-                            if(farmMap.containsKey(farmNameText)) {
-                                farmMap.get(farmNameText).add(kmlFile);
+                            if (!farmNameText.isEmpty() && fileName != null) {
+                                // Instantiate a KmlFileParse object
+                                kmlFileParser = new KmlFileParser(CreateAreaActivity.this);
+                                // Open file and get the data in String type
+                                String dataFromFile = kmlFileParser.getFileData(uri);
+                                // Parse data from the file and create a List with Placemark objects
+                                List<Placemark> placemarks = kmlFileParser.parseDataFromFile(dataFromFile);
+                                // Put data into Map
+                                kmlFileMap.put(fileName, placemarks);
+                                // Create a new KmlFile object
+                                KmlFile kmlFile = new KmlFile(fileName, uri.getPath(), dataFromFile);
+                                // Check if the kmlFile is exists
+                                boolean fileExists = fileIsExistsCheck(kmlFile);
+                                if(fileExists == false){
+                                    if(farmMap.containsKey(farmNameText)){
+                                        // Add a new value for this key
+                                        farmMap.get(farmNameText).add(kmlFile);
+                                     }else{
+                                        // Create a new record
+                                        farmMap.put(farmNameText, new ArrayList<>(List.of(kmlFile)));
+                                    }
+                                    // Show message
+                                     Toast.makeText(CreateAreaActivity.this,
+                                    "The file "+fileName+" was successfully added",Toast.LENGTH_LONG).show();
+                                    // Get the center area of first placemark witch contained this file
+                                    LatLng center = AreaUtilities.getAreaCenterPoint(placemarks.get(0).getLatLngList());
+                                    // Move the camera in current location
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 13f));
+                                    // Add the existing polygons in the map
+                                    addTheExistingAreasInMap();
+                                    // Close dialog
+                                    popupDialog.dismiss();
+                                }
                             }else{
-                                farmMap.put(farmNameText, new ArrayList<>(List.of(kmlFile)));
+                                // Show message
+                                Toast.makeText(CreateAreaActivity.this,
+                                        "Fill all the fields please", Toast.LENGTH_LONG).show();
                             }
-                            // Add the existing polygons in the map
-                            addTheExistingAreasInMap();
-                            // Close dialog
-                            popupDialog.dismiss();
                         }
                     });
 
@@ -523,7 +549,25 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         }
     }
 
-
+    /**
+     * @param kmlFile has the new kml file witch user wants to add
+     * @return true if file is exists false if file is not exists
+     */
+    private boolean fileIsExistsCheck(KmlFile kmlFile) {
+        // Check if the file is exists
+        for(Map.Entry<String, List<KmlFile>> entry : farmMap.entrySet()){
+            for(KmlFile file : entry.getValue()) {
+                // If the kmlFile exists
+                if (file.getData().equals(kmlFile.getData())) {
+                    // Show message
+                    Toast.makeText(CreateAreaActivity.this, "The file " + file.getName()
+                            + " is already exists in the " + entry.getKey(), Toast.LENGTH_LONG).show();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     /**
      * TODO method description
@@ -563,26 +607,36 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
             @Override
             public void onClick(View view) {
                 Log.d(TAG,"Submit button pressed");
+                // Get text from areaName textView in String type
                 String areaNameText = areaName.getText().toString();
+                // Get text from areaDescription textView in String type
                 String areaDescriptionText = areaDescription.getText().toString();
-                if(detectInnerArea){
-                    // Get the outsider area
-                    Placemark outsiderArea = AreaUtilities.getOutsiderArea();
-                    for(Map.Entry<String, List<Placemark>> entry : kmlFileMap.entrySet()){
-                        if(entry.getValue().contains(outsiderArea)){
-                            entry.getValue().add(new Placemark
-                                    (areaNameText, areaDescriptionText, polygonOptions.getPoints()));
+                if(!areaNameText.isEmpty() && !areaDescriptionText.isEmpty()) {
+                    // If this new area is inner in other area
+                    if (detectInnerArea) {
+                        // Get the outsider area
+                        Placemark outsiderArea = AreaUtilities.getOutsiderArea();
+                        for (Map.Entry<String, List<Placemark>> entry : kmlFileMap.entrySet()) {
+                            if (entry.getValue().contains(outsiderArea)) {
+                                entry.getValue().add(new Placemark
+                                        (areaNameText, areaDescriptionText, polygonOptions.getPoints()));
+                            }
                         }
+                        Log.d(TAG, "create inner area in " + AreaUtilities.getOutsiderArea().getName());
+                    } else {
+                        // Show message
+                        Toast.makeText(CreateAreaActivity.this,
+                                "Please draw you area inside in other area", Toast.LENGTH_LONG).show();
                     }
-                    Log.d(TAG,"create inner area in "+AreaUtilities.getOutsiderArea().getName());
+                    //Add the existing polygons in the map
+                    addTheExistingAreasInMap();
+                    // Close dialog
+                    popupDialog.dismiss();
                 }else{
+                    // Show message
                     Toast.makeText(CreateAreaActivity.this,
-                            "Please draw you area inside in other area",Toast.LENGTH_LONG).show();
+                            "Fill all the fields please", Toast.LENGTH_LONG).show();
                 }
-                //Add the existing polygons in the map
-                addTheExistingAreasInMap();
-                // Close dialog
-                popupDialog.dismiss();
             }
         });
 
@@ -598,16 +652,20 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     private void addTheExistingAreasInMap() {
         // Clear the map
         mMap.clear();
-        for(Map.Entry<String, List<Placemark>> entry : kmlFileMap.entrySet()){
-            for(Placemark placemark : entry.getValue()){
-                polygonOptions = new PolygonOptions()
-                    .strokeWidth(5f).addAll(placemark.getLatLngList()).strokeColor(Color.RED)
+        for(String key : kmlFileMap.keySet()){
+            for(Placemark placemark : kmlFileMap.get(key)){
+               // Create new polygonOptions for each placemark
+               polygonOptions = new PolygonOptions()
+                    .strokeWidth(5f).addAll(placemark.getLatLngList())
+                    .strokeColor(Color.RED)
                     .fillColor(Color.argb(70, 50, 255, 0));
-                mMap.addPolygon(polygonOptions);
-                // Fill the placemarkList
-                placemarkList.add(placemark);
+               // Add placemark in the map
+               mMap.addPolygon(polygonOptions);
+               // Fill the placemarkList
+               placemarkList.add(placemark);
             }
         }
+
     }
 
     @Override
@@ -637,7 +695,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         unregisterReceiver(networkUtil);
         // Save the kmlFileMap in shared preferences.
         kmlLocalStorageProvider.saveLayers(kmlFileMap);
-        // Save the farmMap in shared preferences.
+        // Save the farmMap in shared preferences
         kmlLocalStorageProvider.saveFarmMap(farmMap);
     }
 

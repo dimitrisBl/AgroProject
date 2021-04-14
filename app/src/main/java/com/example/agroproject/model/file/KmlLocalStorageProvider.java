@@ -21,24 +21,24 @@ public class KmlLocalStorageProvider {
     /** Name of the Shared preferences file */
     private final String PREFS_NAME ="KmlLocalStorage";
 
+    /** Name of the placemarkMap Map in shared preferences stored */
+    private final String PLACEMARK_MAP = "placemarkMap";
 
-    private final String KML_FILE_MAP = "kmlFileMap";
-
-
+    /** Name of the farmMap Map in shared preferences stored */
     private final String FARM_MAP = "farmMap";
 
     /** SharedPreferences object */
     private SharedPreferences sharedPreferences;
 
+    /** Map with Placemark objects */
+    private Map<String, List<Placemark>> placemarkMap = new HashMap<>();
+
     /** Map with KmlFile objects */
-    private Map<String, List<Placemark>> kmlFileMap = new HashMap<>();
-
-
     private Map<String, List<KmlFile>> farmMap = new HashMap<>();
 
     /**
      * This method initialize the KmlLocalStorageProvider object.
-     * @param context takes the current context application.
+     * @param context takes the current context of the application.
      */
     public KmlLocalStorageProvider(Context context){
         sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -52,25 +52,25 @@ public class KmlLocalStorageProvider {
         Log.d(TAG,"Area save executed");
         String converted = new Gson().toJson(famMap);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(KML_FILE_MAP, converted);
+        editor.putString(PLACEMARK_MAP, converted);
         editor.apply();
     }
 
 
     /**
      * This method load the Map with KmlFile objects from shared preferences.
-     * @return the Map kmlFileMap it contains KmlFile objects from the save file.
+     * @return the Map placemarkMap it contains placemark objects from the save file.
      */
     public Map<String,List<Placemark>> loadLayers(){
         Log.d(TAG,"load area save executed");
         String defaultValue = new Gson().toJson(new HashMap<String, List<Placemark>>());
-        String json = sharedPreferences.getString(KML_FILE_MAP, defaultValue);
+        String json = sharedPreferences.getString(PLACEMARK_MAP, defaultValue);
         if(json != null){
             Gson gson = new Gson();
             Type type = new TypeToken<Map<String, List<Placemark>>>() {}.getType();
-            kmlFileMap = gson.fromJson(json, type);
+            placemarkMap = gson.fromJson(json, type);
         }
-        return kmlFileMap;
+        return placemarkMap;
     }
 
     /**

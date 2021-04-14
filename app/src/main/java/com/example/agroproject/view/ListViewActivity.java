@@ -3,18 +3,14 @@ package com.example.agroproject.view;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.agroproject.R;
@@ -25,16 +21,9 @@ import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.view.adapters.ListViewAdapter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toList;
 
 public class ListViewActivity extends AppCompatActivity {
 
@@ -72,8 +61,10 @@ public class ListViewActivity extends AppCompatActivity {
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
         // Load the farmMap from shared preferences
         farmMap = kmlLocalStorageProvider.loadFarmMap();
-        // Fill data in the kmlFileList
-        fillTheKmlFileList();
+        // Add the stored data from shared preferences in the kmlFileList
+        for(Map.Entry<String, List<KmlFile>> entry : farmMap.entrySet()){
+            kmlFileList.addAll(entry.getValue());
+        }
         // Set data in the listViewAdapter from shared preferences
         listViewAdapter = new ListViewAdapter(new ArrayList<>(kmlFileList));
         // Convert Set<String> to String array
@@ -86,18 +77,6 @@ public class ListViewActivity extends AppCompatActivity {
         initializeComponents();
     }
 
-
-    /**
-     * Add the stored data from the
-     * shared preferences in the kmlFileList.
-     */
-    private void fillTheKmlFileList(){
-        for(Map.Entry<String, List<KmlFile>> entry : farmMap.entrySet()){
-            for(KmlFile kmlFile: entry.getValue()){
-                kmlFileList.add(kmlFile);
-            }
-        }
-    }
 
     /**
      * TODO DESCRIPTION
@@ -125,10 +104,9 @@ public class ListViewActivity extends AppCompatActivity {
             }
         });
 
-
         //---- DropDown menu ----- //
         try{
-            binding.autoCompleteTextView.setText(dropDownAdapter.getItem(0));
+//            binding.autoCompleteTextView.setText(dropDownAdapter.getItem(0));
         }catch (ArrayIndexOutOfBoundsException e){
             e.printStackTrace();
         }
@@ -137,14 +115,13 @@ public class ListViewActivity extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                // Current clicked item
+                // Get item which clicked
                 String clickedItem = dropDownAdapter.getItem(position);
-                for(Map.Entry<String, List<KmlFile>> entry : farmMap.entrySet()){
-                    if(entry.getKey().equals(clickedItem)){
-                        listViewAdapter = new ListViewAdapter(entry.getValue());
-                        listView.setAdapter(listViewAdapter);
-                    }
-                }
+                // Get values from farmMap for current item
+                List<KmlFile> kmlFile = farmMap.get(clickedItem);
+                // Refresh the ui
+                listViewAdapter = new ListViewAdapter(kmlFile);
+                listView.setAdapter(listViewAdapter);
             }
         });
     }
@@ -162,34 +139,44 @@ public class ListViewActivity extends AppCompatActivity {
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        // Get the name of the clicked item
-                        String clickedItemName = listViewAdapter.getItem(position).getName();
-                        // Load the placemarkMap from shared preferences
-                        Map<String, List<Placemark>> placemarkMap = kmlLocalStorageProvider.loadLayers();
-                        // Remove a file from farmMap
-                        for(List<KmlFile> kmlFiles : farmMap.values()){
-                            for(KmlFile kmlFile : kmlFiles){
-                                if(kmlFile.getName().equals(clickedItemName)){
-                                    // Remove
-                                    kmlFiles.remove(kmlFile);
-                                    // Save changes
-                                    kmlLocalStorageProvider.saveFarmMap(farmMap);
-                                    // Remove Placemark that belongs to this file from placemarkMap
-                                    placemarkMap.remove(kmlFile.getName());
-                                    // Save changes
-                                    kmlLocalStorageProvider.saveLayers(placemarkMap);
-                                    // Remove the kmlFile from kmlFileList
-                                    kmlFileList.remove(kmlFile);
-                                    // Refresh the ui
-                                    listViewAdapter = new ListViewAdapter
-                                            (new ArrayList<>(kmlFileList));
-                                    listView.setAdapter(listViewAdapter);
-                                    // Show message
-                                    Toast.makeText(ListViewActivity.this, "The file "
-                                            +clickedItemName+" was removed",Toast.LENGTH_LONG).show();
-                                }
+                        // Get the kml file which clicked
+                        KmlFile kmlFile = listViewAdapter.getItem(position);
+                        // Remove the kmlFile from kmlFileList
+                        kmlFileList.remove(kmlFile);
+                        // Iterate the farmMap
+                        for(Map.Entry<String, List<KmlFile>> entry : farmMap.entrySet()){
+                            // Remove kml file
+                            entry.getValue().remove(kmlFile);
+                            // Save changes
+                            kmlLocalStorageProvider.saveFarmMap(farmMap);
+                            // If this entry don't have values
+                            if(entry.getValue().isEmpty()){
+                                // Remove record from farmMap
+                                farmMap.remove(entry.getKey());
+                                // Save changes
+                                kmlLocalStorageProvider.saveFarmMap(farmMap);
+                                // Refresh the drop down menu
+                                String[] dropDownData = farmMap.keySet().toArray(new String[0]);
+                                // Set the changes in the dropDownAdapter
+                                dropDownAdapter = new ArrayAdapter<>(ListViewActivity.this,
+                                        android.R.layout.simple_list_item_1, dropDownData);
+                                binding.autoCompleteTextView.setAdapter(dropDownAdapter);
+                                // break the for loop
+                                break;
                             }
                         }
+                        // Load the placemarkMap from shared preferences
+                        Map<String, List<Placemark>> placemarkMap = kmlLocalStorageProvider.loadLayers();
+                        // Remove Placemark that belongs to this file from placemarkMap
+                        placemarkMap.remove(kmlFile.getName());
+                        // Save changes
+                        kmlLocalStorageProvider.saveLayers(placemarkMap);
+                        // Refresh the ListView
+                        listViewAdapter = new ListViewAdapter(new ArrayList<>(kmlFileList));
+                        listView.setAdapter(listViewAdapter);
+                        // Show message
+                        Toast.makeText(ListViewActivity.this, "The file "
+                                +kmlFile.getName()+" was removed",Toast.LENGTH_LONG).show();
                     }
                 })
                 .setNegativeButton("No",null)

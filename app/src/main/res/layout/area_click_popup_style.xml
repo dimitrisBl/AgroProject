@@ -64,9 +64,10 @@
                 android:text="Details"/>
 
             <Button
+                android:id="@+id/ndviBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="insert"/>
+                android:text="ndvi"/>
 
         </LinearLayout>
 

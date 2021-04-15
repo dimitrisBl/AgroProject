@@ -38,6 +38,8 @@ import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
 import com.example.agroproject.databinding.InsertFilePopupStyleBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
+import com.example.agroproject.model.agro_api.HttpRequest;
+import com.example.agroproject.model.agro_api.JsonBuilder;
 import com.example.agroproject.model.AreaUtilities;
 import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.Placemark;
@@ -55,6 +57,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -119,7 +124,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     private KmlFileParser kmlFileParser;
 
     /** This Map has a List with placemarks objects, the key is the file name for each List */
-    private Map<String, List<Placemark>> kmlFileMap = new HashMap<>();
+    private Map<String, List<Placemark>> placemarkMap = new HashMap<>();
 
     /** This Map has a List with placemarks objects, the key is the farm name for each List */
     private Map<String, List<KmlFile>> farmMap = new HashMap<>();
@@ -159,7 +164,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         // Instantiate a KmlLocalStorageProvider object
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
         // Load the Map from shared preferences
-        kmlFileMap = kmlLocalStorageProvider.loadLayers();
+        placemarkMap = kmlLocalStorageProvider.loadPlacemarkMap();
         farmMap = kmlLocalStorageProvider.loadFarmMap();
 
         // Set click listener for buttons
@@ -538,10 +543,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                             }
                         }
                     });
-
                 // Show dialog
                 popupDialog.show();
-
             return true;
 
             default:
@@ -665,7 +668,6 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                placemarkList.add(placemark);
             }
         }
-
     }
 
     @Override
@@ -694,8 +696,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         unregisterReceiver(GpsStatusReceiver);
         unregisterReceiver(networkUtil);
         // Save the kmlFileMap in shared preferences.
-        kmlLocalStorageProvider.saveLayers(kmlFileMap);
-        // Save the farmMap in shared preferences
+        kmlLocalStorageProvider.savePlacemarkMap(placemarkMap);
+        // Save the farmMap in shared preferences.
         kmlLocalStorageProvider.saveFarmMap(farmMap);
     }
 

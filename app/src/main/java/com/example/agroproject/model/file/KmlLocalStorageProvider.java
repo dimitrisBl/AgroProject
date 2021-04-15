@@ -46,11 +46,11 @@ public class KmlLocalStorageProvider {
 
     /**
      * This method save the famMap in shared preferences file.
-     * @param famMap has objects of the KmlFile class.
+     * @param placemarkMap has objects of the Placemark class.
      */
-    public void saveLayers(Map<String, List<Placemark>> famMap){
+    public void savePlacemarkMap(Map<String, List<Placemark>> placemarkMap){
         Log.d(TAG,"Area save executed");
-        String converted = new Gson().toJson(famMap);
+        String converted = new Gson().toJson(placemarkMap);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(PLACEMARK_MAP, converted);
         editor.apply();
@@ -61,7 +61,7 @@ public class KmlLocalStorageProvider {
      * This method load the Map with KmlFile objects from shared preferences.
      * @return the Map placemarkMap it contains placemark objects from the save file.
      */
-    public Map<String,List<Placemark>> loadLayers(){
+    public Map<String, List<Placemark>> loadPlacemarkMap(){
         Log.d(TAG,"load area save executed");
         String defaultValue = new Gson().toJson(new HashMap<String, List<Placemark>>());
         String json = sharedPreferences.getString(PLACEMARK_MAP, defaultValue);

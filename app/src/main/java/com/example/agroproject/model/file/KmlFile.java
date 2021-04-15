@@ -1,7 +1,5 @@
 package com.example.agroproject.model.file;
 
-import android.net.Uri;
-
 public class KmlFile {
 
     private String name;

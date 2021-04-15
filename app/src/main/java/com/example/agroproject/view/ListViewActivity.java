@@ -2,7 +2,6 @@ package com.example.agroproject.view;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Build;
@@ -12,14 +11,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
-
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityListViewBinding;
 import com.example.agroproject.model.Placemark;
 import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.view.adapters.ListViewAdapter;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +27,7 @@ public class ListViewActivity extends AppCompatActivity {
     /** Class TAG */
     private final String TAG = "ListViewActivity";
 
-    /** Binding */
+    /** Activity view binding */
     private ActivityListViewBinding binding;
 
     /** ListView */

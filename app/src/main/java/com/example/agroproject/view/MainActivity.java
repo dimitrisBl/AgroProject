@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     /** LocationManager */
     private LocationManager locationManager;
 
-    /** Binding */
+    /** Activity view binding */
     private ActivityMainBinding binding;
 
     /** NetworkUtil */
@@ -276,7 +276,6 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-
     }
 
     @Override
@@ -300,8 +299,6 @@ public class MainActivity extends AppCompatActivity {
         // Unregister since the activity is about to be closed.
         unregisterReceiver(locationReceiver);
         unregisterReceiver(networkUtil);
-
-
     }
 
 

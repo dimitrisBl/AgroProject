@@ -6,31 +6,38 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import com.example.agroproject.R;
+import com.example.agroproject.model.Placemark;
+import com.example.agroproject.model.file.KmlFile;
+import java.util.ArrayList;
 import java.util.List;
 
 
 public class ListViewAdapter extends BaseAdapter {
 
-    private List<String> dataOfAdapter;
-
+    private List<KmlFile> kmlFileList;
+  
     /**
      * Instantiate a new ListViewAdapter
      *
-     * @param dataForAdapter
+     * @param kmlFileList have the KmlFile objects
      */
-    public ListViewAdapter(List<String> dataForAdapter) {
-        this.dataOfAdapter = dataForAdapter;
+    public ListViewAdapter(List<KmlFile> kmlFileList) {
+        this.kmlFileList = kmlFileList;
     }
-
 
     @Override
     public int getCount() {
-        return dataOfAdapter.size();
+        return kmlFileList.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return dataOfAdapter.get(position);
+        return kmlFileList.size();
+    }
+
+    @Override
+    public KmlFile getItem(int position) {
+        return kmlFileList.get(position);
     }
 
     @Override
@@ -38,6 +45,7 @@ public class ListViewAdapter extends BaseAdapter {
         // nothing
         return 0;
     }
+
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -51,9 +59,9 @@ public class ListViewAdapter extends BaseAdapter {
         }
         // UI COMPONENTS
         TextView title = viewResult.findViewById(R.id.title);
-        title.setText(dataOfAdapter.get(position));
-        //TextView description = viewResult.findViewById(R.id.description);
-        //description.setText(placemarkList.get(position).getDescription());
+        title.setText(kmlFileList.get(position).getName());
+//        TextView description = viewResult.findViewById(R.id.description);
+//        description.setText(placemarkList.get(position).getDescription());
         return viewResult;
     }
 }

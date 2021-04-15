@@ -21,10 +21,10 @@ public class KmlLocalStorageProvider {
     /** Name of the Shared preferences file */
     private final String PREFS_NAME ="KmlLocalStorage";
 
-    /** Placemark Map name in shared preferences */
+    /** Name of the placemarkMap Map in shared preferences stored */
     private final String PLACEMARK_MAP = "placemarkMap";
 
-    /** Farm Map name in shared preferences */
+    /** Name of the farmMap Map in shared preferences stored */
     private final String FARM_MAP = "farmMap";
 
     /** SharedPreferences object */
@@ -38,7 +38,7 @@ public class KmlLocalStorageProvider {
 
     /**
      * This method initialize the KmlLocalStorageProvider object.
-     * @param context takes the current context application.
+     * @param context takes the current context of the application.
      */
     public KmlLocalStorageProvider(Context context){
         sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -59,7 +59,7 @@ public class KmlLocalStorageProvider {
 
     /**
      * This method load the Map with KmlFile objects from shared preferences.
-     * @return the Map kmlFileMap it contains KmlFile objects from the save file.
+     * @return the Map placemarkMap it contains placemark objects from the save file.
      */
     public Map<String, List<Placemark>> loadPlacemarkMap(){
         Log.d(TAG,"load area save executed");

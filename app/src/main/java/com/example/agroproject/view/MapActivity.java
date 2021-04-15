@@ -3,12 +3,21 @@ package com.example.agroproject.view;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -18,17 +27,29 @@ import android.widget.TextView;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
 import com.example.agroproject.databinding.AreaClickPopupStyleBinding;
+import com.example.agroproject.model.agro_api.HttpRequest;
+import com.example.agroproject.model.agro_api.JsonParser;
+import com.example.agroproject.model.agro_api.StringBuildForRequest;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.model.Placemark;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
-
+import org.json.JSONArray;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,23 +83,29 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private Map<String, List<Placemark>> placemarkMap = new HashMap<>();
 
+    /** JSON data from GET request in agro api */
+    private JSONArray jsonArray;
+
+    /** BitmapDescriptor has a ndvi image after image request */
+    private BitmapDescriptor bitmapDescriptor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMapBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
         // Get extras from intent
         Intent intent = getIntent();
         latitude = intent.getDoubleExtra("latitude", 0.0);
         longitude = intent.getDoubleExtra("longitude",0.0);
-
         // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
-
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
         placemarkMap = kmlLocalStorageProvider.loadPlacemarkMap();
-
+        // Get request on endpoint polygons of Agro api
+        HttpRequest.getRequest(this, StringBuildForRequest.polygonsRequestLink(), "Get all polygons");
+        // We are registering an observer (responseReceiver) to receive Intents after http Get request in Agro api.
+        LocalBroadcastManager.getInstance(this).registerReceiver(responseReceiver, new IntentFilter("GetRequestData"));
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -122,12 +149,77 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             for (Map.Entry<String, List<Placemark>> entry : placemarkMap.entrySet()) {
                 for (Placemark placemark : entry.getValue()) {
                    if (polygon.getTag().equals(placemark.getName())) {
-                        showAreaPopUp(placemark);
+                       showAreaPopUp(placemark);
+                       // Get id for the clicked polygon
+                       String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
+                       // Create a url for sentinel Get request of agro api for specific polygon and date
+                       String sentinelRequestLink = StringBuildForRequest.sentinelRequestLink(polygonId,"1609501337","1617277337");
+                       // Get sentinel data from agro api
+                       HttpRequest.getRequest( MapActivity.this, sentinelRequestLink,  "Get sentinel data");
+                       break;
                     }
                 }
             }
         }
     };
+    /**
+     *  Our handler for received Intents. This will be called whenever an Intent
+     *  with an action named "GetRequestData".
+     *  TODO MORE DESCRIPTION
+     */
+    private BroadcastReceiver responseReceiver  = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get extra data included in the Intent
+            String responseData = intent.getStringExtra("Response data");
+            String requestType = intent.getStringExtra("Request type");
+
+            if(requestType.equals("Get all polygons")){
+                // Parse response data
+                jsonArray = JsonParser.parseResponse(responseData);
+            }else if (requestType.equals("Get sentinel data")){
+                // Get image url
+                String imageUrl = JsonParser.getImage(responseData);
+                // Get image from Agro api
+                new getImageAsync().execute(imageUrl);
+            }
+            Log.d(TAG,"receive response heree"+responseData);
+        }
+    };
+
+    /**
+     *
+     */
+    private class getImageAsync extends AsyncTask<String, Void, BitmapDescriptor>{
+        @Override
+        protected BitmapDescriptor doInBackground(String... strings) {
+            try {
+                URL url = new URL(strings[0]);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setDoInput(true);
+                connection.connect();
+                InputStream input = connection.getInputStream();
+                Bitmap myBitmap = BitmapFactory.decodeStream(input);
+                input.close();
+                BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(myBitmap);
+                return  bitmapDescriptor;
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                Log.d(TAG,"MalformedURLException");
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.d(TAG,"io exception");
+            }
+            return null;
+        }
+        @Override
+        protected void onPostExecute(BitmapDescriptor descriptor) {
+            super.onPostExecute(descriptor);
+            bitmapDescriptor = descriptor;
+        }
+    }
+
+
 
     @SuppressLint("NewApi")
     private void showAreaPopUp(Placemark placemarkParam) {
@@ -200,6 +292,28 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .show();
                 }
             });
+
+            // Ndvi button
+            Button ndviButton = popupBinding.ndviBtn;
+            ndviButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // Create LatLng object for this location
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                    for (LatLng latLng : placemarkParam.getLatLngList()) {
+                        builder.include(latLng);
+                    }
+                    // Add ground overlay in the map
+                    mMap.addGroundOverlay(new GroundOverlayOptions()
+                            .positionFromBounds(builder.build())
+                            .image(bitmapDescriptor)
+                            .zIndex(100)
+                    );
+                    //Close dialog
+                    popUpDialog.dismiss();
+                }
+            });
+
         // Show popUp
         popUpDialog.show();
         }

@@ -276,7 +276,6 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-
     }
 
     @Override
@@ -300,8 +299,6 @@ public class MainActivity extends AppCompatActivity {
         // Unregister since the activity is about to be closed.
         unregisterReceiver(locationReceiver);
         unregisterReceiver(networkUtil);
-
-
     }
 
 

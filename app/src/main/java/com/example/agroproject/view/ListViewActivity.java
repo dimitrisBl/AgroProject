@@ -163,11 +163,11 @@ public class ListViewActivity extends AppCompatActivity {
                             }
                         }
                         // Load the placemarkMap from shared preferences
-                        Map<String, List<Placemark>> placemarkMap = kmlLocalStorageProvider.loadLayers();
+                        Map<String, List<Placemark>> placemarkMap = kmlLocalStorageProvider.loadPlacemarkMap();
                         // Remove Placemark that belongs to this file from placemarkMap
                         placemarkMap.remove(kmlFile.getName());
                         // Save changes
-                        kmlLocalStorageProvider.saveLayers(placemarkMap);
+                        kmlLocalStorageProvider.savePlacemarkMap(placemarkMap);
                         // Refresh the ListView
                         listViewAdapter = new ListViewAdapter(new ArrayList<>(kmlFileList));
                         listView.setAdapter(listViewAdapter);

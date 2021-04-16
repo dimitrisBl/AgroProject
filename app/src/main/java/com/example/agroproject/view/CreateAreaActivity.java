@@ -510,8 +510,13 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                                 String dataFromFile = kmlFileParser.getFileData(uri);
                                 // Parse data from the file and create a List with Placemark objects
                                 List<Placemark> placemarks = kmlFileParser.parseDataFromFile(dataFromFile);
+                                // Create a JSONObject for Agro Api request,
+                                // List jsonObjectList has the data in JSON type of the current file
+                                List<JSONObject> jsonObjectList = JsonBuilder.build(placemarks);
+                                // Post data in Agro Api TODO EINAI SXOLIO TO POST GIA NA MHN TREXEI SUNEXEIA
+                                //HttpRequest.postRequest(jsonObjectList);
                                 // Put data into Map
-                                kmlFileMap.put(fileName, placemarks);
+                                placemarkMap.put(fileName, placemarks);
                                 // Create a new KmlFile object
                                 KmlFile kmlFile = new KmlFile(fileName, uri.getPath(), dataFromFile);
                                 // Check if the kmlFile is exists
@@ -619,7 +624,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     if (detectInnerArea) {
                         // Get the outsider area
                         Placemark outsiderArea = AreaUtilities.getOutsiderArea();
-                        for (Map.Entry<String, List<Placemark>> entry : kmlFileMap.entrySet()) {
+                        for (Map.Entry<String, List<Placemark>> entry : placemarkMap.entrySet()) {
                             if (entry.getValue().contains(outsiderArea)) {
                                 entry.getValue().add(new Placemark
                                         (areaNameText, areaDescriptionText, polygonOptions.getPoints()));
@@ -655,8 +660,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     private void addTheExistingAreasInMap() {
         // Clear the map
         mMap.clear();
-        for(String key : kmlFileMap.keySet()){
-            for(Placemark placemark : kmlFileMap.get(key)){
+        for(String key : placemarkMap.keySet()){
+            for(Placemark placemark : placemarkMap.get(key)){
                // Create new polygonOptions for each placemark
                polygonOptions = new PolygonOptions()
                     .strokeWidth(5f).addAll(placemark.getLatLngList())

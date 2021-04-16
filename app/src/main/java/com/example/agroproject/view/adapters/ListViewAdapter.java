@@ -30,10 +30,6 @@ public class ListViewAdapter extends BaseAdapter {
         return kmlFileList.size();
     }
 
-    @Override
-    public Object getItem(int position) {
-        return kmlFileList.size();
-    }
 
     @Override
     public KmlFile getItem(int position) {

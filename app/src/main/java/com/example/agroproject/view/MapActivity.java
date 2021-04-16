@@ -153,13 +153,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 for (Placemark placemark : entry.getValue()) {
                    if (polygon.getTag().equals(placemark.getName())) {
                        showAreaPopUp(placemark);
+                       /** TODO BUG FIX  edw kamia foraw xrupaei null pointer exception gia to jsonArray otan kaleitai h get id*/
                        // Get id for the clicked polygon
                        String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
                        // Create a url for sentinel Get request of agro api for specific polygon and date
                        String sentinelRequestLink = StringBuildForRequest.sentinelRequestLink(polygonId,"1609501337","1617277337");
                        // Get sentinel data from agro api
                        HttpRequest.getRequest( MapActivity.this, sentinelRequestLink,  "Get sentinel data");
-                       break;
                     }
                 }
             }
@@ -189,38 +189,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             Log.d(TAG,"receive response heree"+responseData);
         }
     };
-
-    /**
-     *
-     */
-    private class getImageAsync extends AsyncTask<String, Void, BitmapDescriptor>{
-        @Override
-        protected BitmapDescriptor doInBackground(String... strings) {
-            try {
-                URL url = new URL(strings[0]);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setDoInput(true);
-                connection.connect();
-                InputStream input = connection.getInputStream();
-                Bitmap myBitmap = BitmapFactory.decodeStream(input);
-                input.close();
-                BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(myBitmap);
-                return  bitmapDescriptor;
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-                Log.d(TAG,"MalformedURLException");
-            } catch (IOException e) {
-                e.printStackTrace();
-                Log.d(TAG,"io exception");
-            }
-            return null;
-        }
-        @Override
-        protected void onPostExecute(BitmapDescriptor descriptor) {
-            super.onPostExecute(descriptor);
-            bitmapDescriptor = descriptor;
-        }
-    }
 
 
 
@@ -278,14 +246,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                            for (KmlFile kmlFile : entry2.getValue()) {
                                                // If this placemark belongs to this file
                                                if (entry.getKey().equals(kmlFile.getName())) {
-                                                   // If this record have only one file
-                                                   if (entry2.getValue().size() == 1) {
-                                                       // Remove all record
-                                                       farmMap.remove(entry2.getKey());
-                                                   } else {
-                                                       // Remove value only
-                                                       entry2.getValue().remove(kmlFile);
+                                                   // If this placemark belongs to this file
+                                                   if (entry.getKey().equals(kmlFile.getName())) {
+                                                       // If this record have only one file
+                                                       if (entry2.getValue().size() == 1) {
+                                                           // Remove all record
+                                                           farmMap.remove(entry2.getKey());
+                                                       } else {
+                                                           // Remove value only
+                                                           entry2.getValue().remove(kmlFile);
+                                                       }
                                                    }
+                                                   /** TODO exoume problhma edw bale to kml file xwrafaki1, kande delete thn mia perioxh apo tis 2 kai des sto listview*/
                                                    // Save the changes about the farmMap
                                                    kmlLocalStorageProvider.saveFarmMap(farmMap);
                                                    // Show message
@@ -318,7 +290,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .show();
                 }
             });
-
             // Ndvi button
             Button ndviButton = popupBinding.ndviBtn;
             ndviButton.setOnClickListener(new View.OnClickListener() {
@@ -372,6 +343,46 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Calling super after populating the menu is necessary here to ensure that the
         // action bar helpers have a chance to handle this event.
         return true;
+    }
+
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Unregister since the activity is about to be closed.
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(responseReceiver);
+    }
+
+    /**
+     * TODO CLASS DESCRIPTION
+     */
+    private class getImageAsync extends AsyncTask<String, Void, BitmapDescriptor>{
+        @Override
+        protected BitmapDescriptor doInBackground(String... strings) {
+            try {
+                URL url = new URL(strings[0]);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setDoInput(true);
+                connection.connect();
+                InputStream input = connection.getInputStream();
+                Bitmap myBitmap = BitmapFactory.decodeStream(input);
+                input.close();
+                BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(myBitmap);
+                return  bitmapDescriptor;
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                Log.d(TAG,"MalformedURLException");
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.d(TAG,"io exception");
+            }
+            return null;
+        }
+        @Override
+        protected void onPostExecute(BitmapDescriptor descriptor) {
+            super.onPostExecute(descriptor);
+            bitmapDescriptor = descriptor;
+        }
     }
 
 }

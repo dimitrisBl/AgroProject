@@ -23,7 +23,6 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.AgroProject">
-        <activity android:name=".view.ListViewActivity"></activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -42,22 +41,33 @@
 
         <uses-library
             android:name="org.apache.http.legacy"
-            android:required="false" /> <!-- -|||||||||||||||||||||||||||||||||||||||||||||||||||||||| -->
+            android:required="false" />
+        <!---|||||||||||||||||||||||||||||||||||||||||||||||||||||||| -->
         <activity
             android:name=".view.CreateAreaActivity"
             android:label="@string/title_activity_create_area"
             android:parentActivityName=".view.MainActivity" />
+
         <activity
             android:name=".view.MapActivity"
             android:label="@string/title_activity_map"
             android:parentActivityName=".view.MainActivity" />
+
+        <activity android:name=".view.ListViewActivity" />
+
+        <activity
+            android:name=".view.MapActivityV2"
+            android:label="@string/title_activity_map"
+            android:parentActivityName=".view.MainActivity"/>
+
         <activity android:name=".view.MainActivity">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
 
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
-        </activity> <!-- Location  Service -->
+        </activity>
+        <!-- Location  Service -->
         <service android:name=".services.LocationService" />
 
     </application>

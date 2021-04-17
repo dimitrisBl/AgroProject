@@ -249,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.yourMap_item:
                 if(isGpsEnable()){
-                    Intent yourMapIntent = new Intent(this, MapActivity.class);
+                    Intent yourMapIntent = new Intent(this, MapActivityV2.class);
                     yourMapIntent.putExtra("latitude",latitude);
                     yourMapIntent.putExtra("longitude",longitude);
                     startActivity(yourMapIntent);

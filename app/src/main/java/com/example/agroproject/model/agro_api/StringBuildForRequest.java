@@ -5,8 +5,8 @@ public class StringBuildForRequest {
     // key apo -> 6285cde775f088c749b4f1201829658a
     // key dimitri -> 126813a55ec5e945022783add18142d2
 
+    /** AGRO API INFO'S */
     private static final String AGRO_API_LINK = "http://api.agromonitoring.com/agro/1.0";
-
     private static final String API_KEY = "6285cde775f088c749b4f1201829658a";
 
 

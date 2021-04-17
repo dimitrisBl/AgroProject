@@ -84,7 +84,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /** KmlLocalStorageProvider */
     private KmlLocalStorageProvider kmlLocalStorageProvider;
 
-    private Map<String, List<Placemark>> placemarkMap = new HashMap<>();
+    /** KmlFile Map */
+    private Map<KmlFile, List<Placemark>> kmlFileMap = new HashMap<>();
 
     /** JSON data from GET request in agro api */
     private JSONArray jsonArray;
@@ -103,11 +104,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         longitude = intent.getDoubleExtra("longitude",0.0);
         // Create the LatLng object of the current location
         currentLocation = new LatLng(latitude, longitude);
+        // Instantiate a KmlLocalStorageProvider object
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
-        placemarkMap = kmlLocalStorageProvider.loadPlacemarkMap();
+        // Load the kmlFile Map from shared preferences storage
+        kmlFileMap = kmlLocalStorageProvider.loadKmlFileMap();
         // Get request on endpoint polygons of Agro api
         HttpRequest.getRequest(this, StringBuildForRequest.polygonsRequestLink(), "Get all polygons");
-        // We are registering an observer (responseReceiver) to receive Intents after http Get request in Agro api.
+        // We are registering an observer (responseReceiver) with action name GetRequestData to receive Intents after http Get request in Agro api.
         LocalBroadcastManager.getInstance(this).registerReceiver(responseReceiver, new IntentFilter("GetRequestData"));
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -149,11 +152,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public GoogleMap.OnPolygonClickListener polygonClickListener = new GoogleMap.OnPolygonClickListener() {
         @Override
         public void onPolygonClick(Polygon polygon) {
-            for (Map.Entry<String, List<Placemark>> entry : placemarkMap.entrySet()) {
+            for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
                 for (Placemark placemark : entry.getValue()) {
                    if (polygon.getTag().equals(placemark.getName())) {
                        showAreaPopUp(placemark);
-                       /** TODO BUG FIX  edw kamia foraw xrupaei null pointer exception gia to jsonArray otan kaleitai h get id*/
+                        /** TODO edw kamia fora xtupaei null pointer gia to jsonArray, tha prepei na ginetai handle kai ksana to arxiko request sta polygons */
                        // Get id for the clicked polygon
                        String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
                        // Create a url for sentinel Get request of agro api for specific polygon and date
@@ -173,7 +176,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private BroadcastReceiver responseReceiver  = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            // Get extra data included in the Intent
+            // Get response data and request type that are included in the Intent
             String responseData = intent.getStringExtra("Response data");
             String requestType = intent.getStringExtra("Request type");
 
@@ -234,39 +237,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                            @Override
                            public void onClick(DialogInterface dialog, int which) {
-                               // Load farm Map from shared preferences
-                               Map<String, List<KmlFile>> farmMap = kmlLocalStorageProvider.loadFarmMap();
-                               for(Map.Entry<String, List<Placemark>> entry : placemarkMap.entrySet()){
-                                   // Remove the Placemark
-                                   if(entry.getValue().remove(placemarkParam)) {
-                                       // Save the changes about the placemarkMap
-                                       kmlLocalStorageProvider.savePlacemarkMap(placemarkMap);
-                                       // Remove the file which contained this placemark
-                                       for (Map.Entry<String, List<KmlFile>> entry2 : farmMap.entrySet()) {
-                                           for (KmlFile kmlFile : entry2.getValue()) {
-                                               // If this placemark belongs to this file
-                                               if (entry.getKey().equals(kmlFile.getName())) {
-                                                   // If this placemark belongs to this file
-                                                   if (entry.getKey().equals(kmlFile.getName())) {
-                                                       // If this record have only one file
-                                                       if (entry2.getValue().size() == 1) {
-                                                           // Remove all record
-                                                           farmMap.remove(entry2.getKey());
-                                                       } else {
-                                                           // Remove value only
-                                                           entry2.getValue().remove(kmlFile);
-                                                       }
-                                                   }
-                                                   /** TODO exoume problhma edw bale to kml file xwrafaki1, kande delete thn mia perioxh apo tis 2 kai des sto listview*/
-                                                   // Save the changes about the farmMap
-                                                   kmlLocalStorageProvider.saveFarmMap(farmMap);
-                                                   // Show message
-                                                   Toast.makeText(MapActivity.this, "The area "+
-                                                   placemarkParam.getName() +" was removed ",Toast.LENGTH_LONG).show();
-                                                   break;
-                                               }
-                                           }
-                                       }
+                               for(Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()){
+                                   if(entry.getValue().remove(placemarkParam)){
+                                       // If this entry don't have values
+                                        if(entry.getValue().size() == 0){
+                                            // Remove all record
+                                            kmlFileMap.remove(entry.getKey());
+                                        }
+                                        // Save the changes
+                                        kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
+                                        break;
                                    }
                                }
                                // Add the existing polygons in the map
@@ -321,7 +301,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     */
     private void addTheExistingAreas() {
         mMap.clear();
-        for (Map.Entry<String, List<Placemark>> entry : placemarkMap.entrySet()) {
+        for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
             for (Placemark placemark : entry.getValue()) {
                 PolygonOptions polygonOptions = new PolygonOptions()
                        .strokeWidth(5f).addAll(placemark.getLatLngList()).strokeColor(Color.RED)
@@ -384,5 +364,4 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             bitmapDescriptor = descriptor;
         }
     }
-
 }

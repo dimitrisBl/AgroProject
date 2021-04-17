@@ -7,7 +7,9 @@ import android.util.Log;
 import com.example.agroproject.model.Placemark;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,19 +24,22 @@ public class KmlLocalStorageProvider {
     private final String PREFS_NAME ="KmlLocalStorage";
 
     /** Name of the placemarkMap Map in shared preferences stored */
-    private final String PLACEMARK_MAP = "placemarkMap";
+    private final String KML_FILE_LIST = "kmlFiles";
 
     /** Name of the farmMap Map in shared preferences stored */
-    private final String FARM_MAP = "farmMap";
+    private final String PLACEMARK_LIST = "placemarks";
 
     /** SharedPreferences object */
     private SharedPreferences sharedPreferences;
 
     /** Map with Placemark objects */
-    private Map<String, List<Placemark>> placemarkMap = new HashMap<>();
+    private Map<KmlFile, List<Placemark>> kmlFileMap = new HashMap<>();
 
-    /** Map with KmlFile objects */
-    private Map<String, List<KmlFile>> farmMap = new HashMap<>();
+    /** List with KmlFile objects */
+    private List<KmlFile> kmlFileList = new ArrayList<>();
+
+    /** List with List of placemark objects */
+    private List<List<Placemark>> placemarkList = new ArrayList<>();
 
     /**
      * This method initialize the KmlLocalStorageProvider object.
@@ -45,62 +50,64 @@ public class KmlLocalStorageProvider {
     }
 
     /**
-     * This method save the famMap in shared preferences file.
-     * @param placemarkMap has objects of the Placemark class.
+     * This method save the kmlFileMap in files of shared preferences.
+     * @param kmlFileMap has the data to be saved.
      */
-    public void savePlacemarkMap(Map<String, List<Placemark>> placemarkMap){
-        Log.d(TAG,"Area save executed");
-        String converted = new Gson().toJson(placemarkMap);
+    public void saveKmlFileMap(Map<KmlFile, List<Placemark>> kmlFileMap){
+        Log.d(TAG,"Shared preferences save executed");
+        // Initialize a kmlFileList
+        kmlFileList = new ArrayList<>();
+        // Initialize a placemarkList
+        placemarkList = new ArrayList<>();
+        // Pass the keys from kmlFileMap in kmlFileList
+        kmlFileList.addAll(kmlFileMap.keySet());
+        // Pass the values from KmlFileMap in placemarkList
+        placemarkList.addAll(kmlFileMap.values());
+        // Convert data from KmlFileList in String type
+        String kmlFilesConverted = new Gson().toJson(kmlFileList);
+        // Convert data from placemarkList in String type
+        String placemarksConverted = new Gson().toJson(placemarkList);
+        // Create editor
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(PLACEMARK_MAP, converted);
+        // Put kmlFilesConverted data on shared preferences stored
+        editor.putString(KML_FILE_LIST, kmlFilesConverted);
+        // Put placemarksConverted data on shared preferences stored
+        editor.putString(PLACEMARK_LIST, placemarksConverted);
         editor.apply();
     }
 
 
     /**
      * This method load the Map with KmlFile objects from shared preferences.
-     * @return the Map placemarkMap it contains placemark objects from the save file.
+     * @return the Map kmlFileMap it has key with  KmlFile objects and
+     * List of Placemark objects for the value.
      */
-    public Map<String, List<Placemark>> loadPlacemarkMap(){
-        Log.d(TAG,"load area save executed");
-        String defaultValue = new Gson().toJson(new HashMap<String, List<Placemark>>());
-        String json = sharedPreferences.getString(PLACEMARK_MAP, defaultValue);
-        if(json != null){
+    public Map<KmlFile, List<Placemark>> loadKmlFileMap(){
+        Log.d(TAG,"Shared preferences load executed");
+        // Load kmlFileList
+        String kmlDefaultValue = new Gson().toJson(new ArrayList<KmlFile>());
+        String kmlFileListJson = sharedPreferences.getString(KML_FILE_LIST, kmlDefaultValue);
+        // Pass data from kmlFileListJson on kmlFileList
+        if(kmlFileListJson != null){
             Gson gson = new Gson();
-            Type type = new TypeToken<Map<String, List<Placemark>>>() {}.getType();
-            placemarkMap = gson.fromJson(json, type);
+            Type type = new TypeToken< List<KmlFile>>() {}.getType();
+            kmlFileList = gson.fromJson(kmlFileListJson, type);
         }
-        return placemarkMap;
-    }
 
-    /**
-     * TODO DESCRIPTION
-     *
-     * @param multimap
-     */
-    public void saveFarmMap(Map<String, List<KmlFile>> multimap){
-        Log.d(TAG,"farm map save executed");
-        String converted = new Gson().toJson(multimap);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(FARM_MAP, converted);
-        editor.apply();
-    }
-
-    /**
-     * TODO DESCRIPTION
-     *
-     * @return
-     */
-    public Map<String, List<KmlFile>> loadFarmMap(){
-        Log.d(TAG,"farm map load executed");
-        String defaultValue = new Gson().toJson(new HashMap<String, List<KmlFile>>());
-        String json = sharedPreferences.getString(FARM_MAP, defaultValue);
-        if(json != null){
+        // Load placemarkList
+        String placemarkDefaultValue = new Gson().toJson(new ArrayList<Placemark>());
+        String placemarkListJson = sharedPreferences.getString(PLACEMARK_LIST, placemarkDefaultValue);
+        // Pass data from placemarkListJson on placemarkList
+        if(placemarkListJson!=null){
             Gson gson = new Gson();
-            Type type = new TypeToken<Map<String, List<KmlFile>>>() {}.getType();
-            farmMap = gson.fromJson(json, type);
+            Type type = new TypeToken<List<List<Placemark>>>() {}.getType();
+            placemarkList = gson.fromJson(placemarkListJson, type);
         }
-        return farmMap;
-    }
 
+        // Synthesize all loading data in the kmlFileMap
+        for(int i = 0;i < kmlFileList.size(); i++){
+            kmlFileMap.put(kmlFileList.get(i), placemarkList.get(i));
+        }
+        return kmlFileMap;
+    }
 }

@@ -5,12 +5,17 @@ public class KmlFile {
     private String name;
     private String path;
     private String data;
+    private String farmName;
 
-
-    public KmlFile(String name, String path, String data) {
+    public KmlFile(String name, String path, String data, String farmName) {
         this.name = name;
         this.path = path;
         this.data = data;
+        this.farmName = farmName;
+    }
+
+    public String getFarmName() {
+        return farmName;
     }
 
     public String getName() {

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="350dp"
     android:layout_height="450dp"
     android:layout_gravity="center"
-    android:background="@drawable/save_area_popup"
-    android:padding="5dp">
+    android:padding="10dp"
+    android:background="@drawable/save_area_popup">
 
 
     <ImageView
@@ -27,7 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/image"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="25dp"
         android:id="@+id/areaName"
         android:hint="area name "
         android:background="#bdc3c7"/>

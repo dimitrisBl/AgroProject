@@ -17,11 +17,19 @@
 
     <FrameLayout
         android:id="@+id/insert_file_fragment_container"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="70dp"
         android:layout_width="350dp"
         android:layout_height="400dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="70dp"
         android:layout_gravity="center" />
+
+    <FrameLayout
+        android:id="@+id/save_area_fragment_container"
+        android:layout_width="300dp"
+        android:layout_height="330dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="100dp"
+        android:layout_gravity="center"/>
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -47,11 +55,6 @@
             android:layout_weight="1.5"
             android:text="clear" />
 
-<!--        <CheckBox-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:id="@+id/check_box"-->
-<!--            android:text="Location Tracking"/>-->
         <Button
             android:id="@+id/close_layout"
             android:layout_width="match_parent"

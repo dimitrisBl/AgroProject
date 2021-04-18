@@ -33,11 +33,14 @@ import com.example.agroproject.databinding.ActivityMapV2Binding;
 
 import com.example.agroproject.model.AreaUtilities;
 import com.example.agroproject.model.Placemark;
+import com.example.agroproject.model.agro_api.HttpRequest;
+import com.example.agroproject.model.agro_api.StringBuildForRequest;
 import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
 import com.example.agroproject.view.fragments.InsertFileFragment;
+import com.example.agroproject.view.fragments.SaveAreaFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -56,7 +59,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallback, InsertFileFragment.InsertFileEventListener {
+public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallback,
+        InsertFileFragment.InsertFileEventListener, SaveAreaFragment.CreateAreaEventListener {
 
     /** Class TAG */
     private final String TAG = "MapActivity";
@@ -66,6 +70,9 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
 
     /** Marker */
     private Marker marker;
+
+    /** PolygonOptions */
+    private PolygonOptions polygonOptions;
 
     /** Activity view binding */
     private ActivityMapV2Binding binding;
@@ -97,9 +104,6 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
     /** Initialize List with LatLng objects */
     private List<LatLng> latLngList = new ArrayList<>();
 
-    /** Polyline */
-    private Polyline polyline = null;
-
     /** Auxiliary variable for the inner area detection */
     private String currentOuterArea = null;
 
@@ -126,6 +130,8 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
         // Load the kmlFile Map from shared preferences storage
         kmlFileMap = kmlLocalStorageProvider.loadKmlFileMap();
+        // Get request on endpoint polygons of Agro api
+        HttpRequest.getRequest(this, StringBuildForRequest.polygonsRequestLink(), "Get all polygons");
         // Set bottom menu visibility false
         binding.linearLayout.setVisibility(View.GONE);
         // Set click listener for buttons
@@ -206,6 +212,8 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
                 binding.linearLayout.setVisibility(View.VISIBLE);
                 // Set the property clickable false for each polygon
                 addTheExistingAreas(false);
+                //
+                currentOuterArea = null;
                 // bottom layout is enable
                 bottomLayoutIsEnable = true;
             return true;
@@ -221,18 +229,6 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
         }
         return super.onOptionsItemSelected(item);
     }
-
-//    /**
-//     * This method called if you want to close a pop up InsertFileFragment
-//     */
-//    @Override
-//    public void onBackPressed() {
-//        super.onBackPressed();
-//        Toast.makeText(this,"erxomai ewdww",Toast.LENGTH_LONG).show();
-//        kmlFileMap = kmlLocalStorageProvider.loadKmlFileMap();
-//        // Add areas in the map
-//        addTheExistingAreas();
-//    }
 
     /**
      *  TODO description
@@ -251,7 +247,7 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
                         // Do null the currentOuterArea after area creation
                         currentOuterArea = null;
                         // Create PolygonOptions
-                        PolygonOptions polygonOptions = new PolygonOptions()
+                        polygonOptions = new PolygonOptions()
                                 .strokeWidth(5f).addAll(latLngList).strokeColor(Color.RED)
                                 .fillColor(Color.argb(70, 50, 255, 0));
                         // Draw area on the Map
@@ -281,7 +277,7 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
                     latLngList.clear();
                     markerList.clear();
                     mMap.clear();
-                    polyline = null;
+                    currentOuterArea = null;
                     addTheExistingAreas(true);
                 break;
 
@@ -296,7 +292,7 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
                     latLngList.clear();
                     markerList.clear();
                     mMap.clear();
-                    polyline = null;
+                    currentOuterArea = null;
                     addTheExistingAreas(true);
                  break;
             }
@@ -315,8 +311,20 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
                 .setCancelable(false) // Set cancelable on touch outside
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        // If answer is yes show save area popup.
-                        //showSaveAreaPopup();/** TODO */
+                        // Instantiate a SaveAreaFragment object
+                        SaveAreaFragment saveAreaFragment = new SaveAreaFragment();
+                        // Start fragment activity
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.save_area_fragment_container, saveAreaFragment, saveAreaFragment.getClass()
+                                        .getSimpleName()).addToBackStack(null).commit();
+                        // Close bottom layout
+                        binding.linearLayout.setVisibility(View.GONE);
+                        // bottom layout is disable
+                        bottomLayoutIsEnable = false;
+                        // Enable visibility for zoom controls buttons
+                        mMap.getUiSettings().setZoomControlsEnabled(true);
+                        //
+                        addTheExistingAreas(false);
                     }
                 }).setNegativeButton("No", new DialogInterface.OnClickListener() {
                     @Override
@@ -444,6 +452,29 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
         addTheExistingAreas(true);
         // Move the camera in center location
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 13f));
+    }
+
+
+    /**
+     * CreateAreaEventListener implementation
+     *
+     * @param areaName
+     * @param areaDescription
+     * @param outsiderArea
+     */
+    @Override
+    public void createAreaEvent(String areaName, String areaDescription, Placemark outsiderArea) {
+        for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
+            if (entry.getValue().contains(outsiderArea)) {
+                // add new value on this entry
+                entry.getValue().add(new Placemark
+                        (areaName, areaDescription, polygonOptions.getPoints()));
+                // Save the kmlFileMap in shared preferences.
+                kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
+            }
+        }
+        // Add areas in the map  set property clickable  true
+        addTheExistingAreas(true);
     }
 
 

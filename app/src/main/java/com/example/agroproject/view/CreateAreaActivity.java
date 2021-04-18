@@ -36,7 +36,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
-import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
 import com.example.agroproject.model.agro_api.HttpRequest;
 import com.example.agroproject.model.agro_api.JsonBuilder;
 import com.example.agroproject.model.AreaUtilities;
@@ -382,7 +381,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         // If answer is yes show save area popup.
-                        showSaveAreaPopup();
+                        //showSaveAreaPopup();
                     }
                 }).setNegativeButton("No", new DialogInterface.OnClickListener() {
                     @Override
@@ -439,7 +438,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         return true;
     }
 
-  /** TODO EDW EIMAIeeeeee */
+    /** TODO EDW EIMAIeeeeee */
 //    /**
 //     * Event Handling for Individual menu item selected
 //     * Identify single menu item by it's id
@@ -563,83 +562,83 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         }
         return false;
     }
-
-    /**
-     * TODO method description
-     * AUTH KALEITAI OTAN KANEIS POLYGONO PANW APO TON XARTI
-     */
-    private void showSaveAreaPopup(){
-        // Binding
-        SaveAreaPopupStyleBinding popupBinding;
-        // Initialize a view for saveAreaPopup
-        popupBinding = SaveAreaPopupStyleBinding.inflate(getLayoutInflater());
-        View popupView = popupBinding.getRoot();
-
-        // Instantiate a Dialog
-        Dialog popupDialog = new Dialog(this);
-        popupDialog.setContentView(popupView);
-        popupDialog.setCanceledOnTouchOutside(false);
-
-            // Initialize ui components
-            ImageView imageViewClose = popupBinding.btnCLose;
-            EditText areaName = popupBinding.areaName;
-            EditText areaDescription = popupBinding.areaDescription;
-            Button submitBtn = popupBinding.btnSubmit;
-
-            // Close Button ClickEvent
-            imageViewClose.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    mMap.clear();
-                    //Add the existing polygons in the map
-                    addTheExistingAreasInMap();
-                    // Close dialog
-                    popupDialog.dismiss();
-                }
-            });
-            // Save Button ClickEvent
-            submitBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d(TAG,"Submit button pressed");
-                // Get text from areaName textView in String type
-                String areaNameText = areaName.getText().toString();
-                // Get text from areaDescription textView in String type
-                String areaDescriptionText = areaDescription.getText().toString();
-                if(!areaNameText.isEmpty() && !areaDescriptionText.isEmpty()) {
-                    // If this new area is inner in other area
-                    if (detectInnerArea) {
-                        // Get the outsider area
-                        Placemark outsiderArea = AreaUtilities.getOutsiderArea();
-                        for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
-                            if (entry.getValue().contains(outsiderArea)) {
-                                entry.getValue().add(new Placemark
-                                        (areaNameText, areaDescriptionText, polygonOptions.getPoints()));
-                                // Save the kmlFileMap in shared preferences.
-                                kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
-                            }
-                        }
-                        Log.d(TAG, "create inner area in " + AreaUtilities.getOutsiderArea().getName());
-                    } else {
-                        // Show message
-                        Toast.makeText(CreateAreaActivity.this,
-                                "Please draw you area inside in other area", Toast.LENGTH_LONG).show();
-                    }
-                    //Add the existing polygons in the map
-                    addTheExistingAreasInMap();
-                    // Close dialog
-                    popupDialog.dismiss();
-                }else{
-                    // Show message
-                    Toast.makeText(CreateAreaActivity.this,
-                            "Fill all the fields please", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-
-        // Show dialog
-        popupDialog.show();
-    }
+    /** TODO EDW EIMAIeeeeee 2222*/
+//    /**
+//     * TODO method description
+//     * AUTH KALEITAI OTAN KANEIS POLYGONO PANW APO TON XARTI
+//     */
+//    private void showSaveAreaPopup(){
+//        // Binding
+//        SaveAreaPopupStyleBinding popupBinding;
+//        // Initialize a view for saveAreaPopup
+//        popupBinding = SaveAreaPopupStyleBinding.inflate(getLayoutInflater());
+//        View popupView = popupBinding.getRoot();
+//
+//        // Instantiate a Dialog
+//        Dialog popupDialog = new Dialog(this);
+//        popupDialog.setContentView(popupView);
+//        popupDialog.setCanceledOnTouchOutside(false);
+//
+//            // Initialize ui components
+//            ImageView imageViewClose = popupBinding.btnCLose;
+//            EditText areaName = popupBinding.areaName;
+//            EditText areaDescription = popupBinding.areaDescription;
+//            Button submitBtn = popupBinding.btnSubmit;
+//
+//            // Close Button ClickEvent
+//            imageViewClose.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    mMap.clear();
+//                    //Add the existing polygons in the map
+//                    addTheExistingAreasInMap();
+//                    // Close dialog
+//                    popupDialog.dismiss();
+//                }
+//            });
+//            // Save Button ClickEvent
+//            submitBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Log.d(TAG,"Submit button pressed");
+//                // Get text from areaName textView in String type
+//                String areaNameText = areaName.getText().toString();
+//                // Get text from areaDescription textView in String type
+//                String areaDescriptionText = areaDescription.getText().toString();
+//                if(!areaNameText.isEmpty() && !areaDescriptionText.isEmpty()) {
+//                    // If this new area is inner in other area
+//                    if (detectInnerArea) {
+//                        // Get the outsider area
+//                        Placemark outsiderArea = AreaUtilities.getOutsiderArea();
+//                        for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
+//                            if (entry.getValue().contains(outsiderArea)) {
+//                                entry.getValue().add(new Placemark
+//                                        (areaNameText, areaDescriptionText, polygonOptions.getPoints()));
+//                                // Save the kmlFileMap in shared preferences.
+//                                kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
+//                            }
+//                        }
+//                        Log.d(TAG, "create inner area in " + AreaUtilities.getOutsiderArea().getName());
+//                    } else {
+//                        // Show message
+//                        Toast.makeText(CreateAreaActivity.this,
+//                                "Please draw you area inside in other area", Toast.LENGTH_LONG).show();
+//                    }
+//                    //Add the existing polygons in the map
+//                    addTheExistingAreasInMap();
+//                    // Close dialog
+//                    popupDialog.dismiss();
+//                }else{
+//                    // Show message
+//                    Toast.makeText(CreateAreaActivity.this,
+//                            "Fill all the fields please", Toast.LENGTH_LONG).show();
+//                }
+//            }
+//        });
+//
+//        // Show dialog
+//        popupDialog.show();
+//    }
 
 
     /**

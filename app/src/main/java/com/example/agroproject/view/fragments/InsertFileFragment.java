@@ -228,5 +228,4 @@ public class InsertFileFragment extends Fragment {
             throw new ClassCastException(activity.toString() + " must implement onSomeEventListener");
         }
     }
-
 }

@@ -373,6 +373,7 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
     /**
      * This method put the existing monitoring areas in the map
      * loads the existing areas data from the shared preferences storage.
+     *
      * @param isClickable declares the property clickable for each polygon
      */
     private void addTheExistingAreas(boolean isClickable) {
@@ -431,7 +432,7 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
         // to receive intents with action name "CONNECTIVITY_ACTION".
         registerReceiver(networkUtil, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
-    
+
     @Override
     protected void onPause() {
         super.onPause();

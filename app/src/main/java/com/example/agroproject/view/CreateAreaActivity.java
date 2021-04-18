@@ -36,7 +36,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityCreateAreaBinding;
-import com.example.agroproject.databinding.InsertFilePopupStyleBinding;
 import com.example.agroproject.databinding.SaveAreaPopupStyleBinding;
 import com.example.agroproject.model.agro_api.HttpRequest;
 import com.example.agroproject.model.agro_api.JsonBuilder;
@@ -137,7 +136,7 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
     private String currentOuterArea = null;
 
     /** View binding for the insert file pop up */
-    private InsertFilePopupStyleBinding insertFilePopupBinding;
+   // private InsertFilePopupStyleBinding insertFilePopupBinding;
 
     /** Uri */
     private Uri uri;
@@ -412,8 +411,8 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
                     fileName = fileName.substring(cut + 1);
                 }
                 // Set file name in TextView of inertFilePopUp
-                EditText name = insertFilePopupBinding.fileName;
-                name.setText(fileName);
+                //EditText name = insertFilePopupBinding.fileName;
+                //name.setText(fileName);
             }
         }
     }
@@ -440,114 +439,114 @@ public class CreateAreaActivity extends AppCompatActivity implements OnMapReadyC
         return true;
     }
 
-
-    /**
-     * Event Handling for Individual menu item selected
-     * Identify single menu item by it's id
-     */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.insert_file:
-                // Initialize a view for InsertFilePopup
-                insertFilePopupBinding = InsertFilePopupStyleBinding.inflate(getLayoutInflater());
-                View popupView = insertFilePopupBinding.getRoot();
-
-                // Instantiate a Dialog
-                Dialog popupDialog = new Dialog(this);
-                popupDialog.setContentView(popupView);
-                popupDialog.setCanceledOnTouchOutside(false);
-                    // Farm name TextView
-                    AutoCompleteTextView farmName = insertFilePopupBinding.AutoCompleteTextView;
-                    // Initialize a new List
-                    List<String> dropDownData = new ArrayList<>();
-                    for(KmlFile kmlFile : kmlFileMap.keySet()){
-                        if(!dropDownData.contains(kmlFile.getFarmName())){
-                            dropDownData.add(kmlFile.getFarmName());
-                        }
-                    }
-                    // Set data in the dropDownAdapter
-                    ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this,
-                            android.R.layout.simple_list_item_1, dropDownData);
-                    // Set dara in farmName TextView
-                    farmName.setAdapter(spinnerAdapter);
-                    // Close image
-                    ImageView imageViewClose = insertFilePopupBinding.btnCLose;
-                    imageViewClose.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            // Close dialog
-                            popupDialog.dismiss();
-                        }
-                    });
-                    // Choose file button
-                    Button chooseFileBtn = insertFilePopupBinding.chooseFileBtn;
-                    chooseFileBtn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            // Open file explorer
-                            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                            intent.setType("*/*");
-                            //intent.setType("text/xml");
-                            startActivityForResult(intent, FILE_SELECTION_CODE);
-                        }
-                    });
-                    // Submit button
-                    Button submit = insertFilePopupBinding.saveFileBtn;
-                    submit.setOnClickListener(new View.OnClickListener() {
-                        @RequiresApi(api = Build.VERSION_CODES.R)
-                        @Override
-                        public void onClick(View view) {
-                            // Get the text from farmName TextView in String type
-                            String farmNameText = farmName.getText().toString();
-                            if (!farmNameText.isEmpty() && fileName != null) {
-                                // Instantiate a KmlFileParse object
-                                kmlFileParser = new KmlFileParser(CreateAreaActivity.this);
-                                // Open file and get the data in String type
-                                String dataFromFile = kmlFileParser.getFileData(uri);
-                                // Parse data from the file and create a List with Placemark objects
-                                List<Placemark> placemarks = kmlFileParser.parseDataFromFile(dataFromFile);
-                                // Create a JSONObject for Agro Api request,
-                                // List jsonObjectList has the data in JSON type of the current file
-                                List<JSONObject> jsonObjectList = JsonBuilder.build(placemarks);
-                                // Post data in Agro Api TODO EINAI SXOLIO TO POST GIA NA MHN TREXEI SUNEXEIA
-                                //HttpRequest.postRequest(jsonObjectList);
-                                // Create a new KmlFile object
-                                KmlFile kmlFile = new KmlFile(fileName, uri.getPath(), dataFromFile, farmNameText);
-                                // Check if the kmlFile is exists
-                                if(fileExistsCheck(kmlFile) == false){
-                                    // Put data into Map
-                                    kmlFileMap.put(kmlFile, placemarks);
-                                    // Save the kmlFileMap in shared preferences.
-                                    kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
-                                    // Show message
-                                    Toast.makeText(CreateAreaActivity.this,
-                                    "The file "+fileName+" was successfully added",Toast.LENGTH_LONG).show();
-                                    // Get the center area of first placemark witch contained this file
-                                    LatLng center = AreaUtilities.getAreaCenterPoint(placemarks.get(0).getLatLngList());
-                                    // Move the camera in current location
-                                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 13f));
-                                    // Add the existing polygons in the map
-                                    addTheExistingAreasInMap();
-                                    // Close dialog
-                                    popupDialog.dismiss();
-                                }
-                            }else{
-                                // Show message
-                                Toast.makeText(CreateAreaActivity.this,
-                                        "Fill all the fields please", Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    });
-                // Show dialog
-                popupDialog.show();
-            return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
+  /** TODO EDW EIMAIeeeeee */
+//    /**
+//     * Event Handling for Individual menu item selected
+//     * Identify single menu item by it's id
+//     */
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        // Handle item selection
+//        switch (item.getItemId()) {
+//            case R.id.insert_file:
+//                // Initialize a view for InsertFilePopup
+//                insertFilePopupBinding = InsertFilePopupStyleBinding.inflate(getLayoutInflater());
+//                View popupView = insertFilePopupBinding.getRoot();
+//
+//                // Instantiate a Dialog
+//                Dialog popupDialog = new Dialog(this);
+//                popupDialog.setContentView(popupView);
+//                popupDialog.setCanceledOnTouchOutside(false);
+//                    // Farm name TextView
+//                    AutoCompleteTextView farmName = insertFilePopupBinding.AutoCompleteTextView;
+//                    // Initialize a new List
+//                    List<String> dropDownData = new ArrayList<>();
+//                    for(KmlFile kmlFile : kmlFileMap.keySet()){
+//                        if(!dropDownData.contains(kmlFile.getFarmName())){
+//                            dropDownData.add(kmlFile.getFarmName());
+//                        }
+//                    }
+//                    // Set data in the dropDownAdapter
+//                    ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this,
+//                            android.R.layout.simple_list_item_1, dropDownData);
+//                    // Set dara in farmName TextView
+//                    farmName.setAdapter(spinnerAdapter);
+//                    // Close image
+//                    ImageView imageViewClose = insertFilePopupBinding.btnCLose;
+//                    imageViewClose.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View view) {
+//                            // Close dialog
+//                            popupDialog.dismiss();
+//                        }
+//                    });
+//                    // Choose file button
+//                    Button chooseFileBtn = insertFilePopupBinding.chooseFileBtn;
+//                    chooseFileBtn.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View view) {
+//                            // Open file explorer
+//                            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+//                            intent.setType("*/*");
+//                            //intent.setType("text/xml");
+//                            startActivityForResult(intent, FILE_SELECTION_CODE);
+//                        }
+//                    });
+//                    // Submit button
+//                    Button submit = insertFilePopupBinding.saveFileBtn;
+//                    submit.setOnClickListener(new View.OnClickListener() {
+//                        @RequiresApi(api = Build.VERSION_CODES.R)
+//                        @Override
+//                        public void onClick(View view) {
+//                            // Get the text from farmName TextView in String type
+//                            String farmNameText = farmName.getText().toString();
+//                            if (!farmNameText.isEmpty() && fileName != null) {
+//                                // Instantiate a KmlFileParse object
+//                                kmlFileParser = new KmlFileParser(CreateAreaActivity.this);
+//                                // Open file and get the data in String type
+//                                String dataFromFile = kmlFileParser.getFileData(uri);
+//                                // Parse data from the file and create a List with Placemark objects
+//                                List<Placemark> placemarks = kmlFileParser.parseDataFromFile(dataFromFile);
+//                                // Create a JSONObject for Agro Api request,
+//                                // List jsonObjectList has the data in JSON type of the current file
+//                                List<JSONObject> jsonObjectList = JsonBuilder.build(placemarks);
+//                                // Post data in Agro Api TODO EINAI SXOLIO TO POST GIA NA MHN TREXEI SUNEXEIA
+//                                //HttpRequest.postRequest(jsonObjectList);
+//                                // Create a new KmlFile object
+//                                KmlFile kmlFile = new KmlFile(fileName, uri.getPath(), dataFromFile, farmNameText);
+//                                // Check if the kmlFile is exists
+//                                if(fileExistsCheck(kmlFile) == false){
+//                                    // Put data into Map
+//                                    kmlFileMap.put(kmlFile, placemarks);
+//                                    // Save the kmlFileMap in shared preferences.
+//                                    kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
+//                                    // Show message
+//                                    Toast.makeText(CreateAreaActivity.this,
+//                                    "The file "+fileName+" was successfully added",Toast.LENGTH_LONG).show();
+//                                    // Get the center area of first placemark witch contained this file
+//                                    LatLng center = AreaUtilities.getAreaCenterPoint(placemarks.get(0).getLatLngList());
+//                                    // Move the camera in current location
+//                                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 13f));
+//                                    // Add the existing polygons in the map
+//                                    addTheExistingAreasInMap();
+//                                    // Close dialog
+//                                    popupDialog.dismiss();
+//                                }
+//                            }else{
+//                                // Show message
+//                                Toast.makeText(CreateAreaActivity.this,
+//                                        "Fill all the fields please", Toast.LENGTH_LONG).show();
+//                            }
+//                        }
+//                    });
+//                // Show dialog
+//                popupDialog.show();
+//            return true;
+//
+//            default:
+//                return super.onOptionsItemSelected(item);
+//        }
+//    }
 
     /**
      * @param kmlFile has the new kml file witch user wants to add

@@ -1,7 +1,11 @@
 package com.example.agroproject.view;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.text.Layout;
 import android.text.SpannableString;
@@ -28,6 +32,8 @@ import com.example.agroproject.model.AreaUtilities;
 import com.example.agroproject.model.Placemark;
 import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
+import com.example.agroproject.services.LocationService;
+import com.example.agroproject.services.NetworkUtil;
 import com.example.agroproject.view.fragments.InsertFileFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -73,6 +79,9 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
     /** KmlLocalStorageProvider */
     private KmlLocalStorageProvider kmlLocalStorageProvider;
 
+    /** NetworkUtil control the internet connection */
+    private NetworkUtil networkUtil;
+
     /** KmlFile Map */
     private Map<KmlFile, List<Placemark>> kmlFileMap = new HashMap<>();
 
@@ -102,6 +111,8 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
         super.onCreate(savedInstanceState);
         binding = ActivityMapV2Binding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        // Instantiate a NetworkUtil object
+        networkUtil = new NetworkUtil(this);
         // Get extras from intent
         Intent intent = getIntent();
         latitude = intent.getDoubleExtra("latitude", 0.0);
@@ -402,5 +413,32 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
         addTheExistingAreas(true);
         // Move the camera in center location
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 13f));
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG,"onResume executed");
+//        // Receive messages about current location.
+//        // We are registering an observer (locationReceiver) to receive Intents with actions named "LocationUpdates".
+//        registerReceiver(locationReceiver, new IntentFilter(LocationService.ACTION_NAME));
+//        // Receive messages about GPS status.
+//        // We are registering an observer (GpsStatusReceiver) to receive intents with action name "android.location.PROVIDERS_CHANGED".
+//        registerReceiver(GpsStatusReceiver, new IntentFilter("android.location.PROVIDERS_CHANGED"));
+        // Receive messages about Network status.
+        // We are registering an observer from NetworkUtil class which extends BroadCast Receiver class
+        // to receive intents with action name "CONNECTIVITY_ACTION".
+        registerReceiver(networkUtil, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+    
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG,"onPause executed");
+        // Unregister since the activity is about to be closed.
+//        unregisterReceiver(locationReceiver);
+//        unregisterReceiver(GpsStatusReceiver);
+        unregisterReceiver(networkUtil);
     }
 }

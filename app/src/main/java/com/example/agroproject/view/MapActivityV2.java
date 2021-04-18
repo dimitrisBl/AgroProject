@@ -350,7 +350,6 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
             // Detect if current click is inner in other area
             detectInnerArea = AreaUtilities
                     .detectInnerArea(latLng, placemarkList);
-
             if(currentOuterArea == null){
                 // Get the name from current outer area only in the first time
                 currentOuterArea = AreaUtilities.getOutsiderArea().getName();

@@ -134,7 +134,7 @@ public class InsertFileFragment extends Fragment {
                      // Open file explorer
                      Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                      intent.setType("*/*");
-                     //intent.setType("text/xml");
+                     //intent.setType("text/xml");/* TODO AUTO EINAI TO SWSTO GIA NA EPILEGEI MONO KML ARXEIA */
                      startActivityForResult(intent, FILE_SELECTION_CODE);
                 break;
 

@@ -211,11 +211,12 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
             return true;
 
             case R.id.insert_file:
+                // Instantiate a InsertFileFragment object
                 InsertFileFragment insertFileFragment = new InsertFileFragment();
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.add(R.id.fragment_container, insertFileFragment);
-                fragmentTransaction.commit();
+                // Start fragment activity
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.insert_file_fragment_container, insertFileFragment, insertFileFragment.getClass()
+                                .getSimpleName()).addToBackStack(null).commit();
             return true;
         }
         return super.onOptionsItemSelected(item);

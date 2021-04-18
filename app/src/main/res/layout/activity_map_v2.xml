@@ -16,7 +16,7 @@
         android:layout_height="match_parent"/>
 
     <FrameLayout
-        android:id="@+id/fragment_container"
+        android:id="@+id/insert_file_fragment_container"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="70dp"
         android:layout_width="350dp"

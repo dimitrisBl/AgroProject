@@ -361,8 +361,8 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
 
     /**
      * This method put the existing monitoring areas in the map
-     * loads the existing areas data from the shared preferences file.
-     * @param isClickable declares the property clickable  for each polygon
+     * loads the existing areas data from the shared preferences storage.
+     * @param isClickable declares the property clickable for each polygon
      */
     private void addTheExistingAreas(boolean isClickable) {
         mMap.clear();
@@ -385,8 +385,12 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
     /**
      * InsertFileEventListener implementation
      *
-     * @param center have the central location of the area
-     * from the file which added from the user
+     * Puts a new kml files in the kmlFileMap
+     * and save the changes on shared preferences storage.
+     *
+     * @param center have the central location of the area from the file which added from the user.
+     * @param kmlFile is a new kml file selected by the user from the file explorer.
+     * @param placemarks takes the each placemark from the new kml file
      */
     @Override
     public void inertFileEvent(LatLng center, KmlFile kmlFile, List<Placemark> placemarks) {

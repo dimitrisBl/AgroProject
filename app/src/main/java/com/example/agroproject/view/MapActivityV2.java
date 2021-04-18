@@ -1,7 +1,10 @@
 package com.example.agroproject.view;
 
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
@@ -256,8 +259,8 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
                         for (Marker marker : markerList) {
                             marker.remove();
                         }
-                        // Show dialog/** TODO */
-                        //showSaveAlertDialog();
+                        // Show dialog
+                        showSaveAlertDialog();
                         // Clean the lists
                         markerList.clear();
                         latLngList.clear();
@@ -298,6 +301,33 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
             }
         }
     };
+
+    /**
+     * TODO method description
+     */
+    @SuppressLint("NewApi")
+    private void showSaveAlertDialog(){
+        new AlertDialog.Builder(MapActivityV2.this)
+                .setIcon(R.drawable.ic_baseline_save)
+                .setTitle("Save")
+                .setMessage("You want to save this area?")
+                .setCancelable(false) // Set cancelable on touch outside
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // If answer is yes show save area popup.
+                        //showSaveAreaPopup();/** TODO */
+                    }
+                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        // If answer is no, clean the map and add the existing polygons.
+                        mMap.clear();
+                        //Add the existing polygons in the map
+                        addTheExistingAreas(false);
+                    }
+                })
+       .show();
+    }
 
 
     /**

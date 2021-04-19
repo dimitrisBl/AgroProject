@@ -43,20 +43,11 @@
             android:name="org.apache.http.legacy"
             android:required="false" />
         <!---|||||||||||||||||||||||||||||||||||||||||||||||||||||||| -->
-        <activity
-            android:name=".view.CreateAreaActivity"
-            android:label="@string/title_activity_create_area"
-            android:parentActivityName=".view.MainActivity" />
-
-        <activity
-            android:name=".view.MapActivity"
-            android:label="@string/title_activity_map"
-            android:parentActivityName=".view.MainActivity" />
 
         <activity android:name=".view.ListViewActivity" />
 
         <activity
-            android:name=".view.MapActivityV2"
+            android:name=".view.MapActivity"
             android:screenOrientation="portrait"
             android:label="@string/title_activity_map"
             android:parentActivityName=".view.MainActivity"/>

@@ -91,10 +91,8 @@ public class InsertFileFragment extends Fragment implements Executor {
         binding.btnCLose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Close pop up and trigger onBackPressed function of MapActivityV2
+                // Close pop up and trigger onBackPressed function of MapActivity
                 getActivity().onBackPressed();
-                // Close pop up
-                //((ViewGroup)popupView.getParent()).removeView(popupView);
             }
         });
         // Set click listener for choose file button click

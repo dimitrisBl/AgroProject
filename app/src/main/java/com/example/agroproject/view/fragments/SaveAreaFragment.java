@@ -37,15 +37,10 @@ public class SaveAreaFragment extends Fragment {
     /** Create area event listener */
     private CreateAreaEventListener createAreaEventListener;
 
-    private SupportMapFragment mapFragment;
-
-    public SaveAreaFragment() {
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
 

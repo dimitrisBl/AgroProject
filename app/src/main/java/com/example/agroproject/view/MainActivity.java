@@ -30,13 +30,8 @@ import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMainBinding;
 
 
-import com.example.agroproject.model.file.KmlFileWriter;
-
-import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
-
-import java.io.File;
 
 
 /**
@@ -227,13 +222,6 @@ public class MainActivity extends AppCompatActivity {
         s1.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s1.length(), 0);
         item1.setTitle(s1);
 
-        // set title alignment for each item is center
-        int positionOfMenuItem2 = 2; //or any other postion
-        MenuItem item2 = menu.getItem(positionOfMenuItem2);
-        SpannableString s2 = new SpannableString(item2.getTitle());
-        s2.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s2.length(), 0);
-        item2.setTitle(s2);
-
         // Calling super after populating the menu is necessary here to ensure that the
         // action bar helpers have a chance to handle this event.
         return true;
@@ -249,21 +237,13 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.yourMap_item:
                 if(isGpsEnable()){
-                    Intent yourMapIntent = new Intent(this, MapActivityV2.class);
+                    Intent yourMapIntent = new Intent(this, MapActivity.class);
                     yourMapIntent.putExtra("latitude",latitude);
                     yourMapIntent.putExtra("longitude",longitude);
                     startActivity(yourMapIntent);
                 }
              return true;
 
-            case R.id.createArea_item:
-                if(isGpsEnable()){
-                    Intent createAreaIntent = new Intent(this, CreateAreaActivity.class);
-                    createAreaIntent.putExtra("latitude", latitude);
-                    createAreaIntent.putExtra("longitude", longitude);
-                    startActivityForResult(createAreaIntent,CREATE_AREA_ACTIVITY_CODE);
-                }
-            return true;
             case R.id.yourFarms_item:
                 Intent recyclerViewIntent = new Intent(this, ListViewActivity.class);
                 startActivity(recyclerViewIntent);

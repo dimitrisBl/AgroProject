@@ -180,7 +180,6 @@ public class AreaClickFragment extends Fragment {
                     /** TODO OTAN THA PATAEI TO NDVI BUTTON THA ANOIGEI ALERT GIA NA BALEI HMEROMINIES,
                      *  AFOU PATHSEI KAI EKEI OK THA KALW THN getImageAsync kai sthn on onPreExecute tha balw na fortizei
                       */
-
                 break;
             }
         }
@@ -238,7 +237,4 @@ public class AreaClickFragment extends Fragment {
             bitmapDescriptor = descriptor;
         }
     }
-
-
-
 }

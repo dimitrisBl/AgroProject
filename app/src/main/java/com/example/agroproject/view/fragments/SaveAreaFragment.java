@@ -60,8 +60,6 @@ public class SaveAreaFragment extends Fragment {
             public void onClick(View view) {
                 // Close pop up and trigger onBackPressed function of MapActivityV2
                 getActivity().onBackPressed();
-                // Close pop up
-                //((ViewGroup)popupView.getParent()).removeView(popupView);
             }
         });
         // Save button click listener
@@ -79,8 +77,6 @@ public class SaveAreaFragment extends Fragment {
                     createAreaEventListener.createAreaEvent(areaName, areaDescription, outsiderArea);
                     // Close pop up and trigger onBackPressed function of MapActivityV2
                     getActivity().onBackPressed();
-                    // Close pop up
-                    //((ViewGroup)popupView.getParent()).removeView(popupView);
                 }else{
                     // Show message
                     Toast.makeText(getActivity(),

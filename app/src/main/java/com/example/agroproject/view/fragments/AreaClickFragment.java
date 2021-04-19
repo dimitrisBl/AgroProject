@@ -1,6 +1,5 @@
 package com.example.agroproject.view.fragments;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -16,14 +15,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroupOverlay;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
-
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.AreaClickPopupBinding;
 import com.example.agroproject.model.Placemark;
@@ -211,6 +206,7 @@ public class AreaClickFragment extends Fragment {
         }
     }
 
+
     /**
      * TODO CLASS DESCRIPTION
      */
@@ -242,5 +238,7 @@ public class AreaClickFragment extends Fragment {
             bitmapDescriptor = descriptor;
         }
     }
+
+
 
 }

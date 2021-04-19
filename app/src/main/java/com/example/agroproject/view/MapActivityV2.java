@@ -2,17 +2,14 @@ package com.example.agroproject.view;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Layout;
 import android.text.SpannableString;
@@ -22,16 +19,12 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.agroproject.R;
@@ -45,7 +38,6 @@ import com.example.agroproject.model.agro_api.JsonParser;
 import com.example.agroproject.model.agro_api.StringBuildForRequest;
 import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
-import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
 import com.example.agroproject.view.fragments.AreaClickFragment;
 import com.example.agroproject.view.fragments.InsertFileFragment;
@@ -55,7 +47,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -63,17 +55,10 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.material.tabs.TabLayout;
 
 import org.json.JSONArray;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -135,6 +120,9 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
 
     /** JSON data from GET request in agro api */
     private JSONArray jsonArray;
+
+    /** List with GroundOverlay objects, takes the ndvi ground overlays after ndvi request*/
+    private List<GroundOverlayOptions> groundOverlaysList = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -428,11 +416,13 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
         public void onMapClick(LatLng latLng) {
             Log.d(TAG, "OnMapClickListener function running");
             // Detect if current click is inner in other area
-            detectInnerArea = AreaUtilities
+            boolean areaExists =  detectInnerArea = AreaUtilities
                     .detectInnerArea(latLng, placemarkList);
-            if(currentOuterArea == null){
-                // Get the name from current outer area only in the first time
-                currentOuterArea = AreaUtilities.getOutsiderArea().getName();
+            if(areaExists) {
+                if (currentOuterArea == null) {
+                    // Get the name from current outer area only in the first time
+                    currentOuterArea = AreaUtilities.getOutsiderArea().getName();
+                }
             }
             // If bottom layout is enable
             if(bottomLayoutIsEnable) {
@@ -501,6 +491,11 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
                 placemarkList.add(placemark);
             }
         }
+
+        for(GroundOverlayOptions groundOverlayOptions : groundOverlaysList){
+            // Add overlay in the map
+            mMap.addGroundOverlay(groundOverlayOptions);
+        }
     }
 
     /**
@@ -543,6 +538,8 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
         addTheExistingAreas(true);
         // Move the camera in center location
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 13f));
+        // Disable bottom layout
+        binding.linearLayout.setVisibility(View.GONE);
     }
 
 
@@ -604,12 +601,13 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
         for (LatLng latLng : placemark.getLatLngList()) {
                  builder.include(latLng);
         }
-        // Add ground overlay in the map
-        mMap.addGroundOverlay(new GroundOverlayOptions()
-              .positionFromBounds(builder.build())
-               .image(descriptor)
-               .zIndex(100));
-
+        // Create GroundOverlayOptions for the ndv image
+        GroundOverlayOptions groundOverlayOptions = new GroundOverlayOptions()
+                .positionFromBounds(builder.build()).image(descriptor).zIndex(100);
+        // Add overlay in the map
+        mMap.addGroundOverlay(groundOverlayOptions);
+        // Add GroundOverlayOptions in the List
+        groundOverlaysList.add(groundOverlayOptions);
     }
 
     @Override

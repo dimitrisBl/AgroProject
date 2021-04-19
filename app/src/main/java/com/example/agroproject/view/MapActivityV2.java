@@ -2,13 +2,17 @@ package com.example.agroproject.view;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Layout;
 import android.text.SpannableString;
@@ -18,14 +22,17 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.agroproject.R;
 
@@ -34,18 +41,24 @@ import com.example.agroproject.databinding.ActivityMapV2Binding;
 import com.example.agroproject.model.AreaUtilities;
 import com.example.agroproject.model.Placemark;
 import com.example.agroproject.model.agro_api.HttpRequest;
+import com.example.agroproject.model.agro_api.JsonParser;
 import com.example.agroproject.model.agro_api.StringBuildForRequest;
 import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
+import com.example.agroproject.view.fragments.AreaClickFragment;
 import com.example.agroproject.view.fragments.InsertFileFragment;
 import com.example.agroproject.view.fragments.SaveAreaFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
@@ -54,13 +67,20 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.tabs.TabLayout;
 
+import org.json.JSONArray;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallback,
-        InsertFileFragment.InsertFileEventListener, SaveAreaFragment.CreateAreaEventListener {
+        InsertFileFragment.InsertFileEventListener, SaveAreaFragment.CreateAreaEventListener, AreaClickFragment.AreaPopUpEventListener {
 
     /** Class TAG */
     private final String TAG = "MapActivity";
@@ -113,6 +133,9 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
     /** This variable declares the visibility state of bottom layout */
     private boolean bottomLayoutIsEnable = false;
 
+    /** JSON data from GET request in agro api */
+    private JSONArray jsonArray;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,6 +153,8 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
         // Load the kmlFile Map from shared preferences storage
         kmlFileMap = kmlLocalStorageProvider.loadKmlFileMap();
+        // We are registering an observer (responseReceiver) with action name GetRequestData to receive Intents after http Get request in Agro api.
+        LocalBroadcastManager.getInstance(this).registerReceiver(responseReceiver, new IntentFilter("GetRequestData"));
         // Get request on endpoint polygons of Agro api
         HttpRequest.getRequest(this, StringBuildForRequest.polygonsRequestLink(), "Get all polygons");
         // Set bottom menu visibility false
@@ -143,6 +168,7 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
                 .findFragmentById(R.id.mapV2);
         mapFragment.getMapAsync(this);
     }
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -225,9 +251,29 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.insert_file_fragment_container, insertFileFragment, insertFileFragment.getClass()
                                 .getSimpleName()).addToBackStack(null).commit();
+                // Disable map click
+                mMap.setOnMapClickListener(null);
+                // Disable zoom option on touch
+                mMap.getUiSettings().setZoomGesturesEnabled(false);
+                // Disable Polygon click listener
+                mMap.setOnPolygonClickListener(null);
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Calling after closed a pop up fragment
+     */
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        // Enable map click
+        mMap.setOnMapClickListener(mapClickListener);
+        // Enable zoom option on touch
+        mMap.getUiSettings().setZoomGesturesEnabled(true);
+        // Enable Polygon click listener
+        mMap.setOnPolygonClickListener(polygonClickListener);
     }
 
     /**
@@ -299,6 +345,7 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
         }
     };
 
+
     /**
      * TODO method description
      */
@@ -325,12 +372,16 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
                         mMap.getUiSettings().setZoomControlsEnabled(true);
                         //
                         addTheExistingAreas(false);
+                        // Disable map click
+                        mMap.setOnMapClickListener(null);
+                        // Disable zoom option on touch
+                        mMap.getUiSettings().setZoomGesturesEnabled(false);
+                        // Disable Polygon click listener
+                        mMap.setOnPolygonClickListener(null);
                     }
                 }).setNegativeButton("No", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        // If answer is no, clean the map and add the existing polygons.
-                        mMap.clear();
                         //Add the existing polygons in the map
                         addTheExistingAreas(false);
                     }
@@ -345,7 +396,27 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
     private GoogleMap.OnPolygonClickListener polygonClickListener = new GoogleMap.OnPolygonClickListener() {
         @Override
         public void onPolygonClick(Polygon polygon) {
-                Toast.makeText(MapActivityV2.this," Polygon click event ",Toast.LENGTH_LONG).show();
+            for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
+                for (Placemark placemark : entry.getValue()) {
+                    if (polygon.getTag().equals(placemark.getName())) {
+                        // Get id for the clicked polygon
+                        String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
+                        // Instantiate a AreaClickFragment object
+                        AreaClickFragment areaClickFragment = new AreaClickFragment(placemark, polygonId);
+                        // Start fragment activity
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.area_click_fragment_container, areaClickFragment, areaClickFragment.getClass()
+                                        .getSimpleName()).addToBackStack(null).commit();
+                        // Disable map click
+                        mMap.setOnMapClickListener(null);
+                        // Disable zoom option on touch
+                        mMap.getUiSettings().setZoomGesturesEnabled(false);
+                        // Disable Polygon click listener
+                        mMap.setOnPolygonClickListener(null);
+                        break;
+                    }
+                }
+            }
         }
     };
 
@@ -433,10 +504,30 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
     }
 
     /**
+     *  Our handler for received Intents. This will be called whenever an Intent
+     *  with an action named "GetRequestData".
+     *  TODO MORE DESCRIPTION
+     */
+    private BroadcastReceiver responseReceiver  = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get response data and request type that are included in the Intent
+            String responseData = intent.getStringExtra("Response data");
+            String requestType = intent.getStringExtra("Request type");
+
+            if(requestType.equals("Get all polygons")){
+                // Parse response data
+                jsonArray = JsonParser.parseResponse(responseData);
+            }
+            Log.d(TAG,"receive response data here "+responseData);
+        }
+    };
+
+    /**
      * InsertFileEventListener implementation
      *
-     * Puts a new kml files in the kmlFileMap
-     * and save the changes on shared preferences storage.
+     * Puts a new kml files in the kmlFileMap and save the changes on shared preferences storage.
+     * Called after user click in the save button on insert file pop up.
      *
      * @param center have the central location of the area from the file which added from the user.
      * @param kmlFile is a new kml file selected by the user from the file explorer.
@@ -458,9 +549,12 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
     /**
      * CreateAreaEventListener implementation
      *
-     * @param areaName
-     * @param areaDescription
-     * @param outsiderArea
+     * Put a new value in the kmlFileMap and save the changes on shared preferences storage.
+     * Called after user click in the save button on save area pop up.
+     *
+     * @param areaName takes the name of new area
+     * @param areaDescription takes the description of new area
+     * @param outsiderArea is the outsider area of new area
      */
     @Override
     public void createAreaEvent(String areaName, String areaDescription, Placemark outsiderArea) {
@@ -477,17 +571,51 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
         addTheExistingAreas(true);
     }
 
+    /**
+     *
+     * @param placemark
+     */
+    @Override
+    public void deleteAreaEvent(Placemark placemark) {
+        for(Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()){
+            if(entry.getValue().remove(placemark)){
+                // If this entry don't have values
+                if(entry.getValue().size() == 0){
+                    // Remove all record
+                    kmlFileMap.remove(entry.getKey());
+                }
+                // Save the changes
+                kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
+                break;
+            }
+        }
+        // Add areas in the map  set property clickable  true
+        addTheExistingAreas(true);
+    }
+
+    /**
+     *
+     * @param placemark
+     */
+    @Override
+    public void loadNdvi(Placemark placemark, BitmapDescriptor descriptor) {
+        // Create LatLng bounds for the location of placemark
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (LatLng latLng : placemark.getLatLngList()) {
+                 builder.include(latLng);
+        }
+        // Add ground overlay in the map
+        mMap.addGroundOverlay(new GroundOverlayOptions()
+              .positionFromBounds(builder.build())
+               .image(descriptor)
+               .zIndex(100));
+
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.d(TAG,"onResume executed");
-//        // Receive messages about current location.
-//        // We are registering an observer (locationReceiver) to receive Intents with actions named "LocationUpdates".
-//        registerReceiver(locationReceiver, new IntentFilter(LocationService.ACTION_NAME));
-//        // Receive messages about GPS status.
-//        // We are registering an observer (GpsStatusReceiver) to receive intents with action name "android.location.PROVIDERS_CHANGED".
-//        registerReceiver(GpsStatusReceiver, new IntentFilter("android.location.PROVIDERS_CHANGED"));
         // Receive messages about Network status.
         // We are registering an observer from NetworkUtil class which extends BroadCast Receiver class
         // to receive intents with action name "CONNECTIVITY_ACTION".
@@ -499,8 +627,8 @@ public class MapActivityV2 extends AppCompatActivity implements OnMapReadyCallba
         super.onPause();
         Log.d(TAG,"onPause executed");
         // Unregister since the activity is about to be closed.
-//        unregisterReceiver(locationReceiver);
-//        unregisterReceiver(GpsStatusReceiver);
         unregisterReceiver(networkUtil);
+        // Unregister since the activity is about to be closed.
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(responseReceiver);
     }
 }

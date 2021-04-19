@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,9 +28,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 
-public class InsertFileFragment extends Fragment {
+public class InsertFileFragment extends Fragment implements Executor {
 
     /** Class TAG */
     private final String TAG = "InsertFileFragment";
@@ -66,7 +68,6 @@ public class InsertFileFragment extends Fragment {
     /** This variable takes the file name after the user selects the file */
     private String fileName;
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,8 +91,10 @@ public class InsertFileFragment extends Fragment {
         binding.btnCLose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close pop up and trigger onBackPressed function of MapActivityV2
+                getActivity().onBackPressed();
                 // Close pop up
-                ((ViewGroup)popupView.getParent()).removeView(popupView);
+                //((ViewGroup)popupView.getParent()).removeView(popupView);
             }
         });
         // Set click listener for choose file button click
@@ -128,7 +131,6 @@ public class InsertFileFragment extends Fragment {
             // Get text from current button
             String currentButtonText = String
                     .valueOf(currentButton.getText()).toLowerCase();
-
             switch (currentButtonText){
                 case "choose file":
                      // Open file explorer
@@ -159,19 +161,18 @@ public class InsertFileFragment extends Fragment {
                         // Check if the kmlFile is exists
                         if(fileExistsCheck(kmlFile) == false){
                             Toast.makeText(getActivity(), "The file "+fileName+" was successfully added",Toast.LENGTH_LONG).show();
-                            // Get the center area of first placemark witch contained this file
+                            // Get the center area of first placemark which contained this file
                             LatLng center = AreaUtilities.getAreaCenterPoint(placemarks.get(0).getLatLngList());
                             // Trigger the insert file event listener
                             insertFileEventListener.inertFileEvent(center, kmlFile, placemarks);
-                            // Close pop up
-                            ((ViewGroup)popupView.getParent()).removeView(popupView);
+                            // Close pop up and trigger onBackPressed function of MapActivityV2
+                            getActivity().onBackPressed();
                         }
                     }else{
                         // Show message
                         Toast.makeText(getActivity(),
                                 "Fill all the fields of form please", Toast.LENGTH_LONG).show();
                     }
-
                 break;
             }
         }
@@ -211,6 +212,12 @@ public class InsertFileFragment extends Fragment {
             }
         }
     }
+
+    @Override
+    public void execute(Runnable runnable) {
+        runnable.run();
+    }
+
 
     /**
      * Interface for handle event listener about the insert file

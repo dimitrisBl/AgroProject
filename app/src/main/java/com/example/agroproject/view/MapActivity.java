@@ -20,15 +20,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
-import com.example.agroproject.databinding.AreaClickPopupStyleBinding;
 import com.example.agroproject.model.agro_api.HttpRequest;
 import com.example.agroproject.model.agro_api.JsonParser;
 import com.example.agroproject.model.agro_api.StringBuildForRequest;
@@ -155,7 +149,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
                 for (Placemark placemark : entry.getValue()) {
                    if (polygon.getTag().equals(placemark.getName())) {
-                       showAreaPopUp(placemark);
+                       ///showAreaPopUp(placemark);
                         /** TODO edw kamia fora xtupaei null pointer gia to jsonArray, tha prepei na ginetai handle kai ksana to arxiko request sta polygons */
                        // Get id for the clicked polygon
                        String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
@@ -195,105 +189,105 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
 
-    @SuppressLint("NewApi")
-    private void showAreaPopUp(Placemark placemarkParam) {
-        // Binding
-        AreaClickPopupStyleBinding popupBinding;
-        // Initialize popup view
-        popupBinding = AreaClickPopupStyleBinding.inflate(getLayoutInflater());
-        // Get view
-        View popupView = popupBinding.getRoot();
-
-        // Instantiate a Dialog
-        Dialog popUpDialog = new Dialog(this);
-        popUpDialog.setContentView(popupView);
-        popUpDialog.setCancelable(true);
-            // title
-            TextView farmAreaName = popupBinding.farmName;
-            farmAreaName.setText(placemarkParam.getName());
-            // description
-            TextView farmAreaDescription = popupBinding.areaDescription;
-            farmAreaDescription.setText(placemarkParam.getDescription());
-            // close image
-            ImageView btnClose = popupBinding.btnCLose;
-            btnClose.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    popUpDialog.dismiss();
-                }
-            });
-            // delete button
-            Button deleteButton = popupBinding.deleteBtn;
-            deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Close area pop up
-                popUpDialog.dismiss();
-                // Show new pop up for the delete question
-                new AlertDialog.Builder(MapActivity.this)
-                       .setIcon(R.drawable.ic_baseline_delete_24)
-                       .setTitle("Delete")
-                       .setMessage("You want to delete this area?")
-                       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                           @Override
-                           public void onClick(DialogInterface dialog, int which) {
-                               for(Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()){
-                                   if(entry.getValue().remove(placemarkParam)){
-                                       // If this entry don't have values
-                                        if(entry.getValue().size() == 0){
-                                            // Remove all record
-                                            kmlFileMap.remove(entry.getKey());
-                                        }
-                                        // Save the changes
-                                        kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
-                                        break;
-                                   }
-                               }
-                               // Add the existing polygons in the map
-                               addTheExistingAreas();
-                           }
-                       })
-                       .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                          @Override
-                          public void onClick(DialogInterface dialogInterface, int i) {
-                               // do nothing
-                               popUpDialog.dismiss();
-                          }
-                       })
-                       .setOnDismissListener(new DialogInterface.OnDismissListener() {
-                          @Override
-                          public void onDismiss(DialogInterface dialogInterface) {
-                               // Add the existing polygons in the map
-                               addTheExistingAreas();
-                          }
-                       })
-                .show();
-                }
-            });
-            // Ndvi button
-            Button ndviButton = popupBinding.ndviBtn;
-            ndviButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    // Create LatLng object for this location
-                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                    for (LatLng latLng : placemarkParam.getLatLngList()) {
-                        builder.include(latLng);
-                    }
-                    // Add ground overlay in the map
-                    mMap.addGroundOverlay(new GroundOverlayOptions()
-                            .positionFromBounds(builder.build())
-                            .image(bitmapDescriptor)
-                            .zIndex(100)
-                    );
-                    //Close dialog
-                    popUpDialog.dismiss();
-                }
-            });
-
-        // Show popUp
-        popUpDialog.show();
-        }
+//    @SuppressLint("NewApi")
+//    private void showAreaPopUp(Placemark placemarkParam) {
+//        // Binding
+//        AreaClickPopupStyleBinding popupBinding;
+//        // Initialize popup view
+//        popupBinding = AreaClickPopupStyleBinding.inflate(getLayoutInflater());
+//        // Get view
+//        View popupView = popupBinding.getRoot();
+//
+//        // Instantiate a Dialog
+//        Dialog popUpDialog = new Dialog(this);
+//        popUpDialog.setContentView(popupView);
+//        popUpDialog.setCancelable(true);
+//            // title
+//            TextView farmAreaName = popupBinding.farmName;
+//            farmAreaName.setText(placemarkParam.getName());
+//            // description
+//            TextView farmAreaDescription = popupBinding.areaDescription;
+//            farmAreaDescription.setText(placemarkParam.getDescription());
+//            // close image
+//            ImageView btnClose = popupBinding.btnCLose;
+//            btnClose.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    popUpDialog.dismiss();
+//                }
+//            });
+//            // delete button
+//            Button deleteButton = popupBinding.deleteBtn;
+//            deleteButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                // Close area pop up
+//                popUpDialog.dismiss();
+//                // Show new pop up for the delete question
+//                new AlertDialog.Builder(MapActivity.this)
+//                       .setIcon(R.drawable.ic_baseline_delete_24)
+//                       .setTitle("Delete")
+//                       .setMessage("You want to delete this area?")
+//                       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+//                           @Override
+//                           public void onClick(DialogInterface dialog, int which) {
+//                               for(Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()){
+//                                   if(entry.getValue().remove(placemarkParam)){
+//                                       // If this entry don't have values
+//                                        if(entry.getValue().size() == 0){
+//                                            // Remove all record
+//                                            kmlFileMap.remove(entry.getKey());
+//                                        }
+//                                        // Save the changes
+//                                        kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
+//                                        break;
+//                                   }
+//                               }
+//                               // Add the existing polygons in the map
+//                               addTheExistingAreas();
+//                           }
+//                       })
+//                       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+//                          @Override
+//                          public void onClick(DialogInterface dialogInterface, int i) {
+//                               // do nothing
+//                               popUpDialog.dismiss();
+//                          }
+//                       })
+//                       .setOnDismissListener(new DialogInterface.OnDismissListener() {
+//                          @Override
+//                          public void onDismiss(DialogInterface dialogInterface) {
+//                               // Add the existing polygons in the map
+//                               addTheExistingAreas();
+//                          }
+//                       })
+//                .show();
+//                }
+//            });
+//            // Ndvi button
+//            Button ndviButton = popupBinding.ndviBtn;
+//            ndviButton.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    // Create LatLng object for this location
+//                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+//                    for (LatLng latLng : placemarkParam.getLatLngList()) {
+//                        builder.include(latLng);
+//                    }
+//                    // Add ground overlay in the map
+//                    mMap.addGroundOverlay(new GroundOverlayOptions()
+//                            .positionFromBounds(builder.build())
+//                            .image(bitmapDescriptor)
+//                            .zIndex(100)
+//                    );
+//                    //Close dialog
+//                    popUpDialog.dismiss();
+//                }
+//            });
+//
+//        // Show popUp
+//        popUpDialog.show();
+//        }
 
     /**
     * This method put the existing monitoring areas in the map

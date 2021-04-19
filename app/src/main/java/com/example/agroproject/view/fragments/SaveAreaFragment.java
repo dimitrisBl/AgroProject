@@ -1,17 +1,26 @@
 package com.example.agroproject.view.fragments;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+
+import com.example.agroproject.R;
 import com.example.agroproject.databinding.SaveAreaPopupBinding;
 import com.example.agroproject.model.AreaUtilities;
 import com.example.agroproject.model.Placemark;
-
+import com.google.android.gms.maps.SupportMapFragment;
 
 
 public class SaveAreaFragment extends Fragment {
@@ -28,9 +37,15 @@ public class SaveAreaFragment extends Fragment {
     /** Create area event listener */
     private CreateAreaEventListener createAreaEventListener;
 
+    private SupportMapFragment mapFragment;
+
+    public SaveAreaFragment() {
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
     }
 
 
@@ -43,8 +58,10 @@ public class SaveAreaFragment extends Fragment {
         binding.btnCLose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close pop up and trigger onBackPressed function of MapActivityV2
+                getActivity().onBackPressed();
                 // Close pop up
-                ((ViewGroup)popupView.getParent()).removeView(popupView);
+                //((ViewGroup)popupView.getParent()).removeView(popupView);
             }
         });
         // Save button click listener
@@ -60,8 +77,10 @@ public class SaveAreaFragment extends Fragment {
                     Placemark outsiderArea = AreaUtilities.getOutsiderArea();
                     // Trigger the create area event listener
                     createAreaEventListener.createAreaEvent(areaName, areaDescription, outsiderArea);
+                    // Close pop up and trigger onBackPressed function of MapActivityV2
+                    getActivity().onBackPressed();
                     // Close pop up
-                    ((ViewGroup)popupView.getParent()).removeView(popupView);
+                    //((ViewGroup)popupView.getParent()).removeView(popupView);
                 }else{
                     // Show message
                     Toast.makeText(getActivity(),

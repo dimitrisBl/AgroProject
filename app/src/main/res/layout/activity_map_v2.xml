@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
+    android:id="@id/mapV2"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -29,7 +30,15 @@
         android:layout_height="330dp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="100dp"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center" />
+
+    <FrameLayout
+        android:id="@+id/area_click_fragment_container"
+        android:layout_width="300dp"
+        android:layout_height="170dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="200dp"
+        android:layout_gravity="center" />
 
     <LinearLayout
         android:id="@+id/linearLayout"

@@ -116,7 +116,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private JSONArray jsonArray;
 
     /** List with GroundOverlay objects, takes the ndvi ground overlays after ndvi request*/
-    private List<GroundOverlayOptions> groundOverlaysList = new ArrayList<>();
+    private Map<Placemark, GroundOverlayOptions> groundOverlaysList = new HashMap<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -488,9 +488,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         }
 
-        for(GroundOverlayOptions groundOverlayOptions : groundOverlaysList){
+        // Add overlays in the map
+        for(Map.Entry<Placemark,GroundOverlayOptions> entry : groundOverlaysList.entrySet()){
             // Add overlay in the map
-            mMap.addGroundOverlay(groundOverlayOptions);
+            mMap.addGroundOverlay(entry.getValue());
         }
     }
 
@@ -582,8 +583,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 break;
             }
         }
+        // Remove ground overlay from groundOverlaysList
+        groundOverlaysList.remove(placemark);
         // Add areas in the map  set property clickable  true
         addTheExistingAreas(true);
+
     }
 
     /**
@@ -602,8 +606,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .positionFromBounds(builder.build()).image(descriptor).zIndex(100);
         // Add overlay in the map
         mMap.addGroundOverlay(groundOverlayOptions);
-        // Add GroundOverlayOptions in the List
-        groundOverlaysList.add(groundOverlayOptions);
+        // Add GroundOverlayOptions in the groundOverlaysList
+        groundOverlaysList.put(placemark, groundOverlayOptions);
     }
 
     @Override

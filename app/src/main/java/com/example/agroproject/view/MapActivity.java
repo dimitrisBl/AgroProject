@@ -10,20 +10,13 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
-import android.text.Layout;
-import android.text.SpannableString;
-import android.text.style.AlignmentSpan;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
@@ -51,14 +44,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.nightonke.boommenu.BoomButtons.ButtonPlaceEnum;
 import com.nightonke.boommenu.BoomButtons.OnBMClickListener;
-import com.nightonke.boommenu.BoomButtons.TextInsideCircleButton;
 import com.nightonke.boommenu.BoomButtons.TextOutsideCircleButton;
 import com.nightonke.boommenu.BoomMenuButton;
-import com.nightonke.boommenu.ButtonEnum;
-import com.nightonke.boommenu.Piece.PiecePlaceEnum;
-
 import org.json.JSONArray;
 
 import java.util.ArrayList;
@@ -66,7 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback,
         InsertFileFragment.InsertFileEventListener, SaveAreaFragment.CreateAreaEventListener, AreaClickFragment.AreaPopUpEventListener {
 
     /** Class TAG */
@@ -134,6 +122,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         super.onCreate(savedInstanceState);
         binding = ActivityMapBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        // Hide Action bar
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.hide();
         // Instantiate a NetworkUtil object
         networkUtil = new NetworkUtil(this);
         // Get extras from intent
@@ -156,7 +147,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         binding.drawPolygon.setOnClickListener(buttonClickListener);
         binding.clearMap.setOnClickListener(buttonClickListener);
         binding.closeLayout.setOnClickListener(buttonClickListener);
-
         //Initialize button for Boom Menu
         boomButton = binding.bmb;
         CreateBoomMenu();

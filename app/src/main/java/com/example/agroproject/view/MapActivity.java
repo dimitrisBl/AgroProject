@@ -23,6 +23,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
@@ -50,6 +51,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.nightonke.boommenu.BoomButtons.ButtonPlaceEnum;
+import com.nightonke.boommenu.BoomButtons.OnBMClickListener;
+import com.nightonke.boommenu.BoomButtons.TextInsideCircleButton;
+import com.nightonke.boommenu.BoomButtons.TextOutsideCircleButton;
+import com.nightonke.boommenu.BoomMenuButton;
+import com.nightonke.boommenu.ButtonEnum;
+import com.nightonke.boommenu.Piece.PiecePlaceEnum;
 
 import org.json.JSONArray;
 
@@ -58,7 +66,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback,
+public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         InsertFileFragment.InsertFileEventListener, SaveAreaFragment.CreateAreaEventListener, AreaClickFragment.AreaPopUpEventListener {
 
     /** Class TAG */
@@ -118,6 +126,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /** List with GroundOverlay objects, takes the ndvi ground overlays after ndvi request*/
     private Map<Placemark, GroundOverlayOptions> groundOverlaysList = new HashMap<>();
 
+    /** button for Boom Menu **/
+    private BoomMenuButton boomButton;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -145,13 +156,68 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         binding.drawPolygon.setOnClickListener(buttonClickListener);
         binding.clearMap.setOnClickListener(buttonClickListener);
         binding.closeLayout.setOnClickListener(buttonClickListener);
+
+        //Initialize button for Boom Menu
+        boomButton = binding.bmb;
+        CreateBoomMenu();
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapV2);
         mapFragment.getMapAsync(this);
     }
 
+    private void CreateBoomMenu(){
+      boomButton.setNormalColor(R.color.purple_700);
+         boomButton.setDraggable(true);
 
+        TextOutsideCircleButton.Builder builder = new TextOutsideCircleButton.Builder()
+                    .normalImageRes(R.drawable.createnew)
+                    .normalText("CREATE AREA").textSize(15).rotateText(true)
+                .listener(new OnBMClickListener() {
+                    @Override
+                    public void onBoomButtonClick(int index) {
+                        // Disable visibility for zoom controls buttons
+                        mMap.getUiSettings().setZoomControlsEnabled(false);
+                        // Set bottom menu visibility true
+                        binding.linearLayout.setVisibility(View.VISIBLE);
+                        // Set the property clickable false for each polygon
+                        addTheExistingAreas(false);
+                        //
+                        currentOuterArea = null;
+                        // bottom layout is enable
+                        bottomLayoutIsEnable = true;
+                    }
+                });
+            boomButton.addBuilder(builder);
+    //    }
+        TextOutsideCircleButton.Builder builder2 = new TextOutsideCircleButton.Builder()
+                .normalImageRes(R.drawable.insertfile)
+                .normalText("INSERT FILE").textSize(15)
+                .listener(new OnBMClickListener() {
+                    @Override
+                    public void onBoomButtonClick(int index) {
+                        // Instantiate a InsertFileFragment object
+                        InsertFileFragment insertFileFragment = new InsertFileFragment();
+                        // Start fragment activity
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.insert_file_fragment_container, insertFileFragment, insertFileFragment.getClass()
+                                        .getSimpleName()).addToBackStack(null).commit();
+                        // Set bottom menu visibility true
+                        binding.linearLayout.setVisibility(View.GONE);
+                        // Disable map click
+                        mMap.setOnMapClickListener(null);
+                        // Disable zoom option on touch
+                        mMap.getUiSettings().setZoomGesturesEnabled(false);
+                        // Disable Polygon click listener
+                        mMap.setOnPolygonClickListener(null);
+                    }
+                });
+        boomButton.addBuilder(builder2);
+//        for (int i = 0; i < boomButton.getButtonPlaceEnum().buttonNumber(); i++) {
+//            boomButton.addBuilder(new TextInsideCircleButton.Builder()
+//                    .normalImageRes(R.drawable.common_google_signin_btn_text_dark));
+//        }
+    }
     @Override
     public void onMapReady(GoogleMap googleMap) {
         // Initialize map
@@ -175,76 +241,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         addTheExistingAreas(true);
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Initiating Menu XML file (activity_map_menu.xml)
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.activity_map_v2_menu, menu);
-        // Enable back button in menu
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-
-        // set text alignment for each item in center
-        int positionOfMenuItem0 = 0; //or any other position
-        MenuItem item = menu.getItem(positionOfMenuItem0);
-        SpannableString s = new SpannableString(item.getTitle());
-        s.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s.length(), 0);
-        item.setTitle(s);
-
-        // set text alignment for each item in center
-        int positionOfMenuItem1 = 1; //or any other position
-        MenuItem item1 = menu.getItem(positionOfMenuItem1);
-        SpannableString s1 = new SpannableString(item1.getTitle());
-        s1.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s1.length(), 0);
-        item1.setTitle(s1);
-
-        // Calling super after populating the menu is necessary here to ensure that the
-        // action bar helpers have a chance to handle this event.
-        return true;
-    }
-
-
-    /**
-     * Event Handling for Individual menu item selected
-     * Identify single menu item by it's id
-     */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()){
-            case R.id.createArea_item:
-                // Disable visibility for zoom controls buttons
-                mMap.getUiSettings().setZoomControlsEnabled(false);
-                // Set bottom menu visibility true
-                binding.linearLayout.setVisibility(View.VISIBLE);
-                // Set the property clickable false for each polygon
-                addTheExistingAreas(false);
-                //
-                currentOuterArea = null;
-                // bottom layout is enable
-                bottomLayoutIsEnable = true;
-            return true;
-
-            case R.id.insert_file:
-                // Instantiate a InsertFileFragment object
-                InsertFileFragment insertFileFragment = new InsertFileFragment();
-                // Start fragment activity
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.insert_file_fragment_container, insertFileFragment, insertFileFragment.getClass()
-                                .getSimpleName()).addToBackStack(null).commit();
-                // Set bottom menu visibility true
-                binding.linearLayout.setVisibility(View.GONE);
-                // Disable map click
-                mMap.setOnMapClickListener(null);
-                // Disable zoom option on touch
-                mMap.getUiSettings().setZoomGesturesEnabled(false);
-                // Disable Polygon click listener
-                mMap.setOnPolygonClickListener(null);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     /**
      * Calling after closed a pop up fragment

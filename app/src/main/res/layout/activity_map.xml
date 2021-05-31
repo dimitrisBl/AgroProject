@@ -39,6 +39,15 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="200dp"
         android:layout_gravity="center" />
+    <com.nightonke.boommenu.BoomMenuButton
+        android:id="@+id/bmb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:bmb_buttonEnum="textOutsideCircle"
+        app:bmb_piecePlaceEnum="piecePlace_dot_2_2"
+        app:bmb_buttonPlaceEnum="buttonPlace_sc_2_2"
+        />
+
 
     <LinearLayout
         android:id="@+id/linearLayout"

@@ -156,30 +156,33 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
     }
 
+    /**
+     * TODO DESCRIPTION
+     */
     private void CreateBoomMenu(){
       boomButton.setNormalColor(R.color.purple_700);
-         boomButton.setDraggable(true);
-
-        TextOutsideCircleButton.Builder builder = new TextOutsideCircleButton.Builder()
+      boomButton.setDraggable(true);
+            // TODO COMMENTS
+            TextOutsideCircleButton.Builder builder = new TextOutsideCircleButton.Builder()
                     .normalImageRes(R.drawable.createnew)
                     .normalText("CREATE AREA").textSize(15).rotateText(true)
-                .listener(new OnBMClickListener() {
-                    @Override
-                    public void onBoomButtonClick(int index) {
-                        // Disable visibility for zoom controls buttons
-                        mMap.getUiSettings().setZoomControlsEnabled(false);
-                        // Set bottom menu visibility true
-                        binding.linearLayout.setVisibility(View.VISIBLE);
-                        // Set the property clickable false for each polygon
-                        addTheExistingAreas(false);
-                        //
-                        currentOuterArea = null;
-                        // bottom layout is enable
-                        bottomLayoutIsEnable = true;
+                    .listener(new OnBMClickListener() {
+                        @Override
+                        public void onBoomButtonClick(int index) {
+                            // Disable visibility for zoom controls buttons
+                            mMap.getUiSettings().setZoomControlsEnabled(false);
+                            // Set bottom menu visibility true
+                            binding.linearLayout.setVisibility(View.VISIBLE);
+                            // Set the property clickable false for each polygon
+                            addTheExistingAreas(false);
+                            //
+                            currentOuterArea = null;
+                            // bottom layout is enable
+                            bottomLayoutIsEnable = true;
                     }
                 });
-            boomButton.addBuilder(builder);
-    //    }
+        boomButton.addBuilder(builder);
+        // TODO COMMENTS
         TextOutsideCircleButton.Builder builder2 = new TextOutsideCircleButton.Builder()
                 .normalImageRes(R.drawable.insertfile)
                 .normalText("INSERT FILE").textSize(15)
@@ -203,10 +206,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     }
                 });
         boomButton.addBuilder(builder2);
-//        for (int i = 0; i < boomButton.getButtonPlaceEnum().buttonNumber(); i++) {
-//            boomButton.addBuilder(new TextInsideCircleButton.Builder()
-//                    .normalImageRes(R.drawable.common_google_signin_btn_text_dark));
-//        }
     }
     @Override
     public void onMapReady(GoogleMap googleMap) {

@@ -160,7 +160,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * TODO DESCRIPTION
      */
     private void CreateBoomMenu(){
-      boomButton.setNormalColor(R.color.purple_700);
+      boomButton.setNormalColor(R.color.purple_500);
       boomButton.setDraggable(true);
             // TODO COMMENTS
             TextOutsideCircleButton.Builder builder = new TextOutsideCircleButton.Builder()

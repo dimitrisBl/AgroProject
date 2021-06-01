@@ -1,8 +1,11 @@
 package com.example.agroproject.view;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -23,6 +26,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 
@@ -32,6 +36,9 @@ import com.example.agroproject.databinding.ActivityMainBinding;
 
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
+import com.example.agroproject.view.fragments.HomeFrag;
+import com.example.agroproject.view.fragments.InsertFileFragment;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 
 /**
@@ -65,11 +72,15 @@ public class MainActivity extends AppCompatActivity {
     private double latitude;
     private double longitude;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        // Hide Action bar
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.hide();
         // Instantiate a NetworkUtil object
         networkUtil = new NetworkUtil(this);
         // Initialize a LocationManager object
@@ -77,6 +88,50 @@ public class MainActivity extends AppCompatActivity {
                 getSystemService(Context.LOCATION_SERVICE);
         // Permission check service
         checkPermissions();
+
+        //Open Bottom Navigation Menu
+        bottomNavigationMenu();
+
+    }
+
+    /**
+     * TODO:DESCRIPTIOn
+     */
+    private void bottomNavigationMenu(){
+        binding.navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.navigation_home:
+                        // Instantiate a Fragment object
+//                        final Fragment fragment = new HomeFrag();
+//                        // Start fragment activity
+//                        getSupportFragmentManager().beginTransaction()
+//                                .replace(R.id.main_container, fragment, fragment.getClass().getSimpleName())
+//                                .addToBackStack(null).commit();
+
+                        if(isGpsEnable()){
+                            Intent yourMapIntent = new Intent(MainActivity.this, MapActivity.class);
+                            yourMapIntent.putExtra("latitude",latitude);
+                            yourMapIntent.putExtra("longitude",longitude);
+                            startActivity(yourMapIntent);
+                        }
+                        return true;
+                    case R.id.navigation_profile:
+                        // Instantiate a Fragment object
+//                        final Fragment fragment1 = new UserProfile();
+//                        // Start fragment activity
+//                        getSupportFragmentManager().beginTransaction()
+//                                .replace(R.id.main_container, fragment1, fragment1.getClass().getSimpleName())
+//                                .addToBackStack(null).commit();
+
+                        Intent recyclerViewIntent = new Intent(MainActivity.this, ListViewActivity.class);
+                        startActivity(recyclerViewIntent);
+                        return true;
+                }
+                return false;
+            }
+        });
     }
 
     @Override
@@ -200,57 +255,6 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Initiating Menu XML file (activity_main_top_menu.xml)
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.activity_main_menu, menu);
-
-        // set title alignment for each item is center
-        int positionOfMenuItem0 = 0; //or any other postion
-        MenuItem item = menu.getItem(positionOfMenuItem0);
-        SpannableString s = new SpannableString(item.getTitle());
-        s.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s.length(), 0);
-        item.setTitle(s);
-
-        // set title alignment for each item is center
-        int positionOfMenuItem1 = 1; //or any other postion
-        MenuItem item1 = menu.getItem(positionOfMenuItem1);
-        SpannableString s1 = new SpannableString(item1.getTitle());
-        s1.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s1.length(), 0);
-        item1.setTitle(s1);
-
-        // Calling super after populating the menu is necessary here to ensure that the
-        // action bar helpers have a chance to handle this event.
-        return true;
-    }
-
-    /**
-     * Event Handling for Individual menu item selected
-     * Identify single menu item by it's id
-     */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.yourMap_item:
-                if(isGpsEnable()){
-                    Intent yourMapIntent = new Intent(this, MapActivity.class);
-                    yourMapIntent.putExtra("latitude",latitude);
-                    yourMapIntent.putExtra("longitude",longitude);
-                    startActivity(yourMapIntent);
-                }
-             return true;
-
-            case R.id.yourFarms_item:
-                Intent recyclerViewIntent = new Intent(this, ListViewActivity.class);
-                startActivity(recyclerViewIntent);
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
 
     @Override
     protected void onResume() {

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">>
+
+    <item
+        android:id="@+id/item1"
+        android:title="Item 1"
+        app:showAsAction="never">
+
+        <!---   sub items    -->
+
+        <item
+            android:id="@+id/insert_file"
+            android:title="Insert File"/>
+
+        <item
+            android:id="@+id/createArea_item"
+            android:title="Create Area"/>
+
+    </item>
+
+</menu>

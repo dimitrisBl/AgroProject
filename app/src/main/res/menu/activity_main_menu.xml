@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/item1"
+        android:title="Item 1"
+        app:showAsAction="never">
+
+        <!---   sub items    -->
+        <item
+            android:id="@+id/yourMap_item"
+            android:title="Open Map"/>
+
+
+        <item
+            android:id="@+id/yourFarms_item"
+            android:title="Your farms"/>
+
+
+    </item>
+
+</menu>

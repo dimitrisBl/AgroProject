@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="350dp"
+    android:layout_height="450dp"
+    android:layout_gravity="center"
+    android:padding="10dp"
+    android:background="@drawable/save_area_popup">
+
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:id="@+id/btnCLose"
+        android:background="@drawable/ic_baseline_close"/>
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:id="@+id/image"
+        android:background="@drawable/ic_baseline_save"/>
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/image"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
+        android:id="@+id/areaName"
+        android:hint="area name "
+        android:background="#bdc3c7"/>
+
+    <EditText
+        android:inputType="textMultiLine"
+        android:minLines="2"
+        android:scrollbars="vertical"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/areaDescription"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/areaName"
+        android:layout_marginTop="20dp"
+        android:background="#bdc3c7"
+        android:hint="description"
+        android:drawableLeft="@drawable/ic_baseline_description"/>
+
+
+
+    <Button
+        android:layout_width="300dp"
+        android:layout_height="40dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/areaDescription"
+        android:clickable="true"
+        android:layout_marginTop="20dp"
+        android:id="@+id/btnSubmit"
+        android:background="@color/purple_500"
+        android:text="Save"/>
+
+</RelativeLayout>

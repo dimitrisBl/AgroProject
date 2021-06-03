@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="350dp"
+    android:layout_height="450dp"
+    android:layout_gravity="center"
+    android:padding="10dp"
+    android:background="@drawable/insert_file_popup">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:id="@+id/btnCLose"
+            android:background="@drawable/ic_baseline_close"/>
+
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:id="@+id/image"
+            android:background="@drawable/ic_baseline_save"/>
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense.ExposedDropdownMenu"
+            android:id="@+id/areaName"
+            android:layout_width="293dp"
+            android:layout_height="49dp"
+            android:layout_below="@+id/image"
+            android:layout_marginTop="20dp"
+            android:layout_centerHorizontal="true"
+            android:layout_weight="1">
+
+            <AutoCompleteTextView
+                android:id="@+id/autoCompleteTextView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:hint="farm name" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <RelativeLayout
+            android:id="@+id/relative"
+            android:layout_below="@+id/areaName"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_centerHorizontal="true">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/fileName"
+                    android:layout_width="150dp"
+                    android:background="#bdc3c7"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginTop="3dp"
+                    android:editable="false"
+                    android:layout_height="30dp" />
+
+                <Button
+                    android:id="@+id/chooseFileBtn"
+                    android:layout_width="wrap_content"
+                    android:text="Choose file"
+                    android:layout_marginLeft="10dp"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+        </RelativeLayout>
+
+
+        <Button
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/relative"
+            android:clickable="true"
+            android:layout_marginTop="30dp"
+            android:id="@+id/saveFileBtn"
+            android:background="@color/purple_500"
+            android:text="Save"/>
+
+</RelativeLayout>

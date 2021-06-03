@@ -1,70 +1,77 @@
 package com.example.agroproject.view;
 
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import android.annotation.SuppressLint;
-import android.app.Dialog;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.os.AsyncTask;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.text.Layout;
+import android.text.SpannableString;
+import android.text.style.AlignmentSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
-
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
-import com.example.agroproject.databinding.AreaClickPopupStyleBinding;
+import com.example.agroproject.model.AreaUtilities;
+import com.example.agroproject.model.Placemark;
 import com.example.agroproject.model.agro_api.HttpRequest;
 import com.example.agroproject.model.agro_api.JsonParser;
 import com.example.agroproject.model.agro_api.StringBuildForRequest;
 import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
-import com.example.agroproject.model.Placemark;
+import com.example.agroproject.services.NetworkUtil;
+import com.example.agroproject.view.fragments.AreaClickFragment;
+import com.example.agroproject.view.fragments.InsertFileFragment;
+import com.example.agroproject.view.fragments.SaveAreaFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+
 import org.json.JSONArray;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback,
+        InsertFileFragment.InsertFileEventListener, SaveAreaFragment.CreateAreaEventListener, AreaClickFragment.AreaPopUpEventListener {
 
     /** Class TAG */
     private final String TAG = "MapActivity";
 
     /** GoogleMap object */
     private GoogleMap mMap;
+
+    /** Marker */
+    private Marker marker;
+
+    /** PolygonOptions */
+    private PolygonOptions polygonOptions;
 
     /** Activity view binding */
     private ActivityMapBinding binding;
@@ -78,26 +85,46 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /** LatLng object for the current location  */
     private LatLng currentLocation;
 
-    /** Polygon object */
-    private Polygon polygon;
-
     /** KmlLocalStorageProvider */
     private KmlLocalStorageProvider kmlLocalStorageProvider;
+
+    /** NetworkUtil control the internet connection */
+    private NetworkUtil networkUtil;
 
     /** KmlFile Map */
     private Map<KmlFile, List<Placemark>> kmlFileMap = new HashMap<>();
 
+    /** List with Placemark objects */
+    private List<Placemark> placemarkList = new ArrayList<>();
+
+    /** Initialize List with Marker objects */
+    private List<Marker> markerList = new ArrayList<>();
+
+    /** Initialize List with LatLng objects */
+    private List<LatLng> latLngList = new ArrayList<>();
+
+    /** Auxiliary variable for the inner area detection */
+    private String currentOuterArea = null;
+
+    /** Auxiliary variable for the inner area detection */
+    private boolean detectInnerArea = false;
+
+    /** This variable declares the visibility state of bottom layout */
+    private boolean bottomLayoutIsEnable = false;
+
     /** JSON data from GET request in agro api */
     private JSONArray jsonArray;
 
-    /** BitmapDescriptor has a ndvi image after image request */
-    private BitmapDescriptor bitmapDescriptor;
+    /** List with GroundOverlay objects, takes the ndvi ground overlays after ndvi request*/
+    private Map<Placemark, GroundOverlayOptions> groundOverlaysList = new HashMap<>();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMapBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        // Instantiate a NetworkUtil object
+        networkUtil = new NetworkUtil(this);
         // Get extras from intent
         Intent intent = getIntent();
         latitude = intent.getDoubleExtra("latitude", 0.0);
@@ -108,23 +135,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
         // Load the kmlFile Map from shared preferences storage
         kmlFileMap = kmlLocalStorageProvider.loadKmlFileMap();
-        // Get request on endpoint polygons of Agro api
-        HttpRequest.getRequest(this, StringBuildForRequest.polygonsRequestLink(), "Get all polygons");
         // We are registering an observer (responseReceiver) with action name GetRequestData to receive Intents after http Get request in Agro api.
         LocalBroadcastManager.getInstance(this).registerReceiver(responseReceiver, new IntentFilter("GetRequestData"));
+        // Get request on endpoint polygons of Agro api
+        HttpRequest.getRequest(this, StringBuildForRequest.polygonsRequestLink(), "Get all polygons");
+        // Set bottom menu visibility false
+        binding.linearLayout.setVisibility(View.GONE);
+        // Set click listener for buttons
+        binding.drawPolygon.setOnClickListener(buttonClickListener);
+        binding.clearMap.setOnClickListener(buttonClickListener);
+        binding.closeLayout.setOnClickListener(buttonClickListener);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+                .findFragmentById(R.id.mapV2);
         mapFragment.getMapAsync(this);
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This method Adds a marker in current location, sets zoom in the camera and defines the satellite map type.
-     * TODO MORE COMMENTS
-     */
-    @SuppressLint("MissingPermission")
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         // Initialize map
@@ -140,34 +167,334 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMap.addMarker(markerOptions);
         // Move the camera in current location
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18f));
+        // Set Map click listener method
+        mMap.setOnMapClickListener(mapClickListener);
         // Polygon click listener
         mMap.setOnPolygonClickListener(polygonClickListener);
         // Put the existing monitoring areas in the map
-        addTheExistingAreas();
+        addTheExistingAreas(true);
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Initiating Menu XML file (activity_map_menu.xml)
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.activity_map_v2_menu, menu);
+        // Enable back button in menu
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+
+        // set text alignment for each item in center
+        int positionOfMenuItem0 = 0; //or any other position
+        MenuItem item = menu.getItem(positionOfMenuItem0);
+        SpannableString s = new SpannableString(item.getTitle());
+        s.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s.length(), 0);
+        item.setTitle(s);
+
+        // set text alignment for each item in center
+        int positionOfMenuItem1 = 1; //or any other position
+        MenuItem item1 = menu.getItem(positionOfMenuItem1);
+        SpannableString s1 = new SpannableString(item1.getTitle());
+        s1.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, s1.length(), 0);
+        item1.setTitle(s1);
+
+        // Calling super after populating the menu is necessary here to ensure that the
+        // action bar helpers have a chance to handle this event.
+        return true;
+    }
+
+
+    /**
+     * Event Handling for Individual menu item selected
+     * Identify single menu item by it's id
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()){
+            case R.id.createArea_item:
+                // Disable visibility for zoom controls buttons
+                mMap.getUiSettings().setZoomControlsEnabled(false);
+                // Set bottom menu visibility true
+                binding.linearLayout.setVisibility(View.VISIBLE);
+                // Set the property clickable false for each polygon
+                addTheExistingAreas(false);
+                //
+                currentOuterArea = null;
+                // bottom layout is enable
+                bottomLayoutIsEnable = true;
+            return true;
+
+            case R.id.insert_file:
+                // Instantiate a InsertFileFragment object
+                InsertFileFragment insertFileFragment = new InsertFileFragment();
+                // Start fragment activity
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.insert_file_fragment_container, insertFileFragment, insertFileFragment.getClass()
+                                .getSimpleName()).addToBackStack(null).commit();
+                // Set bottom menu visibility true
+                binding.linearLayout.setVisibility(View.GONE);
+                // Disable map click
+                mMap.setOnMapClickListener(null);
+                // Disable zoom option on touch
+                mMap.getUiSettings().setZoomGesturesEnabled(false);
+                // Disable Polygon click listener
+                mMap.setOnPolygonClickListener(null);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     /**
-     * TODO DESCRIPTION
+     * Calling after closed a pop up fragment
      */
-    public GoogleMap.OnPolygonClickListener polygonClickListener = new GoogleMap.OnPolygonClickListener() {
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        // Enable map click
+        mMap.setOnMapClickListener(mapClickListener);
+        // Enable zoom option on touch
+        mMap.getUiSettings().setZoomGesturesEnabled(true);
+        // Enable Polygon click listener
+        mMap.setOnPolygonClickListener(polygonClickListener);
+    }
+
+    /**
+     *  TODO description
+     */
+    private View.OnClickListener buttonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            // Get current button click
+            Button currentButton = (Button) view;
+            // Get text from current button
+            String currentButtonText =
+                    String.valueOf(currentButton.getText());
+            switch (currentButtonText){
+                case "draw area":
+                    if(!latLngList.isEmpty() && markerList.size() >= 3 ) {
+                        // Do null the currentOuterArea after area creation
+                        currentOuterArea = null;
+                        // Create PolygonOptions
+                        polygonOptions = new PolygonOptions()
+                                .strokeWidth(5f).addAll(latLngList).strokeColor(Color.RED)
+                                .fillColor(Color.argb(70, 50, 255, 0));
+                        // Draw area on the Map
+                        mMap.addPolygon(polygonOptions);
+                        // Remove markers from the map
+                        for (Marker marker : markerList) {
+                            marker.remove();
+                        }
+                        // Show dialog
+                        showSaveAlertDialog();
+                        // Clean the lists
+                        markerList.clear();
+                        latLngList.clear();
+                    }else if(!markerList.isEmpty() && markerList.size() <= 3 ){
+                        // Show message
+                        Toast.makeText(MapActivity.this,
+                                "You need three markers at least to draw an area",Toast.LENGTH_LONG).show();
+                    }else{
+                        // Show message
+                        Toast.makeText(MapActivity.this,
+                                "Tap in the map and mark your area first", Toast.LENGTH_LONG).show();
+                    }
+                break;
+
+                case "clear":
+                    currentOuterArea = null;
+                    latLngList.clear();
+                    markerList.clear();
+                    mMap.clear();
+                    currentOuterArea = null;
+                    addTheExistingAreas(true);
+                break;
+
+                case "close":
+                    // Disable bottom layout visibility
+                    binding.linearLayout.setVisibility(View.GONE);
+                    // bottom layout is disable
+                    bottomLayoutIsEnable = false;
+                    // Enable visibility for map zoom controls buttons
+                    mMap.getUiSettings().setZoomControlsEnabled(true);
+                    currentOuterArea = null;
+                    latLngList.clear();
+                    markerList.clear();
+                    mMap.clear();
+                    currentOuterArea = null;
+                    addTheExistingAreas(true);
+                 break;
+            }
+        }
+    };
+
+
+    /**
+     * TODO method description
+     */
+    @SuppressLint("NewApi")
+    private void showSaveAlertDialog(){
+        new AlertDialog.Builder(MapActivity.this)
+                .setIcon(R.drawable.ic_baseline_save)
+                .setTitle("Save")
+                .setMessage("You want to save this area?")
+                .setCancelable(false) // Set cancelable on touch outside
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Instantiate a SaveAreaFragment object
+                        SaveAreaFragment saveAreaFragment = new SaveAreaFragment();
+                        // Start fragment activity
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.save_area_fragment_container, saveAreaFragment, saveAreaFragment.getClass()
+                                        .getSimpleName()).addToBackStack(null).commit();
+                        // Close bottom layout
+                        binding.linearLayout.setVisibility(View.GONE);
+                        // bottom layout is disable
+                        bottomLayoutIsEnable = false;
+                        // Enable visibility for zoom controls buttons
+                        mMap.getUiSettings().setZoomControlsEnabled(true);
+                        //
+                        addTheExistingAreas(false);
+                        // Disable map click
+                        mMap.setOnMapClickListener(null);
+                        // Disable zoom option on touch
+                        mMap.getUiSettings().setZoomGesturesEnabled(false);
+                        // Disable Polygon click listener
+                        mMap.setOnPolygonClickListener(null);
+                    }
+                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //Add the existing polygons in the map
+                        addTheExistingAreas(false);
+                    }
+                })
+       .show();
+    }
+
+
+    /**
+     * Polygon click listener
+     */
+    private GoogleMap.OnPolygonClickListener polygonClickListener = new GoogleMap.OnPolygonClickListener() {
         @Override
         public void onPolygonClick(Polygon polygon) {
             for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
                 for (Placemark placemark : entry.getValue()) {
-                   if (polygon.getTag().equals(placemark.getName())) {
-                       showAreaPopUp(placemark);
-                        /** TODO edw kamia fora xtupaei null pointer gia to jsonArray, tha prepei na ginetai handle kai ksana to arxiko request sta polygons */
-                       // Get id for the clicked polygon
-                       String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
-                       // Create a url for sentinel Get request of agro api for specific polygon and date
-                       String sentinelRequestLink = StringBuildForRequest.sentinelRequestLink(polygonId,"1609501337","1617277337");
-                       // Get sentinel data from agro api
-                       HttpRequest.getRequest( MapActivity.this, sentinelRequestLink,  "Get sentinel data");
+                    if (polygon.getTag().equals(placemark.getName())) {
+                        // Get id for the clicked polygon
+                        String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
+                        // Instantiate a AreaClickFragment object
+                        AreaClickFragment areaClickFragment = new AreaClickFragment(placemark, polygonId);
+                        // Start fragment activity
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.area_click_fragment_container, areaClickFragment, areaClickFragment.getClass()
+                                        .getSimpleName()).addToBackStack(null).commit();
+                        // Disable map click
+                        mMap.setOnMapClickListener(null);
+                        // Disable zoom option on touch
+                        mMap.getUiSettings().setZoomGesturesEnabled(false);
+                        // Disable Polygon click listener
+                        mMap.setOnPolygonClickListener(null);
+                        break;
                     }
                 }
             }
         }
     };
+
+    /**
+     * Map click listener
+     */
+    private GoogleMap.OnMapClickListener mapClickListener = new GoogleMap.OnMapClickListener() {
+        @Override
+        public void onMapClick(LatLng latLng) {
+            Log.d(TAG, "OnMapClickListener function running");
+            // Detect if current click is inner in other area
+            boolean areaExists =  detectInnerArea = AreaUtilities
+                    .detectInnerArea(latLng, placemarkList);
+            if(areaExists) {
+                if (currentOuterArea == null) {
+                    // Get the name from current outer area only in the first time
+                    currentOuterArea = AreaUtilities.getOutsiderArea().getName();
+                }
+            }
+            // If bottom layout is enable
+            if(bottomLayoutIsEnable) {
+                // if current click is inside in other area
+                if (detectInnerArea) {
+                    // If the current marker has the same outer area as the previous marker
+                    if (currentOuterArea.equals(AreaUtilities.getOutsiderArea().getName())) {
+                        // Create MarkerOptions
+                        MarkerOptions markerOptions = new MarkerOptions()
+                                .position(latLng).title("" + latLng.latitude + " " + latLng.longitude);
+                        if (marker != null) {
+                            // Remove the previous marker
+                            marker.remove();
+                        }
+                        // Create Marker in the map
+                        marker = mMap.addMarker(markerOptions);
+                        // Add LatLng in latLngList
+                        latLngList.add(latLng);
+                        // Add Marker in markerList
+                        markerList.add(marker);
+                        if (markerList.size() > 1) {
+                            latitude = latLng.latitude;
+                            longitude = latLng.longitude;
+                            marker.setPosition(new LatLng(latitude, longitude));
+                            PolylineOptions polylineOptions = new PolylineOptions()
+                                    .addAll(latLngList).color(Color.RED);
+                            mMap.addPolyline(polylineOptions);
+                        }
+                    } else {
+                        // Show message
+                        Toast.makeText(MapActivity.this,
+                                "Please keep your marks in the same area or clean the map.", Toast.LENGTH_LONG).show();
+                    }
+                }else{
+                    // Show message
+                    Toast.makeText(MapActivity.this,
+                            "You can not create a mark outside from areas ",Toast.LENGTH_LONG).show();
+                }
+            }else{
+                // Show message
+                Toast.makeText(MapActivity.this,
+                        "If you want to create area click create area option in the menu on top right first",Toast.LENGTH_LONG).show();
+            }
+        }
+    };
+
+    /**
+     * This method put the existing monitoring areas in the map
+     * loads the existing areas data from the shared preferences storage.
+     *
+     * @param isClickable declares the property clickable for each polygon
+     */
+    private void addTheExistingAreas(boolean isClickable) {
+        mMap.clear();
+        for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
+            for (Placemark placemark : entry.getValue()) {
+                // Create PolygonOptions object for each placemark
+                PolygonOptions polygonOptions = new PolygonOptions()
+                        .strokeWidth(5f).addAll(placemark.getLatLngList()).strokeColor(Color.RED)
+                        .fillColor(Color.argb(70, 50, 255, 0)).clickable(isClickable);
+                // Add polygon in the map
+                Polygon polygon = mMap.addPolygon(polygonOptions);
+                // Set in the tag of polygon the name of placemark
+                polygon.setTag(placemark.getName());
+                // Fill the placemarkList
+                placemarkList.add(placemark);
+            }
+        }
+
+        // Add overlays in the map
+        for(Map.Entry<Placemark,GroundOverlayOptions> entry : groundOverlaysList.entrySet()){
+            // Add overlay in the map
+            mMap.addGroundOverlay(entry.getValue());
+        }
+    }
+
     /**
      *  Our handler for received Intents. This will be called whenever an Intent
      *  with an action named "GetRequestData".
@@ -183,185 +510,123 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if(requestType.equals("Get all polygons")){
                 // Parse response data
                 jsonArray = JsonParser.parseResponse(responseData);
-            }else if (requestType.equals("Get sentinel data")){
-                // Get image url
-                String imageUrl = JsonParser.getImage(responseData);
-                // Get image from Agro api
-                new getImageAsync().execute(imageUrl);
             }
-            Log.d(TAG,"receive response heree"+responseData);
+            Log.d(TAG,"receive response data here "+responseData);
         }
     };
 
+    /**
+     * InsertFileEventListener implementation
+     *
+     * Puts a new kml files in the kmlFileMap and save the changes on shared preferences storage.
+     * Called after user click in the save button on insert file pop up.
+     *
+     * @param center have the central location of the area from the file which added from the user.
+     * @param kmlFile is a new kml file selected by the user from the file explorer.
+     * @param placemarks takes the each placemark from the new kml file
+     */
+    @Override
+    public void inertFileEvent(LatLng center, KmlFile kmlFile, List<Placemark> placemarks) {
+        // Add a new record in the kmlFileMap
+        kmlFileMap.put(kmlFile, placemarks);
+        // Save changes on shared preferences storage
+        kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
+        // Add areas in the map
+        addTheExistingAreas(true);
+        // Move the camera in center location
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 13f));
+        // Disable bottom layout
+        binding.linearLayout.setVisibility(View.GONE);
+    }
 
-
-    @SuppressLint("NewApi")
-    private void showAreaPopUp(Placemark placemarkParam) {
-        // Binding
-        AreaClickPopupStyleBinding popupBinding;
-        // Initialize popup view
-        popupBinding = AreaClickPopupStyleBinding.inflate(getLayoutInflater());
-        // Get view
-        View popupView = popupBinding.getRoot();
-
-        // Instantiate a Dialog
-        Dialog popUpDialog = new Dialog(this);
-        popUpDialog.setContentView(popupView);
-        popUpDialog.setCancelable(true);
-            // title
-            TextView farmAreaName = popupBinding.farmName;
-            farmAreaName.setText(placemarkParam.getName());
-            // description
-            TextView farmAreaDescription = popupBinding.areaDescription;
-            farmAreaDescription.setText(placemarkParam.getDescription());
-            // close image
-            ImageView btnClose = popupBinding.btnCLose;
-            btnClose.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    popUpDialog.dismiss();
-                }
-            });
-            // delete button
-            Button deleteButton = popupBinding.deleteBtn;
-            deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Close area pop up
-                popUpDialog.dismiss();
-                // Show new pop up for the delete question
-                new AlertDialog.Builder(MapActivity.this)
-                       .setIcon(R.drawable.ic_baseline_delete_24)
-                       .setTitle("Delete")
-                       .setMessage("You want to delete this area?")
-                       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                           @Override
-                           public void onClick(DialogInterface dialog, int which) {
-                               for(Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()){
-                                   if(entry.getValue().remove(placemarkParam)){
-                                       // If this entry don't have values
-                                        if(entry.getValue().size() == 0){
-                                            // Remove all record
-                                            kmlFileMap.remove(entry.getKey());
-                                        }
-                                        // Save the changes
-                                        kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
-                                        break;
-                                   }
-                               }
-                               // Add the existing polygons in the map
-                               addTheExistingAreas();
-                           }
-                       })
-                       .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                          @Override
-                          public void onClick(DialogInterface dialogInterface, int i) {
-                               // do nothing
-                               popUpDialog.dismiss();
-                          }
-                       })
-                       .setOnDismissListener(new DialogInterface.OnDismissListener() {
-                          @Override
-                          public void onDismiss(DialogInterface dialogInterface) {
-                               // Add the existing polygons in the map
-                               addTheExistingAreas();
-                          }
-                       })
-                .show();
-                }
-            });
-            // Ndvi button
-            Button ndviButton = popupBinding.ndviBtn;
-            ndviButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    // Create LatLng object for this location
-                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                    for (LatLng latLng : placemarkParam.getLatLngList()) {
-                        builder.include(latLng);
-                    }
-                    // Add ground overlay in the map
-                    mMap.addGroundOverlay(new GroundOverlayOptions()
-                            .positionFromBounds(builder.build())
-                            .image(bitmapDescriptor)
-                            .zIndex(100)
-                    );
-                    //Close dialog
-                    popUpDialog.dismiss();
-                }
-            });
-
-        // Show popUp
-        popUpDialog.show();
-        }
 
     /**
-    * This method put the existing monitoring areas in the map
-    * loads the existing areas data from the shared preferences file.
-    */
-    private void addTheExistingAreas() {
-        mMap.clear();
+     * CreateAreaEventListener implementation
+     *
+     * Put a new value in the kmlFileMap and save the changes on shared preferences storage.
+     * Called after user click in the save button on save area pop up.
+     *
+     * @param areaName takes the name of new area
+     * @param areaDescription takes the description of new area
+     * @param outsiderArea is the outsider area of new area
+     */
+    @Override
+    public void createAreaEvent(String areaName, String areaDescription, Placemark outsiderArea) {
         for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
-            for (Placemark placemark : entry.getValue()) {
-                PolygonOptions polygonOptions = new PolygonOptions()
-                       .strokeWidth(5f).addAll(placemark.getLatLngList()).strokeColor(Color.RED)
-                       .fillColor(Color.argb(70, 50, 255, 0)).clickable(true);
-                polygon = mMap.addPolygon(polygonOptions);
-                polygon.setTag(placemark.getName());
+            if (entry.getValue().contains(outsiderArea)) {
+                // add new value on this entry
+                entry.getValue().add(new Placemark
+                        (areaName, areaDescription, polygonOptions.getPoints()));
+                // Save the kmlFileMap in shared preferences.
+                kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
             }
         }
+        // Add areas in the map  set property clickable  true
+        addTheExistingAreas(true);
+    }
+
+    /**
+     *
+     * @param placemark
+     */
+    @Override
+    public void deleteAreaEvent(Placemark placemark) {
+        for(Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()){
+            if(entry.getValue().remove(placemark)){
+                // If this entry don't have values
+                if(entry.getValue().size() == 0){
+                    // Remove all record
+                    kmlFileMap.remove(entry.getKey());
+                }
+                // Save the changes
+                kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
+                break;
+            }
+        }
+        // Remove ground overlay from groundOverlaysList
+        groundOverlaysList.remove(placemark);
+        // Add areas in the map  set property clickable  true
+        addTheExistingAreas(true);
+
+    }
+
+    /**
+     *
+     * @param placemark
+     */
+    @Override
+    public void loadNdvi(Placemark placemark, BitmapDescriptor descriptor) {
+        // Create LatLng bounds for the location of placemark
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (LatLng latLng : placemark.getLatLngList()) {
+                 builder.include(latLng);
+        }
+        // Create GroundOverlayOptions for the ndv image
+        GroundOverlayOptions groundOverlayOptions = new GroundOverlayOptions()
+                .positionFromBounds(builder.build()).image(descriptor).zIndex(100);
+        // Add overlay in the map
+        mMap.addGroundOverlay(groundOverlayOptions);
+        // Add GroundOverlayOptions in the groundOverlaysList
+        groundOverlaysList.put(placemark, groundOverlayOptions);
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Initiating Menu XML file (activity_map_menu.xml)
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.activity_map_menu, menu);
-        // Enable back button in menu
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        // Calling super after populating the menu is necessary here to ensure that the
-        // action bar helpers have a chance to handle this event.
-        return true;
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG,"onResume executed");
+        // Receive messages about Network status.
+        // We are registering an observer from NetworkUtil class which extends BroadCast Receiver class
+        // to receive intents with action name "CONNECTIVITY_ACTION".
+        registerReceiver(networkUtil, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
-
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG,"onPause executed");
+        // Unregister since the activity is about to be closed.
+        unregisterReceiver(networkUtil);
         // Unregister since the activity is about to be closed.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(responseReceiver);
-    }
-
-    /**
-     * TODO CLASS DESCRIPTION
-     */
-    private class getImageAsync extends AsyncTask<String, Void, BitmapDescriptor>{
-        @Override
-        protected BitmapDescriptor doInBackground(String... strings) {
-            try {
-                URL url = new URL(strings[0]);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setDoInput(true);
-                connection.connect();
-                InputStream input = connection.getInputStream();
-                Bitmap myBitmap = BitmapFactory.decodeStream(input);
-                input.close();
-                BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(myBitmap);
-                return  bitmapDescriptor;
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-                Log.d(TAG,"MalformedURLException");
-            } catch (IOException e) {
-                e.printStackTrace();
-                Log.d(TAG,"io exception");
-            }
-            return null;
-        }
-        @Override
-        protected void onPostExecute(BitmapDescriptor descriptor) {
-            super.onPostExecute(descriptor);
-            bitmapDescriptor = descriptor;
-        }
     }
 }

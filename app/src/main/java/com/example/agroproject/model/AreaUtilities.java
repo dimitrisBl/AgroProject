@@ -1,6 +1,7 @@
 package com.example.agroproject.model;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.maps.android.PolyUtil;
 
 import java.util.List;
@@ -31,26 +32,23 @@ public class AreaUtilities {
 
     /**
      *
-     * @param latLng has the center location of current area
+     * @param latLng has the center location of new  area
      * @param placemarkList
      *
      */
     public static boolean detectInnerArea(LatLng latLng, List<Placemark> placemarkList){
-        boolean innerArea = false;
         for (Placemark placemark : placemarkList) {
-            //Don't check the same polygon
-            if (!latLng.equals(getAreaCenterPoint(placemark.getLatLngList()))) {
-                innerArea = PolyUtil.containsLocation(latLng,
-                        placemark.getLatLngList(), false);
-                //The farmArea in which our current polygon exists
+            boolean isInnerArea = PolyUtil.containsLocation
+                    (latLng, placemark.getLatLngList(), false);
+            if(isInnerArea){
+                // The farm area in which our current polygon exists
                 outsiderArea = placemark;
-                if(innerArea){
-                    return  innerArea;
-                }
+                return true;
             }
         }
-        return innerArea;
+        return false;
     }
+
 
     public static Placemark getOutsiderArea() {
         return outsiderArea;

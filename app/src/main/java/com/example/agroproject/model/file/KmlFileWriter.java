@@ -1,49 +1,39 @@
 package com.example.agroproject.model.file;
 
-import android.annotation.SuppressLint;
+
 import android.content.Context;
-import android.content.ContextWrapper;
-import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
-import android.widget.Toast;
-
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-
-import static android.content.Context.MODE_APPEND;
-import static android.content.Context.MODE_PRIVATE;
-import static android.os.Environment.getExternalStoragePublicDirectory;
-import static android.os.ParcelFileDescriptor.MODE_CREATE;
-import static android.os.ParcelFileDescriptor.MODE_WORLD_READABLE;
-
 import com.example.agroproject.model.Placemark;
 import com.google.android.gms.maps.model.LatLng;
 
+/**
+ * TODO CLASS DESCRIPTION
+ */
 public class KmlFileWriter {
-
+    /** Context */
     private Context context;
 
+    /**
+     * Constructor
+     * <p>Instantiates a new KmlFileWriter object</p>
+     *
+     * @param context the current context of application
+     */
     public KmlFileWriter(Context context) {
         this.context = context;
     }
 
     public void fileToWrite(KmlFile kmlFile, List<Placemark> placemarks){
-      File path = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
-
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         try {
             // catches IOException below
             final String kmlstart = "<?xml version=1.0 encoding=UTF-8?> /**" +
@@ -78,7 +68,6 @@ public class KmlFileWriter {
                     "\t\t\t<hotSpot x=\"20\" y=\"2\" xunits=\"pixels\" yunits=\"pixels\"/>\n" +
                     "\t\t</IconStyle>\n" +
                     "\t</Style>\n";
-
             final String end = "</Document>\n" + "</kml>";
             /* We have to use the openFileOutput()-method
              * the ActivityContext provides, to
@@ -95,6 +84,12 @@ public class KmlFileWriter {
             * really written out and close */
             osw.flush();
             osw.close();
+
+            if(file.exists()){
+                Log.d("File state","The file "+kmlFile.getName()+" was created in path "+path);
+            }else{
+                Log.d("File state","File was not created.");
+            }
             //Reading the file back...
             /* We have to use the openFileInput()-method
              * the ActivityContext provides.
@@ -115,9 +110,15 @@ public class KmlFileWriter {
             isr.close();
         } catch (IOException e) {
             e.printStackTrace();
-            Log.d("  File Reading stuff  ", e.toString());
         }
     }
+
+    /**
+     * TODO DESCRIPTION
+     *
+     * @param placemarks
+     * @return
+     */
     public String addPlacemarks(List<Placemark> placemarks){
         String placemarkTag="";
         for(Placemark placemark : placemarks) {
@@ -140,6 +141,12 @@ public class KmlFileWriter {
         return placemarkTag;
     }
 
+    /**
+     * TODO DESCRIPTION
+     *
+     * @param coords
+     * @return
+     */
     public String getStringCoords(List<LatLng> coords){
         List<String> stringCoords = new ArrayList<>();
 

@@ -1,5 +1,6 @@
 package com.example.agroproject.view.fragments;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -7,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -17,6 +19,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.example.agroproject.R;
@@ -27,6 +33,9 @@ import com.example.agroproject.model.agro_api.JsonParser;
 import com.example.agroproject.model.agro_api.StringBuildForRequest;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -38,6 +47,9 @@ public class AreaClickFragment extends Fragment {
 
     /** Class TAG */
     private final String TAG = "AreaClickFragment";
+
+    /** Permission code for write file */
+    private static final int WRITE_EXTERNAL_STORAGE_CODE = 10;
 
     /** View binding */
     private AreaClickPopupBinding binding;
@@ -167,13 +179,8 @@ public class AreaClickFragment extends Fragment {
                     .show();
                 break;
                 case "export":
-                    Toast.makeText(getContext(),"ante gaasfas",Toast.LENGTH_LONG).show();
-                    // Trigger the export file event listener
-                    popUpClickEventListener.exportFile(placemark);
-                    // Unregister since the pop up is about to be closed.
-                    LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
-                    // Close pop up and trigger onBackPressed function of MapActivityV2
-                    getActivity().onBackPressed();
+                    // Check permissions for write external storage
+                    checkSelfPermissionForFiles();
                 break;
 
                 case "ndvi":
@@ -197,6 +204,35 @@ public class AreaClickFragment extends Fragment {
     };
 
     /**
+     *
+     * Check if write external storage permission granted.
+     * <p>
+     * If the permission has been granted calls the trigger the exportFile method of popUpClickEventListener interface and closes the pop up.
+     * If the permission has not been granted displays a request for the missing permissions and asks the permission.
+     * </p>
+     */
+    private void checkSelfPermissionForFiles(){
+        // Permission is not granted
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // Here to request the missing permissions, and then overriding
+            // public void onRequestPermissionsResult(int requestCode, String[] permissions,int[] grantResults).
+            // Requests the permission
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    WRITE_EXTERNAL_STORAGE_CODE);
+
+          // Permission is  granted
+        }else{
+            // Trigger the export file event listener
+            popUpClickEventListener.exportFile(placemark);
+            // Unregister since the pop up is about to be closed.
+            LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
+            // Close pop up and trigger onBackPressed function of MapActivityV2
+            getActivity().onBackPressed();
+        }
+    }
+
+    /**
      * Interface for handle event listener about the insert file
      */
     public interface AreaPopUpEventListener {
@@ -205,6 +241,22 @@ public class AreaClickFragment extends Fragment {
         void exportFile(Placemark placemark);
     }
 
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
+        if(requestCode == WRITE_EXTERNAL_STORAGE_CODE){
+            // Permission granted
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
+                // Trigger the export file event listener
+                popUpClickEventListener.exportFile(placemark);
+                // Unregister since the pop up is about to be closed.
+                LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
+                // Close pop up and trigger onBackPressed function of MapActivityV2
+                getActivity().onBackPressed();
+            }
+        }
+    }
 
     @Override
     public void onAttach(Activity activity) {

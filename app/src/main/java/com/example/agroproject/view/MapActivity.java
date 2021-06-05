@@ -294,7 +294,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     markerList.clear();
                     mMap.clear();
                     currentOuterArea = null;
-                    addTheExistingAreas(true);
+                    addTheExistingAreas(false);
                 break;
 
                 case "close":
@@ -541,7 +541,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // About export file
         KmlFileWriter kmlFileWriter = new KmlFileWriter(MapActivity.this);
         kmlFileWriter.fileToWrite(kmlFile,kmlFileMap.get(kmlFile));
-
+        // Show message
+        Toast.makeText(MapActivity.this,"The file "+kmlFile.getName()+" was successfully exported",Toast.LENGTH_LONG).show();
     }
 
     /**

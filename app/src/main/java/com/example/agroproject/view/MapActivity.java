@@ -26,6 +26,7 @@ import com.example.agroproject.model.agro_api.HttpRequest;
 import com.example.agroproject.model.agro_api.JsonParser;
 import com.example.agroproject.model.agro_api.StringBuildForRequest;
 import com.example.agroproject.model.file.KmlFile;
+import com.example.agroproject.model.file.KmlFileWriter;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.services.NetworkUtil;
 import com.example.agroproject.view.fragments.AreaClickFragment;
@@ -524,6 +525,24 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         binding.linearLayout.setVisibility(View.GONE);
     }
 
+    /**
+     * TODO DESCRIPTION
+     * @param placemark
+     */
+    @Override
+    public void exportFile(Placemark placemark) {
+        KmlFile kmlFile = null;
+        // Get specified file of this placemark
+        for(Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()){
+            if(entry.getValue().contains(placemark)){
+                kmlFile = entry.getKey();
+            }
+        }
+        // About export file
+        KmlFileWriter kmlFileWriter = new KmlFileWriter(MapActivity.this);
+        kmlFileWriter.fileToWrite(kmlFile,kmlFileMap.get(kmlFile));
+
+    }
 
     /**
      * CreateAreaEventListener implementation

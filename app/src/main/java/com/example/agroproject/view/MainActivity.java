@@ -137,15 +137,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-//        KmlFileWriter kmlFileWriter = new KmlFileWriter(this);
-//            kmlFileWriter.fileToWrite();
-//        File file = new File("test5.kml");
-//        if (file.exists()) {
-//            Toast.makeText(this, "FILE EXISTS", Toast.LENGTH_SHORT).show();
-//
-//        } else {
-//           // Toast.makeText(this, "FILE not not!! EXISTS", Toast.LENGTH_SHORT).show();
-//        }
+
     }
 
     /**

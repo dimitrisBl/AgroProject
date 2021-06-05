@@ -102,6 +102,8 @@ public class AreaClickFragment extends Fragment {
         binding.deleteBtn.setOnClickListener(buttonClickListener);
         // Set click listener for ndvi button
         binding.ndviBtn.setOnClickListener(buttonClickListener);
+        // Set click listener for export button
+        binding.exportBtn.setOnClickListener(buttonClickListener);
         return popupView;
     }
 
@@ -164,6 +166,15 @@ public class AreaClickFragment extends Fragment {
                             })
                     .show();
                 break;
+                case "export":
+                    Toast.makeText(getContext(),"ante gaasfas",Toast.LENGTH_LONG).show();
+                    // Trigger the export file event listener
+                    popUpClickEventListener.exportFile(placemark);
+                    // Unregister since the pop up is about to be closed.
+                    LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
+                    // Close pop up and trigger onBackPressed function of MapActivityV2
+                    getActivity().onBackPressed();
+                break;
 
                 case "ndvi":
                     if(bitmapDescriptor == null){
@@ -185,13 +196,13 @@ public class AreaClickFragment extends Fragment {
         }
     };
 
-
     /**
      * Interface for handle event listener about the insert file
      */
     public interface AreaPopUpEventListener {
         void deleteAreaEvent(Placemark placemark);
         void loadNdvi(Placemark placemark, BitmapDescriptor bitmapDescriptor);
+        void exportFile(Placemark placemark);
     }
 
 

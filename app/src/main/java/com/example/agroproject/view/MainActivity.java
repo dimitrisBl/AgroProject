@@ -133,13 +133,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-    }
-
+    
     /**
      *  This method check if location permission granted.
      *  If the permission has been granted calls the startLocationService method to start a location service.

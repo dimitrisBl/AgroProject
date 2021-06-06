@@ -586,6 +586,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         for (LatLng latLng : placemark.getLatLngList()) {
                  builder.include(latLng);
         }
+
         // Create GroundOverlayOptions for the ndv image
         GroundOverlayOptions groundOverlayOptions = new GroundOverlayOptions()
                 .positionFromBounds(builder.build()).image(descriptor).zIndex(100);

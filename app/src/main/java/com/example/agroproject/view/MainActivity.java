@@ -132,21 +132,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-//        KmlFileWriter kmlFileWriter = new KmlFileWriter(this);
-//            kmlFileWriter.fileToWrite();
-//        File file = new File("test5.kml");
-//        if (file.exists()) {
-//            Toast.makeText(this, "FILE EXISTS", Toast.LENGTH_SHORT).show();
-//
-//        } else {
-//           // Toast.makeText(this, "FILE not not!! EXISTS", Toast.LENGTH_SHORT).show();
-//        }
-    }
-
+    
     /**
      *  This method check if location permission granted.
      *  If the permission has been granted calls the startLocationService method to start a location service.
@@ -180,7 +166,6 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("MissingPermission")
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-
         if(requestCode == LOCATION_PERMISSION_CODE){
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                 Log.d(TAG, "Location permission granted!");

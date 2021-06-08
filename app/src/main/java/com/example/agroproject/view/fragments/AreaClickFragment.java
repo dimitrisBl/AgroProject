@@ -17,21 +17,32 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
+
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.AreaClickPopupBinding;
+import com.example.agroproject.model.DatePicker;
 import com.example.agroproject.model.Placemark;
 import com.example.agroproject.model.agro_api.HttpRequest;
 import com.example.agroproject.model.agro_api.JsonParser;
 import com.example.agroproject.model.agro_api.StringBuildForRequest;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.material.datepicker.CalendarConstraints;
+import com.google.android.material.datepicker.DateValidatorPointBackward;
+import com.google.android.material.datepicker.DateValidatorPointForward;
+import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 
 public class AreaClickFragment extends Fragment {
@@ -78,10 +89,10 @@ public class AreaClickFragment extends Fragment {
         popupView = binding.getRoot();
         // We are registering an observer (responseReceiver) with action name GetRequestData to receive Intents after http Get request in Agro api.
         LocalBroadcastManager.getInstance(getContext().getApplicationContext()).registerReceiver(responseReceiver, new IntentFilter("GetRequestData"));
-        // Create a url for sentinel Get request of agro api for specific polygon and date
-        String sentinelRequestLink = StringBuildForRequest.sentinelRequestLink(polygonId,"1609501337","1617277337");
-        // Get request on sentinel url of Agro api
-        HttpRequest.getRequest( getContext().getApplicationContext(), sentinelRequestLink,  "Get sentinel data");
+//        // Create a url for sentinel Get request of agro api for specific polygon and date
+//        String sentinelRequestLink = StringBuildForRequest.sentinelRequestLink(polygonId,"1609501337","1617277337");
+//        // Get request on sentinel url of Agro api
+//        HttpRequest.getRequest( getContext().getApplicationContext(), sentinelRequestLink,  "Get sentinel data");
         // Set click listener for close image top right
         binding.btnCLose.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -166,20 +177,28 @@ public class AreaClickFragment extends Fragment {
                 break;
 
                 case "ndvi":
-                    if(bitmapDescriptor == null){
-                        // Show message
-                        Toast.makeText(getActivity(), "Something was wrong, please try again", Toast.LENGTH_LONG).show();
-                    }else{
-                        // Trigger the event listener for load nvdi in the ui
-                        popUpClickEventListener.loadNdvi(placemark, bitmapDescriptor);
-                        // Unregister since the pop up is about to be closed.
-                        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
-                        // Close pop up and trigger onBackPressed function of MapActivityV2
-                        getActivity().onBackPressed();
-                    }
-                    /** TODO OTAN THA PATAEI TO NDVI BUTTON THA ANOIGEI ALERT GIA NA BALEI HMEROMINIES,
-                     *  AFOU PATHSEI KAI EKEI OK THA KALW THN getImageAsync kai sthn on onPreExecute tha balw na fortizei
-                      */
+                    // Instantiate a new DatePicker object
+                    DatePicker datePicker = new DatePicker();
+                    datePicker.Init();
+                    MaterialDatePicker materialDatePicker = datePicker.getMaterialDatePicker();
+                    // Show calendar
+                    materialDatePicker.show(getActivity().getSupportFragmentManager(), "DATE_PICKER");
+                    // Set click listener for save button of calendar
+                   materialDatePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Pair<Long, Long>>() {
+                       @Override
+                       public void onPositiveButtonClick(Pair<Long, Long>  selection) {
+                              // Edit time before add the time in sentinel url of agro api
+                              // This processing is done only for  time zone of the agro api
+                              int dateFromLength = selection.first.toString().length();
+                              int dateToLength = selection.second.toString().length();
+                              String dateFrom = selection.first.toString().substring(0, dateFromLength-3);
+                              String dateTo = selection.second.toString().substring(0, dateToLength-3);
+                              // Create a url for sentinel Get request of agro api for specific polygon and date
+                              String sentinelRequestLink = StringBuildForRequest.sentinelRequestLink(polygonId,dateFrom,dateTo);
+                              // Get request on sentinel url of Agro api
+                              HttpRequest.getRequest( getContext().getApplicationContext(), sentinelRequestLink,  "Get sentinel data");
+                       }
+                   });
                 break;
             }
         }
@@ -235,6 +254,12 @@ public class AreaClickFragment extends Fragment {
         protected void onPostExecute(BitmapDescriptor descriptor) {
             super.onPostExecute(descriptor);
             bitmapDescriptor = descriptor;
+            // Trigger the event listener for load nvdi in the ui
+            popUpClickEventListener.loadNdvi(placemark, bitmapDescriptor);
+            // Unregister since the pop up is about to be closed.
+            LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
+            // Close pop up and trigger onBackPressed function of MapActivityV2
+            getActivity().onBackPressed();
         }
     }
 }

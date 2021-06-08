@@ -59,15 +59,16 @@
                 android:text="Delete"/>
 
             <Button
+                android:id="@+id/exportBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Details"/>
+                android:text="Export"/>
 
             <Button
                 android:id="@+id/ndviBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ndvi"/>
+                android:text="Ndvi"/>
 
         </LinearLayout>
 

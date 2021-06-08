@@ -1,5 +1,6 @@
 package com.example.agroproject.view.fragments;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -7,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -16,8 +18,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-
 import androidx.core.util.Pair;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.example.agroproject.R;
@@ -31,6 +36,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +49,9 @@ public class AreaClickFragment extends Fragment {
 
     /** Class TAG */
     private final String TAG = "AreaClickFragment";
+
+    /** Permission code for write file */
+    private static final int WRITE_EXTERNAL_STORAGE_CODE = 10;
 
     /** View binding */
     private AreaClickPopupBinding binding;
@@ -103,6 +112,8 @@ public class AreaClickFragment extends Fragment {
         binding.deleteBtn.setOnClickListener(buttonClickListener);
         // Set click listener for ndvi button
         binding.ndviBtn.setOnClickListener(buttonClickListener);
+        // Set click listener for export button
+        binding.exportBtn.setOnClickListener(buttonClickListener);
         return popupView;
     }
 
@@ -165,6 +176,10 @@ public class AreaClickFragment extends Fragment {
                             })
                     .show();
                 break;
+                case "export":
+                    // Check permissions for write external storage
+                    checkSelfPermissionForFiles();
+                break;
 
                 case "ndvi":
                     // Instantiate a new DatePicker object
@@ -194,6 +209,34 @@ public class AreaClickFragment extends Fragment {
         }
     };
 
+    /**
+     *
+     * Check if write external storage permission granted.
+     * <p>
+     * If the permission has been granted calls the trigger the exportFile method of popUpClickEventListener interface and closes the pop up.
+     * If the permission has not been granted displays a request for the missing permissions and asks the permission.
+     * </p>
+     */
+    private void checkSelfPermissionForFiles(){
+        // Permission is not granted
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // Here to request the missing permissions, and then overriding
+            // public void onRequestPermissionsResult(int requestCode, String[] permissions,int[] grantResults).
+            // Requests the permission
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    WRITE_EXTERNAL_STORAGE_CODE);
+
+          // Permission is  granted
+        }else{
+            // Trigger the export file event listener
+            popUpClickEventListener.exportFile(placemark);
+            // Unregister since the pop up is about to be closed.
+            LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
+            // Close pop up and trigger onBackPressed function of MapActivityV2
+            getActivity().onBackPressed();
+        }
+    }
 
     /**
      * Interface for handle event listener about the insert file
@@ -201,8 +244,25 @@ public class AreaClickFragment extends Fragment {
     public interface AreaPopUpEventListener {
         void deleteAreaEvent(Placemark placemark);
         void loadNdvi(Placemark placemark, BitmapDescriptor bitmapDescriptor);
+        void exportFile(Placemark placemark);
     }
 
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
+        if(requestCode == WRITE_EXTERNAL_STORAGE_CODE){
+            // Permission granted
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
+                // Trigger the export file event listener
+                popUpClickEventListener.exportFile(placemark);
+                // Unregister since the pop up is about to be closed.
+                LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
+                // Close pop up and trigger onBackPressed function of MapActivityV2
+                getActivity().onBackPressed();
+            }
+        }
+    }
 
     @Override
     public void onAttach(Activity activity) {

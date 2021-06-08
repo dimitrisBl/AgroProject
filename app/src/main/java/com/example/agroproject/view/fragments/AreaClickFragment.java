@@ -16,7 +16,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
@@ -30,9 +29,6 @@ import com.example.agroproject.model.agro_api.JsonParser;
 import com.example.agroproject.model.agro_api.StringBuildForRequest;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.material.datepicker.CalendarConstraints;
-import com.google.android.material.datepicker.DateValidatorPointBackward;
-import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
 
@@ -41,8 +37,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Calendar;
-import java.util.TimeZone;
 
 
 public class AreaClickFragment extends Fragment {
@@ -89,10 +83,6 @@ public class AreaClickFragment extends Fragment {
         popupView = binding.getRoot();
         // We are registering an observer (responseReceiver) with action name GetRequestData to receive Intents after http Get request in Agro api.
         LocalBroadcastManager.getInstance(getContext().getApplicationContext()).registerReceiver(responseReceiver, new IntentFilter("GetRequestData"));
-//        // Create a url for sentinel Get request of agro api for specific polygon and date
-//        String sentinelRequestLink = StringBuildForRequest.sentinelRequestLink(polygonId,"1609501337","1617277337");
-//        // Get request on sentinel url of Agro api
-//        HttpRequest.getRequest( getContext().getApplicationContext(), sentinelRequestLink,  "Get sentinel data");
         // Set click listener for close image top right
         binding.btnCLose.setOnClickListener(new View.OnClickListener() {
             @Override

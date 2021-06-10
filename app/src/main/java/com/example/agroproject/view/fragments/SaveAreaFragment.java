@@ -62,9 +62,10 @@ public class SaveAreaFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 // Get the area name text
-                String areaName = binding.areaName.getText().toString();
+                String areaName = binding.areaName.getText().toString().trim();
                 // Get the description
-                String areaDescription = binding.areaDescription.getText().toString();
+                String areaDescription = binding.areaDescription.getText().toString().trim();
+                // Check input
                 if(!areaName.isEmpty() && !areaDescription.isEmpty()){
                     // Get the object of outsider area
                     Placemark outsiderArea = AreaUtilities.getOutsiderArea();

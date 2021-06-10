@@ -140,7 +140,7 @@ public class InsertFileFragment extends Fragment implements Executor {
 
                 case "save":
                     // Get the text from farmName TextView in String type
-                    String farmNameText = binding.autoCompleteTextView.getText().toString();
+                    String farmNameText = binding.autoCompleteTextView.getText().toString().trim();
                     // Check if the  fields of pop up is empty
                     if (!farmNameText.isEmpty() && fileName != null) {
                         // Instantiate a KmlFileParse object

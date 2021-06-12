@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.example.agroproject.model.Placemark;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 
 /**
  * TODO CLASS DESCRIPTION
@@ -22,104 +23,143 @@ public class KmlFileWriter {
     /** Context */
     private Context context;
 
+    private final String kmlstartBeforeName = "<?xml version=1.0 encoding=UTF-8?> /**" +
+            "<kml xmlns=\"http://www.opengis.net/kml/2.2\" xmlns:gx=\"http://www.google.com/kml/ext/2.2\" xmlns:kml=\"http://www.opengis.net/kml/2.2\" xmlns:atom=\"http://www.w3.org/2005/Atom\">\n" +
+            "<Document>\n" +
+            "\t<name>";
+    private final String kmlstartAfterName = "</name>\n" +
+            "\t<StyleMap id=\"m_ylw-pushpin\">\n" +
+            "\t\t<Pair>\n" +
+            "\t\t\t<key>normal</key>\n" +
+            "\t\t\t<styleUrl>#s_ylw-pushpin</styleUrl>\n" +
+            "\t\t</Pair>\n" +
+            "\t\t<Pair>\n" +
+            "\t\t\t<key>highlight</key>\n" +
+            "\t\t\t<styleUrl>#s_ylw-pushpin_hl</styleUrl>\n" +
+            "\t\t</Pair>\n" +
+            "\t</StyleMap>\n" +
+            "\t<Style id=\"s_ylw-pushpin_hl\">\n" +
+            "\t\t<IconStyle>\n" +
+            "\t\t\t<scale>1.3</scale>\n" +
+            "\t\t\t<Icon>\n" +
+            "\t\t\t\t<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>\n" +
+            "\t\t\t</Icon>\n" +
+            "\t\t\t<hotSpot x=\"20\" y=\"2\" xunits=\"pixels\" yunits=\"pixels\"/>\n" +
+            "\t\t</IconStyle>\n" +
+            "\t</Style>\n" +
+            "\t<Style id=\"s_ylw-pushpin\">\n" +
+            "\t\t<IconStyle>\n" +
+            "\t\t\t<scale>1.1</scale>\n" +
+            "\t\t\t<Icon>\n" +
+            "\t\t\t\t<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>\n" +
+            "\t\t\t</Icon>\n" +
+            "\t\t\t<hotSpot x=\"20\" y=\"2\" xunits=\"pixels\" yunits=\"pixels\"/>\n" +
+            "\t\t</IconStyle>\n" +
+            "\t</Style>\n";
+
+    private final String end = "</Document>\n" + "</kml>";
+
+    private final String overlayTagBeforeIcon = "<GroundOverlay>\n" +
+            "      <name>Large-scale overlay on terrain</name>\n" +
+            "    <description>Overlay shows Mount Etna erupting\n" +
+            "    on July 13th, 2001.</description>\n" +
+            "      <Icon>\n" +
+            "        <href>";
+    private final String overlayTagAftericon = "</href>\n" +
+            "      </Icon>\n" +"<gx:LatLonQuad>\n"+
+                        "<coordinates>";
+    private final String overlayTagAfterCoords=
+            "        </coordinates>\n" +
+            "       </gx:LatLonQuad>\n" +
+            "    </GroundOverlay>";
+
     /**
      * Constructor
      * <p>Instantiates a new KmlFileWriter object</p>
      *
      * @param context the current context of application
      */
+
     public KmlFileWriter(Context context) {
         this.context = context;
     }
 
-    public void fileToWrite(KmlFile kmlFile, List<Placemark> placemarks){
+    /** Create the kml filedata using StringBuilder. It sends the data to the createFile() method where
+     * the kml file is exported
+     * @param kmlFile The kml file that is going to get exported
+     * @param placemarks  The placemarks contained in the kml file
+     * @param placemark    The placemark that the fround overlay is going to be displayed on
+     */
+    public void fileToWrite(KmlFile kmlFile, List<Placemark> placemarks,Placemark placemark){
+
+            StringBuilder builder = new StringBuilder(kmlstartBeforeName);
+            builder.append(String.format(kmlFile.getName()));
+            builder.append(String.format(kmlstartAfterName));
+            builder.append(String.format(addPlacemarks(placemarks)));
+            builder.append(String.format(getOverlay(placemark)));
+            builder.append(String.format(end));
+            createFile(builder.toString(), kmlFile.getName());
+
+    }
+
+    /** Export file with the specified data and name
+     *
+     * @param fileData Data of the file
+     * @param filename Name of the file
+     */
+    private void createFile(String fileData, String filename){
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         try {
             // catches IOException below
-            final String kmlstart = "<?xml version=1.0 encoding=UTF-8?> /**" +
-                    "<kml xmlns=\"http://www.opengis.net/kml/2.2\" xmlns:gx=\"http://www.google.com/kml/ext/2.2\" xmlns:kml=\"http://www.opengis.net/kml/2.2\" xmlns:atom=\"http://www.w3.org/2005/Atom\">\n" +
-                    "<Document>\n" +
-                    "\t<name>"+kmlFile.getName()+"</name>\n" +
-                    "\t<StyleMap id=\"m_ylw-pushpin\">\n" +
-                    "\t\t<Pair>\n" +
-                    "\t\t\t<key>normal</key>\n" +
-                    "\t\t\t<styleUrl>#s_ylw-pushpin</styleUrl>\n" +
-                    "\t\t</Pair>\n" +
-                    "\t\t<Pair>\n" +
-                    "\t\t\t<key>highlight</key>\n" +
-                    "\t\t\t<styleUrl>#s_ylw-pushpin_hl</styleUrl>\n" +
-                    "\t\t</Pair>\n" +
-                    "\t</StyleMap>\n" +
-                    "\t<Style id=\"s_ylw-pushpin_hl\">\n" +
-                    "\t\t<IconStyle>\n" +
-                    "\t\t\t<scale>1.3</scale>\n" +
-                    "\t\t\t<Icon>\n" +
-                    "\t\t\t\t<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>\n" +
-                    "\t\t\t</Icon>\n" +
-                    "\t\t\t<hotSpot x=\"20\" y=\"2\" xunits=\"pixels\" yunits=\"pixels\"/>\n" +
-                    "\t\t</IconStyle>\n" +
-                    "\t</Style>\n" +
-                    "\t<Style id=\"s_ylw-pushpin\">\n" +
-                    "\t\t<IconStyle>\n" +
-                    "\t\t\t<scale>1.1</scale>\n" +
-                    "\t\t\t<Icon>\n" +
-                    "\t\t\t\t<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>\n" +
-                    "\t\t\t</Icon>\n" +
-                    "\t\t\t<hotSpot x=\"20\" y=\"2\" xunits=\"pixels\" yunits=\"pixels\"/>\n" +
-                    "\t\t</IconStyle>\n" +
-                    "\t</Style>\n";
-            final String end = "</Document>\n" + "</kml>";
+
             /* We have to use the openFileOutput()-method
              * the ActivityContext provides, to
              * protect your file from others and
              * This is done for security-reasons.
              * We chose MODE_WORLD_READABLE, because
              *  we have nothing to hide in our file */
-            File file = new File(path+"/"+kmlFile.getName());
+            File file = new File(path+"/"+filename);
             FileOutputStream fis = new FileOutputStream (file);
             OutputStreamWriter osw = new OutputStreamWriter(fis);
             // Write the string to the file
-            osw.write(kmlstart+addPlacemarks(placemarks)+end);
+            osw.write(fileData);
             /* ensure that everything is
-            * really written out and close */
+             * really written out and close */
             osw.flush();
             osw.close();
 
+
             if(file.exists()){
-                Log.d("File state","The file "+kmlFile.getName()+" was created in path "+path);
+                Log.d("File state","The file "+filename+" was created in path "+path);
             }else{
                 Log.d("File state","File was not created.");
             }
-            //Reading the file back...
-            /* We have to use the openFileInput()-method
-             * the ActivityContext provides.
-             * Again for security reasons with
-             * openFileInput(...) */
-            FileInputStream fIn = new FileInputStream(file);
-            InputStreamReader isr = new InputStreamReader(fIn);
-            /* Prepare a char-Array that will
-             * hold the chars we read back in. */
-            char[] inputBuffer = new char[kmlstart.length()];
-            // Fill the Buffer with data from the file
-            isr.read(inputBuffer);
-            // Transform the chars to a String
-            String readString = new String(inputBuffer);
-            // Check if we read back the same chars that we had written out
-            boolean isTheSame = kmlstart.equals(readString);
-            Log.d("  File Reading stuff  ","  success = " + isTheSame);
-            isr.close();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+    }
+
+    /** Create the Overlay Tag
+     *
+     * @param placemark Placemark that the overlay is going to be displayed on
+     * @return Overlay Tag
+     */
+    private String getOverlay(Placemark placemark){
+      String OverlayTag=overlayTagBeforeIcon;
+      String coords = getStringCoords(placemark.getLatLngList());
+      OverlayTag += placemark.getImageUrl() + overlayTagAftericon + coords + overlayTagAfterCoords;
+      return OverlayTag;
     }
 
     /**
-     * TODO DESCRIPTION
+     * Create the Placemark tag
      *
-     * @param placemarks
-     * @return
+     * @param placemarks placemarks of the specified file
+     * @return Placemark Tag
      */
-    public String addPlacemarks(List<Placemark> placemarks){
+    private String addPlacemarks(List<Placemark> placemarks){
         String placemarkTag="";
         for(Placemark placemark : placemarks) {
            placemarkTag +=   "\t<Placemark>\n" +
@@ -142,10 +182,10 @@ public class KmlFileWriter {
     }
 
     /**
-     * TODO DESCRIPTION
+     * Create the Coordinates tag
      *
-     * @param coords
-     * @return
+     * @param coords coordinates for a placemark
+     * @return coordinates tag
      */
     public String getStringCoords(List<LatLng> coords){
         List<String> stringCoords = new ArrayList<>();

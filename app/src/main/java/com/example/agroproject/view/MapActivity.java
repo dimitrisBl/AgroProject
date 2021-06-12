@@ -7,8 +7,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -37,6 +40,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -50,6 +54,11 @@ import com.nightonke.boommenu.BoomButtons.TextOutsideCircleButton;
 import com.nightonke.boommenu.BoomMenuButton;
 import org.json.JSONArray;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -117,6 +126,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     /** button for Boom Menu **/
     private BoomMenuButton boomButton;
+
+    /** Bitmap Decriptor that will be used to load the ndvi image for every placemark
+     * using the "GetImageAsync"
+     */
+    public BitmapDescriptor bitmapDescriptor;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -473,13 +488,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 placemarkList.add(placemark);
             }
         }
-
-        // Add overlays in the map
-        for(Map.Entry<Placemark,GroundOverlayOptions> entry : groundOverlaysList.entrySet()){
-            // Add overlay in the map
-            mMap.addGroundOverlay(entry.getValue());
-        }
     }
+
+
 
     /**
      *  Our handler for received Intents. This will be called whenever an Intent
@@ -497,7 +508,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 // Parse response data
                 jsonArray = JsonParser.parseResponse(responseData);
             }
-            Log.d(TAG,"receive response data here "+responseData);
         }
     };
 
@@ -519,11 +529,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
         // Add areas in the map
         addTheExistingAreas(true);
-        // Move the camera in center location
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 13f));
-        // Disable bottom layout
-        binding.linearLayout.setVisibility(View.GONE);
+
+        //Get and load ndvi image from every placemark that has an imageURL
+        for(Placemark placemark : placemarks){
+            if(placemark.getImageUrl() != ""){
+                new GetImageAsync(placemark).execute(placemark.getImageUrl());
+            }
+        }
     }
+
+
+
 
     /**
      * TODO DESCRIPTION
@@ -540,7 +556,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
         // About export file
         KmlFileWriter kmlFileWriter = new KmlFileWriter(MapActivity.this);
-        kmlFileWriter.fileToWrite(kmlFile,kmlFileMap.get(kmlFile));
+        kmlFileWriter.fileToWrite(kmlFile,kmlFileMap.get(kmlFile),placemark);
         // Show message
         Toast.makeText(MapActivity.this,"The file "+kmlFile.getName()+" was successfully exported",Toast.LENGTH_LONG).show();
     }
@@ -561,7 +577,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if (entry.getValue().contains(outsiderArea)) {
                 // add new value on this entry
                 entry.getValue().add(new Placemark
-                        (areaName, areaDescription, polygonOptions.getPoints()));
+                        (areaName, areaDescription, polygonOptions.getPoints(), ""));
                 // Save the kmlFileMap in shared preferences.
                 kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
             }
@@ -592,7 +608,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         groundOverlaysList.remove(placemark);
         // Add areas in the map  set property clickable  true
         addTheExistingAreas(true);
-
     }
 
     /**
@@ -601,6 +616,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      */
     @Override
     public void loadNdvi(Placemark placemark, BitmapDescriptor descriptor) {
+        bitmapDescriptor = descriptor; //oti na nai
         // Create LatLng bounds for the location of placemark
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         for (LatLng latLng : placemark.getLatLngList()) {
@@ -626,6 +642,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         registerReceiver(networkUtil, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
+
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -634,5 +652,48 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         unregisterReceiver(networkUtil);
         // Unregister since the activity is about to be closed.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(responseReceiver);
+    }
+
+
+    private class GetImageAsync extends AsyncTask<String, Void, BitmapDescriptor> {
+
+        //Specified placemark
+        private Placemark placemark;
+
+        public GetImageAsync(Placemark placemark){
+            this.placemark = placemark;
+        }
+
+        @Override
+        protected BitmapDescriptor doInBackground(String... strings) {
+            try {
+                //Get the image by placemarks Image URL
+                URL url = new URL(strings[0]);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setDoInput(true);
+                connection.connect();
+                InputStream input = connection.getInputStream();
+                Bitmap myBitmap = BitmapFactory.decodeStream(input);
+                input.close();
+                BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(myBitmap);
+                return  bitmapDescriptor;
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                Log.d(TAG,"MalformedURLException");
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.d(TAG,"io exception");
+            }
+            return null;
+        }
+        @Override
+        protected void onPostExecute(BitmapDescriptor descriptor) {
+            super.onPostExecute(descriptor);
+            //Load the image on BitmapDescriptor
+            bitmapDescriptor = descriptor;
+            //Display the ndvi image of specified placemark
+            loadNdvi(placemark, bitmapDescriptor);
+
+        }
     }
 }

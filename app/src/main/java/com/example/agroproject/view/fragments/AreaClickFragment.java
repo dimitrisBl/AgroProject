@@ -68,6 +68,7 @@ public class AreaClickFragment extends Fragment {
     /** BitmapDescriptor takes the ndvi image after request in the sentinel url fo agro api */
     private BitmapDescriptor bitmapDescriptor;
 
+
     /**
      * Instantiate a new AreaClickFragment
      *
@@ -135,6 +136,8 @@ public class AreaClickFragment extends Fragment {
             if(requestType.equals("Get sentinel data")){
                 // Get image url
                 String imageUrl = JsonParser.getImage(responseData);
+                 //Set imageUrl to it's placemark
+                 placemark.setImageUrl(imageUrl);
                 // Get image from Agro api
                 new getImageAsync().execute(imageUrl);
             }
@@ -223,8 +226,9 @@ public class AreaClickFragment extends Fragment {
 
           // Permission is  granted
         }else{
-            // Trigger the export file event listener
-            popUpClickEventListener.exportFile(placemark);
+                // Trigger the export file event listener
+                popUpClickEventListener.exportFile(placemark);
+
             // Unregister since the pop up is about to be closed.
             LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
             // Close pop up and trigger onBackPressed function of MapActivityV2
@@ -239,6 +243,7 @@ public class AreaClickFragment extends Fragment {
         void deleteAreaEvent(Placemark placemark);
         void loadNdvi(Placemark placemark, BitmapDescriptor bitmapDescriptor);
         void exportFile(Placemark placemark);
+
     }
 
 
@@ -248,8 +253,10 @@ public class AreaClickFragment extends Fragment {
         if(requestCode == WRITE_EXTERNAL_STORAGE_CODE){
             // Permission granted
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
-                // Trigger the export file event listener
-                popUpClickEventListener.exportFile(placemark);
+
+                    // Trigger the export file event listener
+                    popUpClickEventListener.exportFile(placemark);
+
                 // Unregister since the pop up is about to be closed.
                 LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
                 // Close pop up and trigger onBackPressed function of MapActivityV2
@@ -272,7 +279,7 @@ public class AreaClickFragment extends Fragment {
     /**
      * TODO CLASS DESCRIPTION
      */
-    private class getImageAsync extends AsyncTask<String, Void, BitmapDescriptor> {
+    public class getImageAsync extends AsyncTask<String, Void, BitmapDescriptor> {
         @Override
         protected BitmapDescriptor doInBackground(String... strings) {
             try {

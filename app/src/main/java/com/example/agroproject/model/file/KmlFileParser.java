@@ -84,8 +84,11 @@ public class KmlFileParser {
                     .replace("<coordinates>","").replace("</coordinates>",""));
             // Convert List type from string to LatLng
             List<LatLng> convertedLatLngList = convertToLatLng(coordinates);
+
+           String imageUrl = String.valueOf(document.select("GroundOverlay").select("Icon").select("href")).replace("<href>","").replace("</href>","").trim();
             // Create a new Placemark object and put it in placemarkList
-            placemarkList.add(new Placemark(areaName, areaDescription, convertedLatLngList));
+            placemarkList.add(new Placemark(areaName, areaDescription, convertedLatLngList,imageUrl));
+
         }
         // return the List
         return placemarkList;

@@ -112,8 +112,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /** JSON data from GET request in agro api */
     private JSONArray jsonArray;
 
-    /** List with GroundOverlay objects, takes the ndvi ground overlays after ndvi request*/
-    private Map<Placemark, GroundOverlayOptions> groundOverlaysList = new HashMap<>();
+    /** Map with GroundOverlay objects, takes the ndvi ground overlays for any Placemark after ndvi request*/
+    private Map<Placemark, GroundOverlayOptions> groundOverlaysMap = new HashMap<>();
 
     /** button for Boom Menu **/
     private BoomMenuButton boomButton;
@@ -463,8 +463,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             for (Placemark placemark : entry.getValue()) {
                 // Create PolygonOptions object for each placemark
                 PolygonOptions polygonOptions = new PolygonOptions()
-                        .strokeWidth(5f).addAll(placemark.getLatLngList()).strokeColor(Color.RED)
-                        .fillColor(Color.argb(70, 50, 255, 0)).clickable(isClickable);
+                        .strokeWidth(5f).addAll(placemark.getLatLngList()).strokeColor(Color.RED).clickable(isClickable);
                 // Add polygon in the map
                 Polygon polygon = mMap.addPolygon(polygonOptions);
                 // Set in the tag of polygon the name of placemark
@@ -473,9 +472,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 placemarkList.add(placemark);
             }
         }
-
         // Add overlays in the map
-        for(Map.Entry<Placemark,GroundOverlayOptions> entry : groundOverlaysList.entrySet()){
+        for(Map.Entry<Placemark,GroundOverlayOptions> entry : groundOverlaysMap.entrySet()){
             // Add overlay in the map
             mMap.addGroundOverlay(entry.getValue());
         }
@@ -530,7 +528,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * @param placemark
      */
     @Override
-    public void exportFile(Placemark placemark) {
+    public void exportFileEvent(Placemark placemark) {
         KmlFile kmlFile = null;
         // Get specified file of this placemark
         for(Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()){
@@ -540,7 +538,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
         // About export file
         KmlFileWriter kmlFileWriter = new KmlFileWriter(MapActivity.this);
-        kmlFileWriter.fileToWrite(kmlFile,kmlFileMap.get(kmlFile));
+        kmlFileWriter.fileToWrite(kmlFile, kmlFileMap.get(kmlFile));
         // Show message
         Toast.makeText(MapActivity.this,"The file "+kmlFile.getName()+" was successfully exported",Toast.LENGTH_LONG).show();
     }
@@ -558,12 +556,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void createAreaEvent(String areaName, String areaDescription, Placemark outsiderArea) {
         for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
-            if (entry.getValue().contains(outsiderArea)) {
-                // add new value on this entry
-                entry.getValue().add(new Placemark
-                        (areaName, areaDescription, polygonOptions.getPoints()));
-                // Save the kmlFileMap in shared preferences.
-                kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
+            for(Placemark placemark : entry.getValue()){
+                if(placemark.getName().equals(outsiderArea.getName())){
+                    // add new value on this entry
+                    entry.getValue().add(new Placemark
+                            (areaName, areaDescription, polygonOptions.getPoints()));
+                    // Save the kmlFileMap in shared preferences.
+                    kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
+                    break;
+                }
             }
         }
         // Add areas in the map  set property clickable  true
@@ -589,7 +590,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         }
         // Remove ground overlay from groundOverlaysList
-        groundOverlaysList.remove(placemark);
+        groundOverlaysMap.remove(placemark);
         // Add areas in the map  set property clickable  true
         addTheExistingAreas(true);
 
@@ -600,20 +601,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * @param placemark
      */
     @Override
-    public void loadNdvi(Placemark placemark, BitmapDescriptor descriptor) {
+    public void loadNdviEvent(Placemark placemark, BitmapDescriptor descriptor) {
         // Create LatLng bounds for the location of placemark
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         for (LatLng latLng : placemark.getLatLngList()) {
                  builder.include(latLng);
         }
-
         // Create GroundOverlayOptions for the ndv image
         GroundOverlayOptions groundOverlayOptions = new GroundOverlayOptions()
-                .positionFromBounds(builder.build()).image(descriptor).zIndex(100);
+                .positionFromBounds(builder.build()).image(descriptor);
         // Add overlay in the map
         mMap.addGroundOverlay(groundOverlayOptions);
         // Add GroundOverlayOptions in the groundOverlaysList
-        groundOverlaysList.put(placemark, groundOverlayOptions);
+        groundOverlaysMap.put(placemark, groundOverlayOptions);
     }
 
     @Override

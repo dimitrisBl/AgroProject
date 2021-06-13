@@ -230,7 +230,7 @@ public class AreaClickFragment extends Fragment {
           // Permission is  granted
         }else{
             // Trigger the export file event listener
-            popUpClickEventListener.exportFile(placemark);
+            popUpClickEventListener.exportFileEvent(placemark);
             // Unregister since the pop up is about to be closed.
             LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
             // Close pop up and trigger onBackPressed function of MapActivityV2
@@ -243,8 +243,8 @@ public class AreaClickFragment extends Fragment {
      */
     public interface AreaPopUpEventListener {
         void deleteAreaEvent(Placemark placemark);
-        void loadNdvi(Placemark placemark, BitmapDescriptor bitmapDescriptor);
-        void exportFile(Placemark placemark);
+        void loadNdviEvent(Placemark placemark, BitmapDescriptor bitmapDescriptor);
+        void exportFileEvent(Placemark placemark);
     }
 
 
@@ -255,7 +255,7 @@ public class AreaClickFragment extends Fragment {
             // Permission granted
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
                 // Trigger the export file event listener
-                popUpClickEventListener.exportFile(placemark);
+                popUpClickEventListener.exportFileEvent(placemark);
                 // Unregister since the pop up is about to be closed.
                 LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
                 // Close pop up and trigger onBackPressed function of MapActivityV2
@@ -305,7 +305,7 @@ public class AreaClickFragment extends Fragment {
             super.onPostExecute(descriptor);
             bitmapDescriptor = descriptor;
             // Trigger the event listener for load nvdi in the ui
-            popUpClickEventListener.loadNdvi(placemark, bitmapDescriptor);
+            popUpClickEventListener.loadNdviEvent(placemark, bitmapDescriptor);
             // Unregister since the pop up is about to be closed.
             LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
             // Close pop up and trigger onBackPressed function of MapActivityV2

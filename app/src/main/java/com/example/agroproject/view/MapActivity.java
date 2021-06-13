@@ -544,7 +544,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
 
-
     /**
      * TODO DESCRIPTION
      * @param placemark
@@ -582,7 +581,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 if(placemark.getName().equals(outsiderArea.getName())){
                     // add new value on this entry
                     entry.getValue().add(new Placemark
-                            (areaName, areaDescription, polygonOptions.getPoints()));
+                            (areaName, areaDescription, polygonOptions.getPoints(), ""));
                     // Save the kmlFileMap in shared preferences.
                     kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
                     break;
@@ -697,7 +696,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             //Load the image on BitmapDescriptor
             bitmapDescriptor = descriptor;
             //Display the ndvi image of specified placemark
-            loadNdvi(placemark, bitmapDescriptor);
+            loadNdviEvent(placemark, bitmapDescriptor);
         }
     }
 }

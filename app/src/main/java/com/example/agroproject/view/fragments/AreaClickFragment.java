@@ -192,7 +192,7 @@ public class AreaClickFragment extends Fragment {
                     // Show calendar
                     materialDatePicker.show(getActivity().getSupportFragmentManager(), "DATE_PICKER");
                     // Set click listener for save button of calendar
-                   materialDatePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Pair<Long, Long>>() {
+                    materialDatePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Pair<Long, Long>>() {
                        @Override
                        public void onPositiveButtonClick(Pair<Long, Long>  selection) {
                               // Edit time before add the time in sentinel url of agro api
@@ -206,7 +206,7 @@ public class AreaClickFragment extends Fragment {
                               // Get request on sentinel url of Agro api
                               HttpRequest.getRequest( getContext().getApplicationContext(), sentinelRequestLink,  "Get sentinel data");
                        }
-                   });
+                    });
                 break;
             }
         }

@@ -14,7 +14,7 @@ public class DatePicker {
 
     private CalendarConstraints.Builder calendarConstraintsBuilder;
 
-    private  MaterialDatePicker materialDatePicker;
+    private MaterialDatePicker materialDatePicker;
 
     /**
      * Instantiates a new DatePicker object

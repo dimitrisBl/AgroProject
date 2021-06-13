@@ -4,8 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -19,14 +17,8 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.text.Layout;
-import android.text.SpannableString;
-import android.text.style.AlignmentSpan;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.FrameLayout;
 import android.widget.Toast;
 
 
@@ -36,8 +28,6 @@ import com.example.agroproject.databinding.ActivityMainBinding;
 
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
-import com.example.agroproject.view.fragments.HomeFrag;
-import com.example.agroproject.view.fragments.InsertFileFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 
@@ -101,29 +91,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
-                    case R.id.navigation_home:
-                        // Instantiate a Fragment object
-//                        final Fragment fragment = new HomeFrag();
-//                        // Start fragment activity
-//                        getSupportFragmentManager().beginTransaction()
-//                                .replace(R.id.main_container, fragment, fragment.getClass().getSimpleName())
-//                                .addToBackStack(null).commit();
-
+                    case R.id.navigation_map:
                         if(isGpsEnable()){
+                            // Open MapActivity Class
                             Intent yourMapIntent = new Intent(MainActivity.this, MapActivity.class);
                             yourMapIntent.putExtra("latitude",latitude);
                             yourMapIntent.putExtra("longitude",longitude);
                             startActivity(yourMapIntent);
                         }
                         return true;
-                    case R.id.navigation_profile:
-                        // Instantiate a Fragment object
-//                        final Fragment fragment1 = new UserProfile();
-//                        // Start fragment activity
-//                        getSupportFragmentManager().beginTransaction()
-//                                .replace(R.id.main_container, fragment1, fragment1.getClass().getSimpleName())
-//                                .addToBackStack(null).commit();
-
+                    case R.id.navigation_farms:
+                        // Open ListViewActivity Class
                         Intent recyclerViewIntent = new Intent(MainActivity.this, ListViewActivity.class);
                         startActivity(recyclerViewIntent);
                         return true;

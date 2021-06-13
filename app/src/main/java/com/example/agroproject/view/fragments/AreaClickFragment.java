@@ -70,6 +70,7 @@ public class AreaClickFragment extends Fragment {
     /** BitmapDescriptor takes the ndvi image after request in the sentinel url fo agro api */
     private BitmapDescriptor bitmapDescriptor;
 
+
     /**
      * Instantiate a new AreaClickFragment
      *
@@ -133,6 +134,8 @@ public class AreaClickFragment extends Fragment {
             if(requestType.equals("Get sentinel data")){
                 // Get image url
                 String imageUrl = JsonParser.getImage(responseData);
+                 //Set imageUrl to it's placemark
+                 placemark.setImageUrl(imageUrl);
                 // Get image from Agro api
                 new getImageAsync().execute(imageUrl);
             }
@@ -278,7 +281,7 @@ public class AreaClickFragment extends Fragment {
     /**
      * TODO CLASS DESCRIPTION
      */
-    private class getImageAsync extends AsyncTask<String, Void, BitmapDescriptor> {
+    public class getImageAsync extends AsyncTask<String, Void, BitmapDescriptor> {
         @Override
         protected BitmapDescriptor doInBackground(String... strings) {
             try {

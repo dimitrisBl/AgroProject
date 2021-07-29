@@ -69,18 +69,18 @@ public class NetworkUtil extends BroadcastReceiver{
         if(connection == NetworkUtil.TYPE_NOT_CONNECTED){
             // Show message
              AlertDialog alertDialog = new AlertDialog.Builder(activity)
-                    .setTitle("Wifi permission")
-                    .setMessage("The Wifi is required for this app, go to wifi settings to turn on Wifi.")
+                    .setTitle("Network permission")
+                    .setMessage("The internet connection is required for this app, go to data source settings to turn on network data.")
                     .setCancelable(false)
                     .setPositiveButton("Yes", ((dialogInterface, i) -> {
-                        //Intent intent1 = new Intent(Settings.ACTION_DATA_ROAMING_SETTINGS);
-                        Intent intent1 = new Intent(Settings.ACTION_WIFI_SETTINGS);
+                        Intent intent1 = new Intent(Settings.ACTION_DATA_USAGE_SETTINGS);
+                        //Intent intent1 = new Intent(Settings.ACTION_WIFI_SETTINGS);
                         activity.startActivity(intent1);
                     }))
                     .setNegativeButton("No", ((dialogInterface, i) -> {
                         Toast.makeText(activity,
-                                "Wifi is required." +
-                                        "Please enable wifi.",Toast.LENGTH_LONG).show();
+                                "Internet connection is required." +
+                                        "Please enable internet connection.",Toast.LENGTH_LONG).show();
                         activity.finish();
                     }))
             .show();

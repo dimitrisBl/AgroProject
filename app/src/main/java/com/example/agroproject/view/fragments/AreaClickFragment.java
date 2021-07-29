@@ -19,13 +19,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import androidx.core.util.Pair;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import com.example.agroproject.R;
+import com.example.agroproject.*;
 import com.example.agroproject.databinding.AreaClickPopupBinding;
 import com.example.agroproject.model.DatePicker;
 import com.example.agroproject.model.Placemark;
@@ -44,7 +43,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-
+@SuppressWarnings("unchecked")
 public class AreaClickFragment extends Fragment {
 
     /** Class TAG */
@@ -145,6 +144,7 @@ public class AreaClickFragment extends Fragment {
     /**
      * Button click listener
      */
+    //@SuppressWarnings("unchecked")
     private View.OnClickListener buttonClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -185,6 +185,9 @@ public class AreaClickFragment extends Fragment {
                 break;
 
                 case "ndvi":
+                    /**TODO otan kanw clean kai rebuild sthn kartela build bgazei: uses unchecked or unsafe operations kai ofeiletai apo ton kwdika parakatw
+                     * mallon apo to initialize tou datePicker
+                     */
                     // Instantiate a new DatePicker object
                     DatePicker datePicker = new DatePicker();
                     datePicker.Init();

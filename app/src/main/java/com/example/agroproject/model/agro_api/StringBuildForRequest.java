@@ -11,7 +11,7 @@ public class StringBuildForRequest {
 
 
     /**
-     * API endpoint for polygons. This url can be used for GET and POST requests.
+     * API endpoint for polygons, this url can be used for GET and POST requests.
      *
      * @return a string representing the polygons url of agro api
      */
@@ -22,7 +22,7 @@ public class StringBuildForRequest {
     }
 
     /**
-     * API endpoint for sentinel. This url can be used for
+     * API endpoint for sentinel, this url can be used for
      * Get request for a specific polygon in user choice date.
      *
      * @param polygonId has the polygon Id for which I want to get satellite data

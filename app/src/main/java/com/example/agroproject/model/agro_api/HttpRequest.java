@@ -22,8 +22,8 @@ public class HttpRequest {
     private static final String TAG = "HttpRequest";
 
     /**
-     * Performs a post request in endpoint polygons of Agro Api for create a new polygon.
-     * The number of polygons to be created is determined by the size of the list jsonObjectList.
+     * Performs a POST request in endpoint polygons of Agro Api for create a new polygon,
+     * the number of polygons to be created is determined by the size of the list jsonObjectList.
      *
      * @param jsonObjectList has the placemark data in json type for the new kml file to be added,
      * one kml file may contain multiple placemark data.
@@ -64,7 +64,7 @@ public class HttpRequest {
 
     /**
      * Performs a GET request in specific url
-     * to receive data about the polygons from the agro api.
+     * to receive data about the polygons from the Agro api.
      *
      * @param context has the current context of application.
      * @param url has the url for GET http request.

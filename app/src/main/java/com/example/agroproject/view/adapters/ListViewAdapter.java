@@ -6,9 +6,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import com.example.agroproject.R;
-import com.example.agroproject.model.Placemark;
 import com.example.agroproject.model.file.KmlFile;
-import java.util.ArrayList;
 import java.util.List;
 
 

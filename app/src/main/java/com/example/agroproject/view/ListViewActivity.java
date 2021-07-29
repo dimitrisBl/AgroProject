@@ -4,6 +4,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -76,9 +77,13 @@ public class ListViewActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                /** TODO LOGIC */
-                Toast.makeText(ListViewActivity.this,
-                        "clicked item name "+listViewAdapter.getItem(position), Toast.LENGTH_SHORT).show();
+                // The name of the clicked kmlFile
+                String kmlFileName = listViewAdapter.getItem(position).getName();
+                // Start an intent on the MapActivity
+                Intent mapActivityIntent = new Intent(ListViewActivity.this, MapActivity.class);
+                mapActivityIntent.setAction("Find the kmlFile that clicked");
+                mapActivityIntent.putExtra("kmlFileName", kmlFileName);
+                startActivity(mapActivityIntent);
             }
         });
         // Item long click listener
@@ -155,5 +160,6 @@ public class ListViewActivity extends AppCompatActivity {
                 android.R.layout.simple_list_item_1, dropDownData);
         // Set in the ui
         binding.autoCompleteTextView.setAdapter(dropDownAdapter);
+        binding.autoCompleteTextView.setText("");
     }
 }

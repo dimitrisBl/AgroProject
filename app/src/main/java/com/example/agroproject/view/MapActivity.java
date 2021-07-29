@@ -21,6 +21,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import com.airbnb.lottie.L;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
 import com.example.agroproject.model.AreaUtilities;
@@ -143,12 +145,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         actionBar.hide();
         // Instantiate a NetworkUtil object
         networkUtil = new NetworkUtil(this);
-        // Get extras from intent
-        Intent intent = getIntent();
-        latitude = intent.getDoubleExtra("latitude", 0.0);
-        longitude = intent.getDoubleExtra("longitude",0.0);
-        // Create the LatLng object of the current location
-        currentLocation = new LatLng(latitude, longitude);
         // Instantiate a KmlLocalStorageProvider object
         kmlLocalStorageProvider = new KmlLocalStorageProvider(this);
         // Load the kmlFile Map from shared preferences storage
@@ -231,13 +227,41 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMap.getUiSettings().setZoomControlsEnabled(true);
         // Setup satellite map
         mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
-        // Create MarkerOption for current location
-        MarkerOptions markerOptions = new MarkerOptions()
-                .position(currentLocation).title("Your location: "+latitude+"  "+longitude);
-        // Add Marker in the map
-        mMap.addMarker(markerOptions);
-        // Move the camera in current location
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18f));
+        /** TODO: den douleuei giati amesos meta kaleitai h addTheExistingAreas kai kanei clear to map
+         */
+//        // Create MarkerOption for current location
+//        MarkerOptions markerOptions = new MarkerOptions()
+//                .position(currentLocation).title("Your location: "+latitude+"  "+longitude);
+//        // Add Marker in the map
+//        mMap.addMarker(markerOptions);
+
+        // Get intent
+        Intent intent = getIntent();
+        // Handling an intent from Main Activity
+        if(intent.getAction().equals("Get coordinates from main")){
+            // Get extras from intent
+            latitude = intent.getDoubleExtra("latitude", 0.0);
+            longitude = intent.getDoubleExtra("longitude",0.0);
+            // Create the LatLng object of the current location
+            currentLocation = new LatLng(latitude, longitude);
+            // Move the camera in current location
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15f));
+        // Handling an intent from ListView Activity
+        }else if(intent.getAction().equals("Find the kmlFile that clicked")){
+            // Get extras from intent
+            String kmlFileName = intent.getStringExtra("kmlFileName");
+            for(Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()){
+                if(entry.getKey().getName().equals(kmlFileName)){
+                    Placemark placemark = entry.getValue().get(0);
+                    // Get center location for this Placemark
+                    LatLng center = AreaUtilities.getAreaCenterPoint(placemark.getLatLngList());
+                    // Create the LatLng object of the current location
+                    currentLocation = new LatLng(center.latitude, center.longitude);
+                    // Move the camera in current location
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15f));
+                }
+            }
+        }
         // Set Map click listener method
         mMap.setOnMapClickListener(mapClickListener);
         // Polygon click listener
@@ -381,9 +405,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private GoogleMap.OnPolygonClickListener polygonClickListener = new GoogleMap.OnPolygonClickListener() {
         @Override
         public void onPolygonClick(Polygon polygon) {
+
             for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
                 for (Placemark placemark : entry.getValue()) {
                     if (polygon.getTag().equals(placemark.getName())) {
+
+
+
                         // Get id for the clicked polygon
                         String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
                         // Instantiate a AreaClickFragment object
@@ -485,6 +513,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 polygon.setTag(placemark.getName());
                 // Fill the placemarkList
                 placemarkList.add(placemark);
+                /** TODO AN ENA POLUGONO EXEI GROUND OVERLAY APO PRIN NA TO FORTWNEI KATHE FORA POU ANOIGEI TO MAP ;; */
+//                if(placemark.getImageUrl() != ""){
+//                    new GetImageAsync(placemark).execute(placemark.getImageUrl());
+//                }
             }
         }
         // Add overlays in the map
@@ -533,7 +565,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
         // Add areas in the map
         addTheExistingAreas(true);
-
+        // Move the camera in center location
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 14f));
         //Get and load ndvi image from every placemark that has an imageURL
         for(Placemark placemark : placemarks){
             if(placemark.getImageUrl() != ""){

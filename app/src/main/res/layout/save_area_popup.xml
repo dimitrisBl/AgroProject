@@ -2,7 +2,7 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="350dp"
-    android:layout_height="450dp"
+    android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:padding="10dp"
     android:background="@drawable/save_area_popup">
@@ -31,6 +31,7 @@
         android:layout_marginTop="25dp"
         android:id="@+id/areaName"
         android:hint="area name "
+        android:autoSizeTextType="uniform"
         android:background="#bdc3c7"/>
 
     <EditText
@@ -48,16 +49,16 @@
         android:drawableLeft="@drawable/ic_baseline_description"/>
 
 
+        <Button
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/areaDescription"
+            android:clickable="true"
+            android:layout_marginTop="20dp"
+            android:id="@+id/btnSubmit"
+            android:background="@color/purple_500"
+            android:text="Save"/>
 
-    <Button
-        android:layout_width="300dp"
-        android:layout_height="40dp"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/areaDescription"
-        android:clickable="true"
-        android:layout_marginTop="20dp"
-        android:id="@+id/btnSubmit"
-        android:background="@color/purple_500"
-        android:text="Save"/>
 
 </RelativeLayout>

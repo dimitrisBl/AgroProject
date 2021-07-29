@@ -14,26 +14,21 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
+
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
-
-
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMainBinding;
-
-
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 
-/**
- * TODO IS NETWORK ENABLE METHOD
- */
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,11 +38,8 @@ public class MainActivity extends AppCompatActivity {
     /** Permission request code */
     private static final int LOCATION_PERMISSION_CODE = 1;
 
-    /** location source settings intent code */
+    /** Location source settings intent code */
     private static final int LOCATION_SOURCE_SETTINGS_CODE = 2;
-
-    /** CreateAreaActivity intent code */
-    private static final int CREATE_AREA_ACTIVITY_CODE = 3;
 
     /** LocationManager */
     private LocationManager locationManager;
@@ -71,16 +63,15 @@ public class MainActivity extends AppCompatActivity {
         // Hide Action bar
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
-        // Instantiate a NetworkUtil object
-        networkUtil = new NetworkUtil(this);
         // Initialize a LocationManager object
         locationManager = (LocationManager)
                 getSystemService(Context.LOCATION_SERVICE);
         // Permission check service
         checkPermissions();
-
         //Open Bottom Navigation Menu
         bottomNavigationMenu();
+        // Instantiate a NetworkUtil object
+        networkUtil = new NetworkUtil(this);
     }
 
     /**
@@ -94,10 +85,11 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.navigation_map:
                         if(isGpsEnable()){
                             // Open MapActivity Class
-                            Intent yourMapIntent = new Intent(MainActivity.this, MapActivity.class);
-                            yourMapIntent.putExtra("latitude",latitude);
-                            yourMapIntent.putExtra("longitude",longitude);
-                            startActivity(yourMapIntent);
+                            Intent mapIntent = new Intent(MainActivity.this, MapActivity.class);
+                            mapIntent.setAction("Get coordinates from main");
+                            mapIntent.putExtra("latitude",latitude);
+                            mapIntent.putExtra("longitude",longitude);
+                            startActivity(mapIntent);
                         }
                         return true;
                     case R.id.navigation_farms:
@@ -166,14 +158,9 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == LOCATION_SOURCE_SETTINGS_CODE){
             // Check status of the GPS
             if(isGpsEnable()){
-                // Start the location service
                 Intent locationServiceIntent = new Intent(this, LocationService.class);
                 startService(locationServiceIntent);
             }
-        }// If i returns from CreateAreaActivity intent
-        else if (requestCode == CREATE_AREA_ACTIVITY_CODE){
-            // Check status of the GPS
-            isGpsEnable();
         }
     }
 
@@ -195,12 +182,12 @@ public class MainActivity extends AppCompatActivity {
         }else{
             // GPS is not enable
             // Show alert for GPS turn on
-            AlertDialog alertDialog = new AlertDialog.Builder(this)
+            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this)
                     .setTitle("GPS permission")
                     .setMessage("The GPS is required for this app, go to location source settings to turn on GPS.")
                     .setPositiveButton("Yes", ((dialogInterface, i) -> {
                             Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                            startActivityForResult(intent,LOCATION_SOURCE_SETTINGS_CODE);
+                            startActivityForResult(intent, LOCATION_SOURCE_SETTINGS_CODE);
                     }))
                     .setNegativeButton("No", ((dialogInterface, i) -> {
                             Toast.makeText(MainActivity.this,
@@ -209,14 +196,13 @@ public class MainActivity extends AppCompatActivity {
                             finish();
                     }))
                     .setOnCancelListener(((dialogInterface) -> {
-                            Toast.makeText(this, "GPS is required for use map and other services. " +
+                            Toast.makeText(MainActivity.this, "GPS is required for use map and other services. " +
                                 "Please enable GPS.", Toast.LENGTH_LONG).show();
                     }))
             .show();
         }
         return false;
     }
-
 
     @Override
     protected void onResume() {
@@ -251,9 +237,8 @@ public class MainActivity extends AppCompatActivity {
     public void startLocationService(){
         // Check status of the GPS
         if(isGpsEnable()){
-            // Start the location service
-            Intent locationServiceIntent = new Intent(this, LocationService.class);
-            startService(locationServiceIntent);
+           Intent locationServiceIntent = new Intent(this, LocationService.class);
+           startService(locationServiceIntent);
         }
     }
 
@@ -277,6 +262,4 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "receive coordinates: " +latitude+" "+longitude);
         }
     };
-
-
 }

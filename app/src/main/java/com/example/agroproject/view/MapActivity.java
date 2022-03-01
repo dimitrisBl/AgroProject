@@ -22,7 +22,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.airbnb.lottie.L;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMapBinding;
 import com.example.agroproject.model.AreaUtilities;
@@ -65,6 +64,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+
+
+
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback,
         InsertFileFragment.InsertFileEventListener, SaveAreaFragment.CreateAreaEventListener, AreaClickFragment.AreaPopUpEventListener {
@@ -409,9 +412,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
                 for (Placemark placemark : entry.getValue()) {
                     if (polygon.getTag().equals(placemark.getName())) {
-
-
-
                         // Get id for the clicked polygon
                         String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
                         // Instantiate a AreaClickFragment object
@@ -559,6 +559,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      */
     @Override
     public void inertFileEvent(LatLng center, KmlFile kmlFile, List<Placemark> placemarks) {
+        Log.d(TAG,"num of placemarks "+placemarks.size());
         // Add a new record in the kmlFileMap
         kmlFileMap.put(kmlFile, placemarks);
         // Save changes on shared preferences storage
@@ -571,11 +572,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         for(Placemark placemark : placemarks){
             if(placemark.getImageUrl() != ""){
                 new GetImageAsync(placemark).execute(placemark.getImageUrl());
+                break;
             }
         }
     }
-
-
 
     /**
      * TODO DESCRIPTION
@@ -592,7 +592,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
         // About export file
         KmlFileWriter kmlFileWriter = new KmlFileWriter(MapActivity.this);
-        kmlFileWriter.fileToWrite(kmlFile,kmlFileMap.get(kmlFile),placemark);
+        kmlFileWriter.fileToWrite(kmlFile, kmlFileMap.get(kmlFile), placemark);
         // Show message
         Toast.makeText(MapActivity.this,"The file "+kmlFile.getName()+" was successfully exported",Toast.LENGTH_LONG).show();
     }

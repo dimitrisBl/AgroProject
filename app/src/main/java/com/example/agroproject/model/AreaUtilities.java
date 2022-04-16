@@ -53,4 +53,9 @@ public class AreaUtilities {
     public static Placemark getOutsiderArea() {
         return outsiderArea;
     }
+
+
+
+
+
 }

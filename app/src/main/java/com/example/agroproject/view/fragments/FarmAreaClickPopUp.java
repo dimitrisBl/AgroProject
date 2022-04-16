@@ -18,6 +18,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
+
 import androidx.core.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -25,12 +27,15 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.example.agroproject.*;
-import com.example.agroproject.databinding.AreaClickPopupBinding;
+import com.example.agroproject.databinding.FarmAreaClickPopupBinding;
 import com.example.agroproject.model.DatePicker;
 import com.example.agroproject.model.Placemark;
 import com.example.agroproject.model.agro_api.HttpRequest;
 import com.example.agroproject.model.agro_api.JsonParser;
 import com.example.agroproject.model.agro_api.StringBuildForRequest;
+import com.example.agroproject.view.FarmDetailsActivity;
+import com.example.agroproject.view.MainActivity;
+import com.example.agroproject.view.MapActivity;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.material.datepicker.MaterialDatePicker;
@@ -39,21 +44,22 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 @SuppressWarnings("unchecked")
-public class AreaClickFragment extends Fragment {
+public class FarmAreaClickPopUp extends Fragment {
 
     /** Class TAG */
-    private final String TAG = "AreaClickFragment";
+    private final String TAG = "FarmAreaClickFragment";
 
     /** Permission code for write file */
     private static final int WRITE_EXTERNAL_STORAGE_CODE = 10;
 
     /** View binding */
-    private AreaClickPopupBinding binding;
+    private FarmAreaClickPopupBinding binding;
 
     /** Current view */
     private View popupView;
@@ -61,14 +67,15 @@ public class AreaClickFragment extends Fragment {
     private Placemark placemark;
 
     /** Event listener for button click of pop up */
-    private AreaPopUpEventListener popUpClickEventListener;
+    private FarmAreaPopUpEventListener popUpClickEventListener;
 
     /** The polygon ID pressed by the user */
     private String polygonId;
 
+    private String dateToAdded;
+
     /** BitmapDescriptor takes the ndvi image after request in the sentinel url fo agro api */
     private BitmapDescriptor bitmapDescriptor;
-
 
     /**
      * Instantiate a new AreaClickFragment
@@ -76,9 +83,10 @@ public class AreaClickFragment extends Fragment {
      * @param placemark takes the object of the area clicked by the user
      * @param agroApiSentinelUrl
      */
-    public AreaClickFragment(Placemark placemark,String agroApiSentinelUrl){
+    public FarmAreaClickPopUp(Placemark placemark, String agroApiSentinelUrl,String dateToAdded){
         this.placemark = placemark;
         this.polygonId = agroApiSentinelUrl;
+        this.dateToAdded = dateToAdded;
     }
 
     @Override
@@ -88,7 +96,7 @@ public class AreaClickFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater,  ViewGroup container,  Bundle savedInstanceState) {
-        binding = AreaClickPopupBinding.inflate(getLayoutInflater());
+        binding = FarmAreaClickPopupBinding.inflate(getLayoutInflater());
         popupView = binding.getRoot();
         // We are registering an observer (responseReceiver) with action name GetRequestData to receive Intents after http Get request in Agro api.
         LocalBroadcastManager.getInstance(getContext().getApplicationContext()).registerReceiver(responseReceiver, new IntentFilter("GetRequestData"));
@@ -109,11 +117,13 @@ public class AreaClickFragment extends Fragment {
         // Set description
         binding.areaDescription.setText(placemark.getDescription());
         // Set click listener for delete button
-        binding.deleteBtn.setOnClickListener(buttonClickListener);
+        //binding.deleteBtn.setOnClickListener(buttonClickListener);
         // Set click listener for ndvi button
         binding.ndviBtn.setOnClickListener(buttonClickListener);
         // Set click listener for export button
         binding.exportBtn.setOnClickListener(buttonClickListener);
+        binding.detailsBtn.setOnClickListener(buttonClickListener);
+
         return popupView;
     }
 
@@ -137,6 +147,8 @@ public class AreaClickFragment extends Fragment {
                  placemark.setImageUrl(imageUrl);
                 // Get image from Agro api
                 new getImageAsync().execute(imageUrl);
+
+                Log.d(TAG,"response data "+responseData);
             }
         }
     };
@@ -153,32 +165,55 @@ public class AreaClickFragment extends Fragment {
             // Get text from current button
             String currentButtonText = String
                     .valueOf(currentButton.getText()).toLowerCase();
+
+
             switch (currentButtonText) {
-                case "delete":
-                    // Show new pop up for the delete question
-                    new AlertDialog.Builder(getActivity())
-                            .setIcon(R.drawable.ic_baseline_delete_24)
-                            .setTitle("Delete")
-                            .setMessage("Are you sure you want to delete this area?")
-                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    // Trigger the insert file event listener
-                                    popUpClickEventListener.deleteAreaEvent(placemark);
-                                    // Unregister since the pop up is about to be closed.
-                                    LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
-                                    // Close pop up and trigger onBackPressed function of MapActivityV2
-                                    getActivity().onBackPressed();
-                                }
-                            })
-                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                        // Do nothing
-                                }
-                            })
-                    .show();
+//                case "delete":
+//                    // Show new pop up for the delete question
+//                    new AlertDialog.Builder(getActivity())
+//                            .setIcon(R.drawable.ic_baseline_delete_24)
+//                            .setTitle("Delete")
+//                            .setMessage("Are you sure you want to delete this area?")
+//                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+//                                @Override
+//                                public void onClick(DialogInterface dialogInterface, int i) {
+//                                    // Trigger the insert file event listener
+//                                    popUpClickEventListener.deleteAreaEvent(placemark);
+//                                    // Unregister since the pop up is about to be closed.
+//                                    LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
+//                                    // Close pop up and trigger onBackPressed function of MapActivityV2
+//                                    getActivity().onBackPressed();
+//                                }
+//                            })
+//                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+//                                @Override
+//                                public void onClick(DialogInterface dialogInterface, int i) {
+//                                        // Do nothing
+//                                }
+//                            })
+//                    .show();
+//                break;
+
+                // Show message
+
+
+                case "details":
+                    // Open FarmDetailsActivity Class
+                    //Intent mapIntent = new Intent(getActivity(), FarmDetailsActivity.class);
+                    //mapIntent.setAction("Get coordinates from main");
+                    //mapIntent.putExtra("placemark name",  placemark.getName());
+                    //mapIntent.putExtra("polygon id", polygonId);
+                    //mapIntent.putExtra("date to added",dateToAdded);
+                    //startActivity(mapIntent);
+
+                    // Trigger the area details event listener
+                    popUpClickEventListener.areaDetailsEvent(placemark,polygonId,dateToAdded);
+                    // Unregister since the pop up is about to be closed.
+                    LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
+                    // Close pop up and trigger onBackPressed function of MapActivityV2
+                    getActivity().onBackPressed();
                 break;
+
                 case "export":
                     // Check permissions for write external storage
                     checkSelfPermissionForFiles();
@@ -204,6 +239,7 @@ public class AreaClickFragment extends Fragment {
                               int dateToLength = selection.second.toString().length();
                               String dateFrom = selection.first.toString().substring(0, dateFromLength-3);
                               String dateTo = selection.second.toString().substring(0, dateToLength-3);
+                              Log.d("DATE TO EDW",dateTo);
                               // Create a url for sentinel Get request of agro api for specific polygon and date
                               String sentinelRequestLink = StringBuildForRequest.sentinelRequestLink(polygonId,dateFrom,dateTo);
                               // Get request on sentinel url of Agro api
@@ -239,7 +275,7 @@ public class AreaClickFragment extends Fragment {
             popUpClickEventListener.exportFileEvent(placemark);
             // Unregister since the pop up is about to be closed.
             LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
-            // Close pop up and trigger onBackPressed function of MapActivityV2
+            // Close pop up and trigger onBackPressed function of MapActivity
             getActivity().onBackPressed();
         }
     }
@@ -247,10 +283,11 @@ public class AreaClickFragment extends Fragment {
     /**
      * Interface for handle event listener about the insert file
      */
-    public interface AreaPopUpEventListener {
+    public interface FarmAreaPopUpEventListener {
         void deleteAreaEvent(Placemark placemark);
         void loadNdviEvent(Placemark placemark, BitmapDescriptor bitmapDescriptor);
         void exportFileEvent(Placemark placemark);
+        void areaDetailsEvent(Placemark placemark,String polygonId, String dateToAdded);
     }
 
 
@@ -270,11 +307,12 @@ public class AreaClickFragment extends Fragment {
         }
     }
 
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            popUpClickEventListener = (AreaPopUpEventListener) activity;
+            popUpClickEventListener = (FarmAreaPopUpEventListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString() + " must implement onSomeEventListener");
         }

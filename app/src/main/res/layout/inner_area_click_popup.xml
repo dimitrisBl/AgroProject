@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:padding="5dp"
-    android:background="@drawable/area_click_popup">
+    android:background="@drawable/inner_area_click_popup">
 
     <ImageView
         android:layout_width="wrap_content"
@@ -52,23 +52,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
-            <Button
+           <Button
                 android:id="@+id/deleteBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Delete"/>
 
             <Button
-                android:id="@+id/exportBtn"
+                android:id="@+id/editBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Export"/>
+                android:text="Edit"/>
 
-            <Button
-                android:id="@+id/ndviBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Ndvi"/>
+<!--            <Button-->
+<!--                android:id="@+id/ndviBtn"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="Ndvi"/>-->
 
         </LinearLayout>
 

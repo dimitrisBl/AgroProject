@@ -21,6 +21,14 @@
         android:layout_marginLeft="15dp"
         android:layout_weight="1">
 
+<!--        <AutoCompleteTextView-->
+<!--            android:id="@+id/autoCompleteTextView"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:layout_weight="1"-->
+<!--            android:inputType="none"-->
+<!--            android:hint="Search" />-->
+
         <AutoCompleteTextView
             android:id="@+id/autoCompleteTextView"
             android:layout_width="match_parent"
@@ -28,6 +36,7 @@
             android:layout_weight="1"
             android:inputType="none"
             android:hint="Search" />
+
    </com.google.android.material.textfield.TextInputLayout>
 
 </RelativeLayout>

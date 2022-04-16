@@ -13,7 +13,7 @@ android {
         versionName "1.0"
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        multiDexEnabled true
+        //multiDexEnabled true
         // ...
         // Set the properties within `local.properties` into a `Properties` class so that values
         // within `local.properties` (e.g. Maps API key) are accessible in this file.
@@ -50,6 +50,16 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.navigation:navigation-fragment:2.3.5'
+    implementation 'androidx.navigation:navigation-ui:2.3.5'
+
+//    implementation fileTree(dir: 'C:\\Users\\Dimitris\\Documents\\GitHub\\AgroProject\\app\\libs', include: ['*.aar', '*.jar'], exclude: [])
+//    implementation fileTree(dir: 'C:\\Users\\Dimitris\\Documents\\GitHub\\AgroProject\\app\\libs', include: ['*.aar', '*.jar'], exclude: [])
+//    implementation fileTree(dir: 'C:\\Users\\Dimitris\\Documents\\GitHub\\AgroProject\\app\\libs', include: ['*.aar', '*.jar'], exclude: [])
+//    implementation fileTree(dir: 'C:\\Users\\Dimitris\\Documents\\GitHub\\AgroProject\\app\\libs', include: ['*.aar', '*.jar'], exclude: [])
+//    implementation fileTree(dir: 'C:\\Users\\Dimitris\\Documents\\GitHub\\AgroProject\\app\\libs', include: ['*.aar', '*.jar'], exclude: [])
+
+
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
@@ -64,5 +74,5 @@ dependencies {
     implementation "com.airbnb.android:lottie:3.4.0"
     implementation 'eu.long1:spacetablayout:1.0.4'
     implementation 'com.google.android.material:material:1.2.0-alpha03'
-    implementation 'androidx.multidex:multidex:2.0.1'
+    //implementation 'androidx.multidex:multidex:2.0.1'
 }

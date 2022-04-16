@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     case R.id.navigation_farms:
                         // Open ListViewActivity Class
-                        Intent recyclerViewIntent = new Intent(MainActivity.this, ListViewActivity.class);
+                        Intent recyclerViewIntent = new Intent(MainActivity.this, FarmListViewActivity.class);
                         startActivity(recyclerViewIntent);
                         return true;
                 }

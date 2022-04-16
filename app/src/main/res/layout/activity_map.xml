@@ -17,7 +17,7 @@
         android:layout_height="match_parent"/>
 
     <FrameLayout
-        android:id="@+id/insert_file_fragment_container"
+        android:id="@+id/insert_file_popup_container"
         android:layout_width="350dp"
         android:layout_height="400dp"
         android:layout_centerHorizontal="true"
@@ -25,7 +25,7 @@
         android:layout_gravity="center" />
 
     <FrameLayout
-        android:id="@+id/save_area_fragment_container"
+        android:id="@+id/save_inner_area_popup_container"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
@@ -33,7 +33,15 @@
         android:layout_gravity="center" />
 
     <FrameLayout
-        android:id="@+id/area_click_fragment_container"
+        android:id="@+id/farm_area_click_popup_container"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="230dp"
+        android:layout_gravity="center" />
+
+    <FrameLayout
+        android:id="@+id/inner_area_click_popup_container"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"

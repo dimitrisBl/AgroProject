@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +15,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
 import com.example.agroproject.databinding.InsertFilePopupBinding;
 import com.example.agroproject.model.AreaUtilities;
 import com.example.agroproject.model.Placemark;
@@ -23,15 +23,22 @@ import com.example.agroproject.model.agro_api.JsonBuilder;
 import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.file.KmlFileParser;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
+import com.example.agroproject.view.MapActivity;
 import com.google.android.gms.maps.model.LatLng;
+
 import org.json.JSONObject;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
 
-public class InsertFileFragment extends Fragment implements Executor {
+public class InsertFilePopUp extends Fragment implements Executor {
 
     /** Class TAG */
     private final String TAG = "InsertFileFragment";
@@ -154,15 +161,17 @@ public class InsertFileFragment extends Fragment implements Executor {
                         List<JSONObject> jsonObjectList = JsonBuilder.build(placemarks);
                         // Post data in Agro Api TODO EINAI SXOLIO TO POST GIA NA MHN TREXEI SUNEXEIA
                         //HttpRequest.postRequest(jsonObjectList);
+                        // Get the current date
+                        long currentDateAndTime = Calendar.getInstance().getTimeInMillis();
                         // Create a new KmlFile object
-                        KmlFile kmlFile = new KmlFile(fileName, uri.getPath(), dataFromFile, farmNameText);
+                        KmlFile kmlFile = new KmlFile(fileName, uri.getPath(), dataFromFile, farmNameText,currentDateAndTime);
                         // Check if the kmlFile is exists
                         if(fileExistsCheck(kmlFile) == false){
                             Toast.makeText(getActivity(), "The file "+fileName+" was successfully added",Toast.LENGTH_LONG).show();
                             // Get the center area of first placemark which contained this file
                             LatLng center = AreaUtilities.getAreaCenterPoint(placemarks.get(0).getLatLngList());
-                            // Trigger the insert file event listener
-                            insertFileEventListener.inertFileEvent(center, kmlFile, placemarks);
+                            // Trigger the kml insert file event listener
+                            insertFileEventListener.insertKmlFileEvent(center, kmlFile, placemarks);
                             // Close pop up and trigger onBackPressed function of MapActivityV2
                             getActivity().onBackPressed();
                         }
@@ -185,28 +194,39 @@ public class InsertFileFragment extends Fragment implements Executor {
             if(file.getData().equals(kmlFile.getData())){
                 // Show message
                 Toast.makeText(getActivity(), "The file " + file.getName()
-                        + " is already exists in the " + file.getFarmName(), Toast.LENGTH_LONG).show();
+                        + " is already exists in the farm " + file.getFarmName(), Toast.LENGTH_LONG).show();
                 return true;
             }
         }
         return false;
     }
 
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == FILE_SELECTION_CODE){
             if(resultCode == RESULT_OK){
-                // Create a Uri path
-                uri = Uri.parse(data.getDataString());
-                // Get the name of the file
-                fileName = uri.getPath();
-                int cut = fileName.lastIndexOf('/');
-                if(cut != -1){
-                    fileName = fileName.substring(cut + 1);
+
+                // Get the type of file
+                String typeOfFile = data.getDataString().substring(data.getDataString().length()-3);
+
+                if (typeOfFile.toLowerCase().equals("kml")){
+                    // Create a Uri path
+                    uri = Uri.parse(data.getDataString());
+                    // Get the name of the file
+                    fileName = uri.getPath();
+                    int cut = fileName.lastIndexOf('/');
+                    if(cut != -1){
+                        fileName = fileName.substring(cut + 1);
+                    }
+                    binding.fileName.setText(fileName);
+                }else{
+                    // Show message
+                    Toast.makeText(getContext().getApplicationContext(),
+                        "Your file is not kml, please select .kml files only",Toast.LENGTH_LONG).show();
+                    binding.fileName.setText("");
                 }
-                // Set file name in TextView
-                binding.fileName.setText(fileName);
             }
         }
     }
@@ -221,7 +241,7 @@ public class InsertFileFragment extends Fragment implements Executor {
      * Interface for handle event listener about the insert file
      */
     public interface InsertFileEventListener {
-        void inertFileEvent(LatLng bounds, KmlFile kmlFile, List<Placemark> placemarks);
+        void insertKmlFileEvent(LatLng bounds, KmlFile kmlFile, List<Placemark> placemarks);
     }
 
     @Override

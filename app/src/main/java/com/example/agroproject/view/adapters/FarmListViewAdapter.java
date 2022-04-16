@@ -10,7 +10,7 @@ import com.example.agroproject.model.file.KmlFile;
 import java.util.List;
 
 
-public class ListViewAdapter extends BaseAdapter {
+public class FarmListViewAdapter extends BaseAdapter {
 
     private List<KmlFile> kmlFileList;
   
@@ -19,7 +19,7 @@ public class ListViewAdapter extends BaseAdapter {
      *
      * @param kmlFileList have the KmlFile objects
      */
-    public ListViewAdapter(List<KmlFile> kmlFileList) {
+    public FarmListViewAdapter(List<KmlFile> kmlFileList) {
         this.kmlFileList = kmlFileList;
     }
 
@@ -54,6 +54,10 @@ public class ListViewAdapter extends BaseAdapter {
         // UI COMPONENTS
         TextView title = viewResult.findViewById(R.id.title);
         title.setText(kmlFileList.get(position).getName());
+
+        TextView description = viewResult.findViewById(R.id.description);
+        description.setText("Farm: "+kmlFileList.get(position).getFarmName());
+
 //        TextView description = viewResult.findViewById(R.id.description);
 //        description.setText(placemarkList.get(position).getDescription());
         return viewResult;

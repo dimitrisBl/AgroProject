@@ -15,16 +15,16 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        android:requestLegacyExternalStorage="true"
-        android:theme="@style/Theme.AgroProject">
+        android:theme="@style/Theme.AgroProject"
+        android:usesCleartextTraffic="true">
+        <activity android:name=".view.FarmDetailsActivity"></activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -43,16 +43,14 @@
 
         <uses-library
             android:name="org.apache.http.legacy"
-            android:required="false" />
-        <!---|||||||||||||||||||||||||||||||||||||||||||||||||||||||| -->
-
-        <activity android:name=".view.ListViewActivity" />
+            android:required="false" /> <!-- -|||||||||||||||||||||||||||||||||||||||||||||||||||||||| -->
+        <activity android:name=".view.FarmListViewActivity" />
 
         <activity
             android:name=".view.MapActivity"
-            android:screenOrientation="portrait"
             android:label="@string/title_activity_map"
-            android:parentActivityName=".view.MainActivity" />
+            android:parentActivityName=".view.MainActivity"
+            android:screenOrientation="portrait" />
 
         <activity android:name=".view.MainActivity">
             <intent-filter>
@@ -60,10 +58,8 @@
 
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
-        </activity>
-        <!-- Location  Service -->
+        </activity> <!-- Location  Service -->
         <service android:name=".services.LocationService" />
-
     </application>
 
 </manifest>

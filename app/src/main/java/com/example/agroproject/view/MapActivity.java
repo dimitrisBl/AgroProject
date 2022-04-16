@@ -33,9 +33,10 @@ import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.file.KmlFileWriter;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.services.NetworkUtil;
-import com.example.agroproject.view.fragments.AreaClickFragment;
-import com.example.agroproject.view.fragments.InsertFileFragment;
-import com.example.agroproject.view.fragments.SaveAreaFragment;
+import com.example.agroproject.view.fragments.FarmAreaClickPopUp;
+import com.example.agroproject.view.fragments.InnerAreaClickPopUp;
+import com.example.agroproject.view.fragments.InsertFilePopUp;
+import com.example.agroproject.view.fragments.SaveInnerAreaPopUp;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -50,9 +51,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.ui.IconGenerator;
 import com.nightonke.boommenu.BoomButtons.OnBMClickListener;
 import com.nightonke.boommenu.BoomButtons.TextOutsideCircleButton;
 import com.nightonke.boommenu.BoomMenuButton;
+
 import org.json.JSONArray;
 
 import java.io.IOException;
@@ -66,11 +69,8 @@ import java.util.List;
 import java.util.Map;
 
 
-
-
-
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback,
-        InsertFileFragment.InsertFileEventListener, SaveAreaFragment.CreateAreaEventListener, AreaClickFragment.AreaPopUpEventListener {
+        InsertFilePopUp.InsertFileEventListener, SaveInnerAreaPopUp.CreateAreaEventListener, FarmAreaClickPopUp.FarmAreaPopUpEventListener {
 
     /** Class TAG */
     private final String TAG = "MapActivity";
@@ -205,10 +205,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     @Override
                     public void onBoomButtonClick(int index) {
                         // Instantiate a InsertFileFragment object
-                        InsertFileFragment insertFileFragment = new InsertFileFragment();
+                        InsertFilePopUp insertFilePopUp = new InsertFilePopUp();
                         // Start fragment activity
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.insert_file_fragment_container, insertFileFragment, insertFileFragment.getClass()
+                                .replace(R.id.insert_file_popup_container, insertFilePopUp, insertFilePopUp.getClass()
                                         .getSimpleName()).addToBackStack(null).commit();
                         // Set bottom menu visibility true
                         binding.linearLayout.setVisibility(View.GONE);
@@ -371,10 +371,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         // Instantiate a SaveAreaFragment object
-                        SaveAreaFragment saveAreaFragment = new SaveAreaFragment();
+                        SaveInnerAreaPopUp saveInnerAreaPopUp = new SaveInnerAreaPopUp();
                         // Start fragment activity
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.save_area_fragment_container, saveAreaFragment, saveAreaFragment.getClass()
+                                .replace(R.id.save_inner_area_popup_container, saveInnerAreaPopUp, saveInnerAreaPopUp.getClass()
                                         .getSimpleName()).addToBackStack(null).commit();
                         // Close bottom layout
                         binding.linearLayout.setVisibility(View.GONE);
@@ -410,25 +410,69 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         public void onPolygonClick(Polygon polygon) {
 
             for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
+
+                // Get the current KmlFile object
+                KmlFile currentKmlFile = entry.getKey();
+
                 for (Placemark placemark : entry.getValue()) {
                     if (polygon.getTag().equals(placemark.getName())) {
-                        // Get id for the clicked polygon
-                        String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
-                        // Instantiate a AreaClickFragment object
-                        AreaClickFragment areaClickFragment = new AreaClickFragment(placemark, polygonId);
-                        // Start fragment activity
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.area_click_fragment_container, areaClickFragment, areaClickFragment.getClass()
+                        if ((placemark.getName()+".kml").equals(currentKmlFile.getName())){
+                            // Get id of the clicked polygon
+                            String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
+                            // Get date to added of the clicked polygon
+                            String dateToAdded = JsonParser.getDateToAdded(placemark.getName(),jsonArray);
+                            // Instantiate a AreaClickFragment object
+                            FarmAreaClickPopUp farmAreaClickPopUp = new FarmAreaClickPopUp(placemark, polygonId,dateToAdded);
+                            // Start fragment activity
+                            getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.farm_area_click_popup_container, farmAreaClickPopUp, farmAreaClickPopUp.getClass()
                                         .getSimpleName()).addToBackStack(null).commit();
-                        // Disable map click
-                        mMap.setOnMapClickListener(null);
-                        // Disable zoom option on touch
-                        mMap.getUiSettings().setZoomGesturesEnabled(false);
-                        // Disable Polygon click listener
-                        mMap.setOnPolygonClickListener(null);
-                        break;
+                            // Disable map click
+                            mMap.setOnMapClickListener(null);
+                            // Disable zoom option on touch
+                            mMap.getUiSettings().setZoomGesturesEnabled(false);
+                            // Disable Polygon click listener
+                            mMap.setOnPolygonClickListener(null);
+                            break;
+                        }else {
+                            // Instantiate a innerAreaClickPopUp object
+                            InnerAreaClickPopUp innerAreaClickPopUp = new InnerAreaClickPopUp(placemark);
+                            // Start fragment activity
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.inner_area_click_popup_container, innerAreaClickPopUp, innerAreaClickPopUp.getClass()
+                                            .getSimpleName()).addToBackStack(null).commit();
+                            // Disable map click
+                            mMap.setOnMapClickListener(null);
+                            // Disable zoom option on touch
+                            mMap.getUiSettings().setZoomGesturesEnabled(false);
+                            // Disable Polygon click listener
+                            mMap.setOnPolygonClickListener(null);
+                            break;
+                        }
                     }
                 }
+
+
+//                for (Placemark placemark : entry.getValue()) {
+//                    if (polygon.getTag().equals(placemark.getName())) {
+//                        // Get id for the clicked polygon
+//                        String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
+//                        // Instantiate a AreaClickFragment object
+//                        AreaClickFragment areaClickFragment = new AreaClickFragment(placemark, polygonId);
+//                        // Start fragment activity
+//                        getSupportFragmentManager().beginTransaction()
+//                                .replace(R.id.area_click_fragment_container, areaClickFragment, areaClickFragment.getClass()
+//                                        .getSimpleName()).addToBackStack(null).commit();
+//                        // Disable map click
+//                        mMap.setOnMapClickListener(null);
+//                        // Disable zoom option on touch
+//                        mMap.getUiSettings().setZoomGesturesEnabled(false);
+//                        // Disable Polygon click listener
+//                        mMap.setOnPolygonClickListener(null);
+//                        break;
+//                    }
+//                }
+
             }
         }
     };
@@ -443,6 +487,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             // Detect if current click is inner in other area
             boolean areaExists =  detectInnerArea = AreaUtilities
                     .detectInnerArea(latLng, placemarkList);
+
             if(areaExists) {
                 if (currentOuterArea == null) {
                     // Get the name from current outer area only in the first time
@@ -543,6 +588,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if(requestType.equals("Get all polygons")){
                 // Parse response data
                 jsonArray = JsonParser.parseResponse(responseData);
+                Log.d(TAG,"response data "+responseData);
             }
         }
     };
@@ -558,7 +604,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * @param placemarks takes the each placemark from the new kml file
      */
     @Override
-    public void inertFileEvent(LatLng center, KmlFile kmlFile, List<Placemark> placemarks) {
+    public void insertKmlFileEvent(LatLng center, KmlFile kmlFile, List<Placemark> placemarks) {
         Log.d(TAG,"num of placemarks "+placemarks.size());
         // Add a new record in the kmlFileMap
         kmlFileMap.put(kmlFile, placemarks);
@@ -597,6 +643,25 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         Toast.makeText(MapActivity.this,"The file "+kmlFile.getName()+" was successfully exported",Toast.LENGTH_LONG).show();
     }
 
+
+    /**
+     *
+     * @param placemark
+     * @param polygonId
+     * @param dateToAdded
+     */
+    @Override
+    public void areaDetailsEvent(Placemark placemark, String polygonId, String dateToAdded) {
+        // Open FarmDetailsActivity Class
+        Intent mapIntent = new Intent(MapActivity.this, FarmDetailsActivity.class);
+        mapIntent.putExtra("placemark name",  placemark.getName());
+        mapIntent.putExtra("polygon id", polygonId);
+        mapIntent.putExtra("date to added",dateToAdded);
+        startActivity(mapIntent);
+    }
+
+
+
     /**
      * CreateAreaEventListener implementation
      *
@@ -632,9 +697,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void deleteAreaEvent(Placemark placemark) {
         for(Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()){
+
             if(entry.getValue().remove(placemark)){
-                // If this entry don't have values
-                if(entry.getValue().size() == 0){
+                String placemarkName = placemark.getName()+".kml";
+                KmlFile currentKmlFile = entry.getKey();
+                if (placemarkName.equals(currentKmlFile.getName())){
                     // Remove all record
                     kmlFileMap.remove(entry.getKey());
                 }
@@ -642,12 +709,26 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
                 break;
             }
+
+
+//            if(entry.getValue().remove(placemark)){
+//                // If this entry don't have values
+//                if(entry.getValue().size() == 0){
+//                    // Remove all record
+//                    kmlFileMap.remove(entry.getKey());
+//                }
+//                // Save the changes
+//                kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
+//                break;
+//            }
         }
+
         // Remove ground overlay from groundOverlaysList
         groundOverlaysMap.remove(placemark);
         // Add areas in the map  set property clickable  true
         addTheExistingAreas(true);
     }
+
 
     /**
      *
@@ -690,6 +771,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Unregister since the activity is about to be closed.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(responseReceiver);
     }
+
+
 
 
     private class GetImageAsync extends AsyncTask<String, Void, BitmapDescriptor> {

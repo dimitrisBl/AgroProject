@@ -9,18 +9,18 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
-import com.example.agroproject.databinding.SaveAreaPopupBinding;
+import com.example.agroproject.databinding.SaveInnerAreaPopupBinding;
 import com.example.agroproject.model.AreaUtilities;
 import com.example.agroproject.model.Placemark;
 
 
-public class SaveAreaFragment extends Fragment {
+public class SaveInnerAreaPopUp extends Fragment {
 
     /** Class TAG */
     private final String TAG = "SaveAreaFragment";
 
     /** View binding */
-    private SaveAreaPopupBinding binding;
+    private SaveInnerAreaPopupBinding binding;
 
     /** Current view */
     private View popupView;
@@ -38,7 +38,7 @@ public class SaveAreaFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG,"on create view of SaveAreaFragment executed");
-        binding = SaveAreaPopupBinding.inflate(getLayoutInflater());
+        binding = SaveInnerAreaPopupBinding.inflate(getLayoutInflater());
         popupView = binding.getRoot();
         // Set click listener for close image top right
         binding.btnCLose.setOnClickListener(new View.OnClickListener() {

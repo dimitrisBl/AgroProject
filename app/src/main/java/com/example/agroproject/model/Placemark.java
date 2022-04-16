@@ -2,6 +2,7 @@ package com.example.agroproject.model;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.io.Serializable;
 import java.util.List;
 
 public class Placemark {
@@ -11,14 +12,10 @@ public class Placemark {
     private List<LatLng> coordinates;
     private String imageUrl;
 
-
-
-
     public Placemark(String name, String description, List<LatLng> coordinates, String imageUrl) {
         this.name = name;
         this.description = description;
         this.coordinates = coordinates;
-
         this.imageUrl = imageUrl;
     }
 

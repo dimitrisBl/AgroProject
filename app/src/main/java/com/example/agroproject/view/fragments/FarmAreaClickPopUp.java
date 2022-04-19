@@ -13,6 +13,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -72,8 +74,6 @@ public class FarmAreaClickPopUp extends Fragment {
     /** The polygon ID pressed by the user */
     private String polygonId;
 
-    private String dateToAdded;
-
     /** BitmapDescriptor takes the ndvi image after request in the sentinel url fo agro api */
     private BitmapDescriptor bitmapDescriptor;
 
@@ -83,10 +83,9 @@ public class FarmAreaClickPopUp extends Fragment {
      * @param placemark takes the object of the area clicked by the user
      * @param agroApiSentinelUrl
      */
-    public FarmAreaClickPopUp(Placemark placemark, String agroApiSentinelUrl,String dateToAdded){
+    public FarmAreaClickPopUp(Placemark placemark, String agroApiSentinelUrl){
         this.placemark = placemark;
         this.polygonId = agroApiSentinelUrl;
-        this.dateToAdded = dateToAdded;
     }
 
     @Override
@@ -116,13 +115,14 @@ public class FarmAreaClickPopUp extends Fragment {
         binding.farmName.setText(placemark.getName());
         // Set description
         binding.areaDescription.setText(placemark.getDescription());
-        // Set click listener for delete button
-        //binding.deleteBtn.setOnClickListener(buttonClickListener);
+        // Set the text change event listener of area description edit text
+        binding.areaDescription.addTextChangedListener(areaDescriptionTextChangedEvent);
         // Set click listener for ndvi button
         binding.ndviBtn.setOnClickListener(buttonClickListener);
         // Set click listener for export button
         binding.exportBtn.setOnClickListener(buttonClickListener);
-        binding.detailsBtn.setOnClickListener(buttonClickListener);
+        // Set click listener for delete button
+        binding.deleteBtn.setOnClickListener(buttonClickListener);
 
         return popupView;
     }
@@ -168,51 +168,51 @@ public class FarmAreaClickPopUp extends Fragment {
 
 
             switch (currentButtonText) {
-//                case "delete":
-//                    // Show new pop up for the delete question
-//                    new AlertDialog.Builder(getActivity())
-//                            .setIcon(R.drawable.ic_baseline_delete_24)
-//                            .setTitle("Delete")
-//                            .setMessage("Are you sure you want to delete this area?")
-//                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-//                                @Override
-//                                public void onClick(DialogInterface dialogInterface, int i) {
-//                                    // Trigger the insert file event listener
-//                                    popUpClickEventListener.deleteAreaEvent(placemark);
-//                                    // Unregister since the pop up is about to be closed.
-//                                    LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
-//                                    // Close pop up and trigger onBackPressed function of MapActivityV2
-//                                    getActivity().onBackPressed();
-//                                }
-//                            })
-//                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
-//                                @Override
-//                                public void onClick(DialogInterface dialogInterface, int i) {
-//                                        // Do nothing
-//                                }
-//                            })
-//                    .show();
-//                break;
+                case "delete":
+                    // Show new pop up for the delete question
+                    new AlertDialog.Builder(getActivity())
+                            .setIcon(R.drawable.ic_baseline_delete_24)
+                            .setTitle("Delete")
+                            .setMessage("Are you sure you want to delete this area?")
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    // Trigger the insert file event listener
+                                    popUpClickEventListener.deleteAreaEvent(placemark);
+                                    // Unregister since the pop up is about to be closed.
+                                    LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
+                                    // Close pop up and trigger onBackPressed function of MapActivityV2
+                                    getActivity().onBackPressed();
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                        // Do nothing
+                                }
+                            })
+                    .show();
+                break;
 
                 // Show message
 
 
-                case "details":
-                    // Open FarmDetailsActivity Class
-                    //Intent mapIntent = new Intent(getActivity(), FarmDetailsActivity.class);
-                    //mapIntent.setAction("Get coordinates from main");
-                    //mapIntent.putExtra("placemark name",  placemark.getName());
-                    //mapIntent.putExtra("polygon id", polygonId);
-                    //mapIntent.putExtra("date to added",dateToAdded);
-                    //startActivity(mapIntent);
-
-                    // Trigger the area details event listener
-                    popUpClickEventListener.areaDetailsEvent(placemark,polygonId,dateToAdded);
-                    // Unregister since the pop up is about to be closed.
-                    LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
-                    // Close pop up and trigger onBackPressed function of MapActivityV2
-                    getActivity().onBackPressed();
-                break;
+//                case "details":
+//                    // Open FarmDetailsActivity Class
+//                    //Intent mapIntent = new Intent(getActivity(), FarmDetailsActivity.class);
+//                    //mapIntent.setAction("Get coordinates from main");
+//                    //mapIntent.putExtra("placemark name",  placemark.getName());
+//                    //mapIntent.putExtra("polygon id", polygonId);
+//                    //mapIntent.putExtra("date to added",dateToAdded);
+//                    //startActivity(mapIntent);
+//
+//                    // Trigger the area details event listener
+//                    popUpClickEventListener.areaDetailsEvent(placemark,polygonId,dateToAdded);
+//                    // Unregister since the pop up is about to be closed.
+//                    LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(responseReceiver);
+//                    // Close pop up and trigger onBackPressed function of MapActivityV2
+//                    getActivity().onBackPressed();
+//                break;
 
                 case "export":
                     // Check permissions for write external storage
@@ -248,6 +248,29 @@ public class FarmAreaClickPopUp extends Fragment {
                     });
                 break;
             }
+        }
+    };
+
+
+    /**
+     * Event handler for text changed event of area description
+     */
+    private android.text.TextWatcher areaDescriptionTextChangedEvent = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+        String areaDescription;
+        @Override
+        public void onTextChanged(CharSequence input, int i, int i1, int i2) {
+            areaDescription = String.valueOf(input);
+        }
+        @Override
+        public void afterTextChanged(Editable editable) {
+            // Disable the cursor of edit text
+            binding.areaDescription.setCursorVisible(false);
+            // Trigger the edit area description event listener
+            //innerAreaPopUpEventListener.editAreaDescription(placemark, areaDescription);
+            popUpClickEventListener.editAreaDescription(placemark,areaDescription);
         }
     };
 
@@ -287,7 +310,9 @@ public class FarmAreaClickPopUp extends Fragment {
         void deleteAreaEvent(Placemark placemark);
         void loadNdviEvent(Placemark placemark, BitmapDescriptor bitmapDescriptor);
         void exportFileEvent(Placemark placemark);
-        void areaDetailsEvent(Placemark placemark,String polygonId, String dateToAdded);
+        void editAreaDescription(Placemark placemark,String description);
+
+        //void areaDetailsEvent(Placemark placemark,String polygonId, String dateToAdded);
     }
 
 

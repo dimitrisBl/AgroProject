@@ -57,7 +57,7 @@ public class SaveInnerAreaPopUp extends Fragment {
                 // Get the description
                 String areaDescription = binding.areaDescription.getText().toString().trim();
                 // Check input
-                if(!areaName.isEmpty() && !areaDescription.isEmpty()){
+                if(!areaName.isEmpty() ){ //&& !areaDescription.isEmpty()
                     // Get the object of outsider area
                     Placemark outsiderArea = AreaUtilities.getOutsiderArea();
                     // Trigger the create area event listener
@@ -66,8 +66,10 @@ public class SaveInnerAreaPopUp extends Fragment {
                     getActivity().onBackPressed();
                 }else{
                     // Show message
+//                    Toast.makeText(getActivity(),
+//                            "Fill all the fields of form please", Toast.LENGTH_LONG).show();
                     Toast.makeText(getActivity(),
-                            "Fill all the fields of form please", Toast.LENGTH_LONG).show();
+                            "Please type a name of area", Toast.LENGTH_LONG).show();
                 }
             }
         });

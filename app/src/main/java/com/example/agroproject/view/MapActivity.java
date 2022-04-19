@@ -419,10 +419,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         if ((placemark.getName()+".kml").equals(currentKmlFile.getName())){
                             // Get id of the clicked polygon
                             String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
-                            // Get date to added of the clicked polygon
-                            String dateToAdded = JsonParser.getDateToAdded(placemark.getName(),jsonArray);
                             // Instantiate a AreaClickFragment object
-                            FarmAreaClickPopUp farmAreaClickPopUp = new FarmAreaClickPopUp(placemark, polygonId,dateToAdded);
+                            FarmAreaClickPopUp farmAreaClickPopUp = new FarmAreaClickPopUp(placemark, polygonId);
                             // Start fragment activity
                             getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.farm_area_click_popup_container, farmAreaClickPopUp, farmAreaClickPopUp.getClass()
@@ -617,7 +615,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         //Get and load ndvi image from every placemark that has an imageURL
         for(Placemark placemark : placemarks){
             if(placemark.getImageUrl() != ""){
-                new GetImageAsync(placemark).execute(placemark.getImageUrl());
+                //new GetImageAsync(placemark).execute(placemark.getImageUrl());
                 break;
             }
         }
@@ -644,21 +642,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
 
-    /**
-     *
-     * @param placemark
-     * @param polygonId
-     * @param dateToAdded
-     */
-    @Override
-    public void areaDetailsEvent(Placemark placemark, String polygonId, String dateToAdded) {
-        // Open FarmDetailsActivity Class
-        Intent mapIntent = new Intent(MapActivity.this, FarmDetailsActivity.class);
-        mapIntent.putExtra("placemark name",  placemark.getName());
-        mapIntent.putExtra("polygon id", polygonId);
-        mapIntent.putExtra("date to added",dateToAdded);
-        startActivity(mapIntent);
-    }
+//    /**
+//     * TODO COMMENTS
+//     * @param placemark
+//     * @param polygonId
+//     * @param dateToAdded
+//     */
+//    @Override
+//    public void areaDetailsEvent(Placemark placemark, String polygonId, String dateToAdded) {
+//        // Open FarmDetailsActivity Class
+//        Intent mapIntent = new Intent(MapActivity.this, FarmDetailsActivity.class);
+//        mapIntent.putExtra("placemark name",  placemark.getName());
+//        mapIntent.putExtra("polygon id", polygonId);
+//        mapIntent.putExtra("date to added",dateToAdded);
+//        startActivity(mapIntent);
+//    }
 
 
 
@@ -691,7 +689,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     /**
-     *
+     * TODO COMMENTS
      * @param placemark
      */
     @Override
@@ -731,7 +729,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
     /**
-     *
+     * TODO COMMENTS
      * @param placemark
      */
     @Override
@@ -749,6 +747,29 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Add GroundOverlayOptions in the groundOverlaysList
         groundOverlaysMap.put(placemark, groundOverlayOptions);
     }
+
+    /**
+     * TODO COMMENTS
+     * @param placemark
+     * @param description
+     */
+    @Override
+    public void editAreaDescription(Placemark placemark, String description) {
+        // Show message
+        //Toast.makeText(MapActivity.this,
+               // "Edit area function triggered",Toast.LENGTH_LONG).show();
+
+        for(Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()){
+            for (Placemark element :entry.getValue()){
+                if (element.getName().equals(placemark.getName())){
+                    element.setDescription(description);
+                    // Save the changes
+                    kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
+                }
+            }
+        }
+    }
+
 
     @Override
     protected void onResume() {

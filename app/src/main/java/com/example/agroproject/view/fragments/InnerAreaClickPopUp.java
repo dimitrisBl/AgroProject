@@ -4,10 +4,13 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -15,6 +18,8 @@ import androidx.fragment.app.Fragment;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.InnerAreaClickPopupBinding;
 import com.example.agroproject.model.Placemark;
+import com.example.agroproject.view.MapActivity;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 
 
 public class InnerAreaClickPopUp extends Fragment {
@@ -33,6 +38,12 @@ public class InnerAreaClickPopUp extends Fragment {
     /** Event listener for delete button click of pop up */
     private FarmAreaClickPopUp.FarmAreaPopUpEventListener farmAreaPopUpEventListener;
 
+
+    /**
+     * Instantiate a new InnerAreaClickPopUp
+     *
+     * @param placemark takes the object of the area clicked by the user
+     */
     public InnerAreaClickPopUp(Placemark placemark){
         this.placemark = placemark;
     }
@@ -60,12 +71,38 @@ public class InnerAreaClickPopUp extends Fragment {
                 getActivity().onBackPressed();
             }
         });
+        // Set the text change event listener of area description edit text
+        binding.areaDescription.addTextChangedListener(areaDescriptionTextChangedEvent);
         // Set click listener for delete button
         binding.deleteBtn.setOnClickListener(buttonClickListener);
         // Set click listener for delete button
-        binding.editBtn.setOnClickListener(buttonClickListener);
+        //binding.saveBtn.setOnClickListener(buttonClickListener);
         return popupView;
     }
+
+
+
+    /**
+     * Event handler to handle the text changed event of area description
+     */
+    private android.text.TextWatcher areaDescriptionTextChangedEvent = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+        String areaDescription;
+        @Override
+        public void onTextChanged(CharSequence input, int i, int i1, int i2) {
+            areaDescription = String.valueOf(input);
+        }
+        @Override
+        public void afterTextChanged(Editable editable) {
+            // Disable the cursor of edit text
+            binding.areaDescription.setCursorVisible(false);
+            // Trigger the edit area description event listener
+            //innerAreaPopUpEventListener.editAreaDescription(placemark, areaDescription);
+            farmAreaPopUpEventListener.editAreaDescription(placemark,areaDescription);
+        }
+    };
 
 
     /**
@@ -91,9 +128,9 @@ public class InnerAreaClickPopUp extends Fragment {
                             .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    // Trigger the insert file event listener
+                                    // Trigger the delete area event listener
                                     farmAreaPopUpEventListener.deleteAreaEvent(placemark);
-                                    // Close pop up and trigger onBackPressed function of MapActivityV2
+                                    // Close pop up and trigger onBackPressed function of MapActivity
                                     getActivity().onBackPressed();
                                 }
                             })
@@ -106,22 +143,27 @@ public class InnerAreaClickPopUp extends Fragment {
                     .show();
                 break;
 
-                case "edit":
-                    // Show message
-                    Toast.makeText(getActivity(),
-                            "Edit button pressed",Toast.LENGTH_LONG).show();
-
-                break;
+//                case "save":
+//                    // Show message
+//                    Toast.makeText(getActivity(),
+//                            "Save button pressed",Toast.LENGTH_LONG).show();
+//
+//                    String newAreaDescription = String.valueOf(binding.areaDescription.getText());
+//                    // Trigger the edit area description event listener
+//                    innerAreaPopUpEventListener.editAreaDescription(placemark, newAreaDescription);
+//                    // Close pop up and trigger onBackPressed function of MapActivity
+//                    getActivity().onBackPressed();
+//                break;
             }
         }
     };
-
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
             farmAreaPopUpEventListener = (FarmAreaClickPopUp.FarmAreaPopUpEventListener) activity;
+            //innerAreaPopUpEventListener = (InnerAreaPopUpEventListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString() + " must implement onSomeEventListener");
         }

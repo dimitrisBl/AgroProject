@@ -173,6 +173,7 @@ public class FarmListViewActivity extends AppCompatActivity {
             listView.setAdapter(farmListViewAdapter);
         }
     };
+
 //
 //    /**
 //     * Event handler for text changed event of AutoCompleteTextView

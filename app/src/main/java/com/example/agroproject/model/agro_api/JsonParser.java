@@ -136,7 +136,6 @@ public class JsonParser {
                     myJSONObject.put("mean",mean);
                     myJSONObject.put("min",min);
 
-
                     historicalNdviData.add(myJSONObject);
                 }
             }

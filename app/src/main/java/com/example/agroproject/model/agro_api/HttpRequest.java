@@ -52,7 +52,6 @@ public class HttpRequest {
                 public void onResponse(Call call,  Response response) throws IOException {
                     String r = response.body().string();
                     Log.e(TAG, "onResponse(): " + r );
-
                 }
                 @Override
                 public void onFailure(Call call, IOException e) {

@@ -23,6 +23,8 @@ public class Placemark {
         this.imageUrl = imageUrl;
     }
 
+    public void setDescription(String description){this.description = description;}
+
     public String getImageUrl() {
         return imageUrl;
     }

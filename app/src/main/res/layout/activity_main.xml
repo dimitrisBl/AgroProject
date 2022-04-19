@@ -42,8 +42,8 @@
             android:layout_gravity="bottom"
             android:background="#fafafa"
             app:elevation="16dp"
-            app:itemIconTint="@color/purple_500"
-            app:itemTextColor="@color/purple_500"
+            app:itemIconTint="@color/light_green700"
+            app:itemTextColor="@color/light_green700"
             app:menu="@menu/bottom_navigation_view" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

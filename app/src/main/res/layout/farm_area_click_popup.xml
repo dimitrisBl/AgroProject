@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="350dp"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_gravity="center"
     android:padding="5dp"
-    android:background="@drawable/farm_area_click_popup">
+    android:background="@drawable/background_border">
 
     <ImageView
         android:layout_width="wrap_content"
@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:textColor="#000"
+        android:textColor="@color/white"
         android:textStyle="bold"
         android:textSize="25sp"
         android:hint="Farm Name"
@@ -34,9 +34,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
+        android:textColor="@color/white"
         android:id="@+id/areaDescription"
         android:layout_centerHorizontal="true"
-        android:background="@color/white"
+        android:background="@drawable/edit_text_border"
         android:focusable="false"
         android:hint="description"
         android:gravity="center_horizontal"/>
@@ -57,23 +58,34 @@
 <!--                android:layout_width="wrap_content"-->
 <!--                android:layout_height="wrap_content"-->
 <!--                android:text="Delete"/>-->
-
+<!--            style="@style/Widget.AppCompat.Button.Borderless"-->
             <Button
                 android:id="@+id/detailsBtn"
+
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Details"/>
+
+                app:cornerRadius="100dp"
+                android:layout_height="40dp"
+                android:layout_marginRight="10dp"
+                android:text="Details"
+                android:textColor="@color/white" />
 
             <Button
                 android:id="@+id/exportBtn"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Export"/>
+                app:cornerRadius="100dp"
+                android:layout_height="40dp"
+                android:layout_marginRight="10dp"
+                android:text="Export"
+                >
+            </Button>
 
             <Button
                 android:id="@+id/ndviBtn"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                app:cornerRadius="100dp"
+                android:layout_marginRight="10dp"
+                android:layout_height="40dp"
                 android:text="Ndvi"/>
 
 

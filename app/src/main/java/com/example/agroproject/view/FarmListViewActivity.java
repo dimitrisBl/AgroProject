@@ -3,6 +3,8 @@ package com.example.agroproject.view;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -24,6 +26,8 @@ import com.example.agroproject.model.Placemark;
 import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
 import com.example.agroproject.view.adapters.FarmListViewAdapter;
+import com.example.agroproject.view.adapters.NearbyStopsAdapter;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,6 +47,8 @@ public class FarmListViewActivity extends AppCompatActivity {
 
     /** Adapter for ListView */
     private FarmListViewAdapter farmListViewAdapter;
+
+    private NearbyStopsAdapter listAdapter;
 
     /** Adapter for drop down menu */
     private ArrayAdapter<String> dropDownAdapter;
@@ -68,7 +74,8 @@ public class FarmListViewActivity extends AppCompatActivity {
         initializeComponents();
     }
 
-
+    //RecyclerView recyclerView;
+    //LinearLayoutManager layoutManager;
     /**
      * Initialize UI components
      */
@@ -78,6 +85,18 @@ public class FarmListViewActivity extends AppCompatActivity {
         //----- ListView ----- //
         listView = binding.listView;
         listView.setAdapter(farmListViewAdapter);
+
+
+//        recyclerView = binding.recyclerView;
+//        layoutManager = new LinearLayoutManager(this);
+//        layoutManager.setOrientation(RecyclerView.HORIZONTAL);
+//        recyclerView.setLayoutManager(layoutManager);
+//
+//        listAdapter = new NearbyStopsAdapter(new ArrayList<>(kmlFileMap.keySet()),this,kmlFileMap);
+//        recyclerView.setAdapter(listAdapter);
+//        listAdapter.notifyDataSetChanged();
+
+
         // ListView item click listener
         listView.setOnItemClickListener(listViewItemClickListener);
         // ListView item long click listener
@@ -89,7 +108,7 @@ public class FarmListViewActivity extends AppCompatActivity {
         // AutoCompleteTextview item click listener
         binding.autoCompleteTextView.setOnItemClickListener(autoCompleteTextViewItemClickEvent);
         // AutoCompleteTextView text change event listener
-        //binding.autoCompleteTextView.addTextChangedListener(autoCompleteTextViewTextChangedEvent);
+        binding.autoCompleteTextView.addTextChangedListener(autoCompleteTextViewTextChangedEvent);
     }
 
     /**
@@ -171,35 +190,45 @@ public class FarmListViewActivity extends AppCompatActivity {
             // Refresh the ui
             farmListViewAdapter = new FarmListViewAdapter(kmlFiles);
             listView.setAdapter(farmListViewAdapter);
+            //listAdapter = new NearbyStopsAdapter(new ArrayList<>(kmlFileMap.keySet()),FarmListViewActivity.this,kmlFileMap);
+            //recyclerView.setAdapter(listAdapter);
+            //listAdapter.notifyDataSetChanged();
         }
     };
-//
-//    /**
-//     * Event handler for text changed event of AutoCompleteTextView
-//     */
-//    private android.text.TextWatcher autoCompleteTextViewTextChangedEvent = new TextWatcher() {
-//        @Override
-//        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
-//
-//        @RequiresApi(api = Build.VERSION_CODES.N)
-//        @Override
-//        public void onTextChanged(CharSequence input, int i, int i1, int i2) {
-//            List<KmlFile> kmlFiles = kmlFileMap.keySet().stream().
-//                    filter(element -> element.getFarmName().toLowerCase().equals(String.valueOf(input).toLowerCase())).collect(Collectors.toList());
-//
-//            if (kmlFiles.size() > 0){
-//                // Refresh the ui
-//                farmListViewAdapter = new FarmListViewAdapter(kmlFiles);
-//                listView.setAdapter(farmListViewAdapter);
-//            }else if(kmlFiles.size() == 0){
-//                // Set data in the listViewAdapter from shared preferences
-//                farmListViewAdapter = new FarmListViewAdapter(new ArrayList<>(kmlFileMap.keySet()));
-//                listView.setAdapter(farmListViewAdapter);
-//            }
-//        }
-//        @Override
-//        public void afterTextChanged(Editable editable) { }
-//    };
+
+    /**
+     * Event handler for text changed event of AutoCompleteTextView
+     */
+    private android.text.TextWatcher autoCompleteTextViewTextChangedEvent = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        @Override
+        public void onTextChanged(CharSequence input, int i, int i1, int i2) {
+            List<KmlFile> kmlFiles = kmlFileMap.keySet().stream().
+                    filter(element -> element.getFarmName().toLowerCase().equals(String.valueOf(input).toLowerCase())).collect(Collectors.toList());
+
+            if (kmlFiles.size() > 0){
+                // Refresh the ui
+                farmListViewAdapter = new FarmListViewAdapter(kmlFiles);
+                listView.setAdapter(farmListViewAdapter);
+                //listAdapter = new NearbyStopsAdapter(new ArrayList<>(kmlFileMap.keySet()),FarmListViewActivity.this,kmlFileMap);
+                //recyclerView.setAdapter(listAdapter);
+                //listAdapter.notifyDataSetChanged();
+            }else if(kmlFiles.size() == 0){
+                // Set data in the listViewAdapter from shared preferences
+                farmListViewAdapter = new FarmListViewAdapter(new ArrayList<>(kmlFileMap.keySet()));
+                listView.setAdapter(farmListViewAdapter);
+
+                //listAdapter = new NearbyStopsAdapter(new ArrayList<>(kmlFileMap.keySet()),FarmListViewActivity.this,kmlFileMap);
+                //recyclerView.setAdapter(listAdapter);
+                //listAdapter.notifyDataSetChanged();
+            }
+        }
+        @Override
+        public void afterTextChanged(Editable editable) { }
+    };
 
 
 

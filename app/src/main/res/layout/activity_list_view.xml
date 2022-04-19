@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/grey"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -11,6 +12,13 @@
         android:layout_height="match_parent"
         android:id="@+id/listView"/>
 
+
+
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/recyclerView"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:layout_marginTop="95dp"/>-->
 
     <com.google.android.material.textfield.TextInputLayout
         style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense.ExposedDropdownMenu"
@@ -29,12 +37,12 @@
 <!--            android:inputType="none"-->
 <!--            android:hint="Search" />-->
 
+        <!--            android:inputType="none"-->
         <AutoCompleteTextView
             android:id="@+id/autoCompleteTextView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:inputType="none"
             android:hint="Search" />
 
    </com.google.android.material.textfield.TextInputLayout>

@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import com.example.agroproject.databinding.InsertFilePopupBinding;
 import com.example.agroproject.model.AreaUtilities;
 import com.example.agroproject.model.Placemark;
+import com.example.agroproject.model.agro_api.HttpRequest;
 import com.example.agroproject.model.agro_api.JsonBuilder;
 import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.file.KmlFileParser;
@@ -161,6 +162,7 @@ public class InsertFilePopUp extends Fragment implements Executor {
                         List<JSONObject> jsonObjectList = JsonBuilder.build(placemarks);
                         // Post data in Agro Api TODO EINAI SXOLIO TO POST GIA NA MHN TREXEI SUNEXEIA
                         //HttpRequest.postRequest(jsonObjectList);
+                        Log.d("ETREKSE TO POST","ETREKSE TO POST");
                         // Get the current date
                         long currentDateAndTime = Calendar.getInstance().getTimeInMillis();
                         // Create a new KmlFile object
@@ -207,7 +209,6 @@ public class InsertFilePopUp extends Fragment implements Executor {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == FILE_SELECTION_CODE){
             if(resultCode == RESULT_OK){
-
                 // Get the type of file
                 String typeOfFile = data.getDataString().substring(data.getDataString().length()-3);
 

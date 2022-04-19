@@ -196,39 +196,34 @@ public class FarmListViewActivity extends AppCompatActivity {
         }
     };
 
-    /**
-     * Event handler for text changed event of AutoCompleteTextView
-     */
-    private android.text.TextWatcher autoCompleteTextViewTextChangedEvent = new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
-        @RequiresApi(api = Build.VERSION_CODES.N)
-        @Override
-        public void onTextChanged(CharSequence input, int i, int i1, int i2) {
-            List<KmlFile> kmlFiles = kmlFileMap.keySet().stream().
-                    filter(element -> element.getFarmName().toLowerCase().equals(String.valueOf(input).toLowerCase())).collect(Collectors.toList());
-
-            if (kmlFiles.size() > 0){
-                // Refresh the ui
-                farmListViewAdapter = new FarmListViewAdapter(kmlFiles);
-                listView.setAdapter(farmListViewAdapter);
-                //listAdapter = new NearbyStopsAdapter(new ArrayList<>(kmlFileMap.keySet()),FarmListViewActivity.this,kmlFileMap);
-                //recyclerView.setAdapter(listAdapter);
-                //listAdapter.notifyDataSetChanged();
-            }else if(kmlFiles.size() == 0){
-                // Set data in the listViewAdapter from shared preferences
-                farmListViewAdapter = new FarmListViewAdapter(new ArrayList<>(kmlFileMap.keySet()));
-                listView.setAdapter(farmListViewAdapter);
-
-                //listAdapter = new NearbyStopsAdapter(new ArrayList<>(kmlFileMap.keySet()),FarmListViewActivity.this,kmlFileMap);
-                //recyclerView.setAdapter(listAdapter);
-                //listAdapter.notifyDataSetChanged();
-            }
-        }
-        @Override
-        public void afterTextChanged(Editable editable) { }
-    };
+//
+//    /**
+//     * Event handler for text changed event of AutoCompleteTextView
+//     */
+//    private android.text.TextWatcher autoCompleteTextViewTextChangedEvent = new TextWatcher() {
+//        @Override
+//        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+//
+//        @RequiresApi(api = Build.VERSION_CODES.N)
+//        @Override
+//        public void onTextChanged(CharSequence input, int i, int i1, int i2) {
+//            List<KmlFile> kmlFiles = kmlFileMap.keySet().stream().
+//                    filter(element -> element.getFarmName().toLowerCase().equals(String.valueOf(input).toLowerCase())).collect(Collectors.toList());
+//
+//            if (kmlFiles.size() > 0){
+//                // Refresh the ui
+//                farmListViewAdapter = new FarmListViewAdapter(kmlFiles);
+//                listView.setAdapter(farmListViewAdapter);
+//            }else if(kmlFiles.size() == 0){
+//                // Set data in the listViewAdapter from shared preferences
+//                farmListViewAdapter = new FarmListViewAdapter(new ArrayList<>(kmlFileMap.keySet()));
+//                listView.setAdapter(farmListViewAdapter);
+//            }
+//        }
+//        @Override
+//        public void afterTextChanged(Editable editable) { }
+//    };
 
 
 

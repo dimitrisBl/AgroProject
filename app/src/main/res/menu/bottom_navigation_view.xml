@@ -4,8 +4,14 @@
         android:id="@+id/navigation_map"
         android:icon="@drawable/ic_baseline_map"
         android:title="Map" />
+
     <item
         android:id="@+id/navigation_farms"
         android:icon="@drawable/ic_baseline_farms"
         android:title="My Farms" />
+
+    <item
+        android:id="@+id/navigation_analytics"
+        android:icon="@drawable/ic_baseline_analytics"
+        android:title="Analytics" />
 </menu>

@@ -108,7 +108,7 @@ public class FarmListViewActivity extends AppCompatActivity {
         // AutoCompleteTextview item click listener
         binding.autoCompleteTextView.setOnItemClickListener(autoCompleteTextViewItemClickEvent);
         // AutoCompleteTextView text change event listener
-        binding.autoCompleteTextView.addTextChangedListener(autoCompleteTextViewTextChangedEvent);
+        //binding.autoCompleteTextView.addTextChangedListener(autoCompleteTextViewTextChangedEvent);
     }
 
     /**

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -23,11 +24,14 @@ import android.view.MenuItem;
 import android.widget.Toast;
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityMainBinding;
+import com.example.agroproject.model.agro_api.HttpRequest;
+import com.example.agroproject.model.agro_api.JsonParser;
+import com.example.agroproject.model.agro_api.StringBuildForRequest;
 import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-
+import org.json.JSONArray;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -55,6 +59,10 @@ public class MainActivity extends AppCompatActivity {
     private double longitude;
 
 
+
+    /** JSON data from GET request in agro api */
+    private JSONArray jsonArray;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,7 +80,29 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationMenu();
         // Instantiate a NetworkUtil object
         networkUtil = new NetworkUtil(this);
+        // We are registering an observer (responseReceiver) with action name GetRequestData to receive Intents after http Get request in Agro api.
+        LocalBroadcastManager.getInstance(this).registerReceiver(agroApiResponseReceiver, new IntentFilter("GetRequestData"));
     }
+
+    /**
+     *  Our handler for received Intents. This will be called whenever an Intent
+     *  with an action named "GetRequestData".
+     *  TODO MORE DESCRIPTION
+     */
+    private BroadcastReceiver agroApiResponseReceiver  = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get response data and request type that are included in the Intent
+            String responseData = intent.getStringExtra("Response data");
+            String requestType = intent.getStringExtra("Request type");
+
+            if(requestType.equals("Get all polygons")){
+                // Parse response data
+                jsonArray = JsonParser.parseResponse(responseData);
+                Log.d(TAG,"response data "+responseData);
+            }
+        }
+    };
 
     /**
      * TODO:DESCRIPTIOn
@@ -99,7 +129,8 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     case R.id.navigation_analytics:
                         // Open farmDetailsActivity
-                        Intent farmDetailsActivityIntent = new Intent(MainActivity.this,FarmDetailsActivity.class);
+                        Intent farmDetailsActivityIntent = new Intent(MainActivity.this, FarmDetailsActivity.class);
+                        farmDetailsActivityIntent.putExtra("ALL POLYGONS",jsonArray.toString());
                         startActivity(farmDetailsActivityIntent);
                         return true;
 
@@ -221,6 +252,11 @@ public class MainActivity extends AppCompatActivity {
         // We are registering an observer from NetworkUtil class which extends BroadCast Receiver class
         // to receive intents with action name "CONNECTIVITY_ACTION".
         registerReceiver(networkUtil, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        if (jsonArray == null){
+            Log.d(TAG,"ALL POLYGONS GET REQUEST EXECUTED");
+            // Get request on endpoint polygons of Agro api
+            HttpRequest.getRequest(this, StringBuildForRequest.polygonsRequestLink(), "Get all polygons");
+        }
     }
 
 
@@ -232,7 +268,6 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(locationReceiver);
         unregisterReceiver(networkUtil);
     }
-
 
     /**
      *  This method starts an intent service

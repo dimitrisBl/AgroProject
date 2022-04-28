@@ -114,8 +114,8 @@ public class JsonParser {
                 JSONObject currentJSONObject = jsonArray.getJSONObject(i);
                 String sentinelType = currentJSONObject.getString("type");
 
-                // If the type of sentinel is LANDSAT 8
-                if (sentinelType.equals("l8")){
+                // If the type of sentinel is SENTINEL 2
+                if (sentinelType.equals("s2")){
                     // Get the date as UnixTimeStamp
                     String dateTime = currentJSONObject.getString("dt");
                     JSONObject dataJSONObject = currentJSONObject.getJSONObject("data");

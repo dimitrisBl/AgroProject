@@ -4,23 +4,53 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-
+    android:layout_height="match_parent"
+    xmlns:ap="http://schemas.android.com/apk/res-auto"
+    tools:context=".view.FarmDetailsActivity" >
 
 
 
 
     <RelativeLayout
-        android:layout_width="180dp"
-        android:layout_height="250dp"
-        tools:context=".view.FarmDetailsActivity">
-
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <ListView
             android:id="@+id/detailsListView"
             android:layout_width="180dp"
-            android:layout_height="250dp" />
+            android:layout_height="250dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="230dp"/>
+
+
+
+        <Button
+            android:layout_below="@+id/detailsListView"
+            android:id="@+id/chooseDateBtn"
+            android:layout_width="wrap_content"
+            android:layout_marginLeft="240dp"
+            app:cornerRadius="100dp"
+            android:layout_height="40dp"
+            android:textColor="@color/white"
+            android:text="Choose date"/>
+
+
+<!--        ap:lineLabels="left|bottom"-->
+<!--        ap:lineLabelRotationBottom="-45"-->
+<!--        -->
+
+        <com.androidplot.xy.XYPlot
+            style="@style/APDefacto.Light"
+            ap:title="HISTORICAL NDVI"
+            ap:rangeTitle="NDVI"
+            ap:domainTitle= "DATE"
+            android:layout_below="@+id/detailsListView"
+            android:layout_width="match_parent"
+            android:layout_height="420dp"
+            android:layout_marginTop="50dp"
+            android:id="@+id/ndviplot" >
+        </com.androidplot.xy.XYPlot>
+
 
     </RelativeLayout>
 

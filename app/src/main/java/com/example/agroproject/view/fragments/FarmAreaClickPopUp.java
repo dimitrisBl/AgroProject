@@ -20,7 +20,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.core.util.Pair;
 import androidx.annotation.NonNull;
@@ -35,9 +34,6 @@ import com.example.agroproject.model.Placemark;
 import com.example.agroproject.model.agro_api.HttpRequest;
 import com.example.agroproject.model.agro_api.JsonParser;
 import com.example.agroproject.model.agro_api.StringBuildForRequest;
-import com.example.agroproject.view.FarmDetailsActivity;
-import com.example.agroproject.view.MainActivity;
-import com.example.agroproject.view.MapActivity;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.material.datepicker.MaterialDatePicker;
@@ -46,7 +42,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;

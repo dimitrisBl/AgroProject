@@ -75,4 +75,6 @@ dependencies {
     implementation 'com.androidplot:androidplot-core:1.5.9'
 
     //implementation 'com.jjoe64:graphview:4.2.2'
+
+    implementation 'com.android.volley:volley:1.0.0'
 }

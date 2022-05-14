@@ -1,19 +1,26 @@
 package com.example.agroproject.model;
 
+import android.util.Log;
+
+import com.example.agroproject.model.file.KmlFile;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.maps.android.PolyUtil;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AreaUtilities {
 
     private static Placemark outsiderArea;
 
     /**
-     * TODO METHOD DESCRIPTION
+     * Detect the center LatLng object of an area.
+     *
      * @param points is a List with LatLng objects of an area.
-     * @return latLng object. This object have the center location of area.
+     * @return latLng object.This object is the center location of area.
      */
     public static LatLng getAreaCenterPoint(List<LatLng> points) {
         double[] centroid = { 0.0, 0.0 };
@@ -31,10 +38,9 @@ public class AreaUtilities {
 
 
     /**
-     *
-     * @param latLng has the center location of new  area
-     * @param placemarkList
-     *
+     * @param latLng has the center location of new area
+     * @param placemarkList has all saved placemarks
+     * @return true if the point LatLng param its inside in some placemark.
      */
     public static boolean detectInnerArea(LatLng latLng, List<Placemark> placemarkList){
         for (Placemark placemark : placemarkList) {
@@ -55,7 +61,51 @@ public class AreaUtilities {
     }
 
 
+    /**
+     * Classifier of the placemarks.
+     *
+     *
+     * @param kmlFileMap has all saved data of the application
+     * @return Map with outer placemark as key and List with the inner placemarks as value.
+     */
+    public static Map<Placemark,List<Placemark>> placemarkClassification(Map<KmlFile,List<Placemark>> kmlFileMap){
 
+        Map<Placemark,List<Placemark>> placemarkMap = new HashMap<>();
+        // Get all placemarks from the kmlFileMap
+        List<Placemark> placemarks  = new ArrayList<>();
+        for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
+            for (Placemark placemark : entry.getValue()) {
+                placemarks.add(placemark);
+            }
+        }
 
+        for (Placemark placemark : placemarks){
+            // Its try if the current placemark located inside in other
+            boolean isInnerArea = true;
+            for (LatLng latLng : placemark.getLatLngList()){
+                if (detectInnerArea(latLng,placemarks) == false){
+                    // ALl LatLng points of a placemark
+                    // must be inside in some other placemark to be inner area
+                    isInnerArea = false;
+                    break;
+                }else if(placemark.getName().equals(outsiderArea.getName())){
+                    isInnerArea = false;
+                    break;
+                }
+            }
 
+            if (isInnerArea){
+                for (Map.Entry<Placemark, List<Placemark>> entry : placemarkMap.entrySet()){
+                    if (entry.getKey().equals(outsiderArea)){
+                        // Append value in the existing key
+                        entry.getValue().add(placemark);
+                    }
+                }
+            } else{
+                // Create a new entry
+                placemarkMap.put(placemark,new ArrayList<>());
+            }
+        }
+        return placemarkMap;
+    }
 }

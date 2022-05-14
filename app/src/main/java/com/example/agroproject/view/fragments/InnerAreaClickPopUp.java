@@ -10,16 +10,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
 import com.example.agroproject.R;
 import com.example.agroproject.databinding.InnerAreaClickPopupBinding;
 import com.example.agroproject.model.Placemark;
-import com.example.agroproject.view.MapActivity;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 
 
 public class InnerAreaClickPopUp extends Fragment {

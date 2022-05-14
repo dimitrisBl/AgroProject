@@ -128,12 +128,13 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(recyclerViewIntent);
                         return true;
                     case R.id.navigation_analytics:
-                        // Open farmDetailsActivity
-                        Intent farmDetailsActivityIntent = new Intent(MainActivity.this, FarmDetailsActivity.class);
-                        farmDetailsActivityIntent.putExtra("ALL POLYGONS",jsonArray.toString());
-                        startActivity(farmDetailsActivityIntent);
-                        return true;
-
+                        if (jsonArray != null){
+                            // Open farmDetailsActivity
+                            Intent farmDetailsActivityIntent = new Intent(MainActivity.this, FarmDetailsActivity.class);
+                            farmDetailsActivityIntent.putExtra("ALL POLYGONS",jsonArray.toString());
+                            startActivity(farmDetailsActivityIntent);
+                            return true;
+                        }
                 }
                 return false;
             }

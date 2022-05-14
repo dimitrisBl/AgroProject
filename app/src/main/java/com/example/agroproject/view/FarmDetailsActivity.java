@@ -1,6 +1,5 @@
 package com.example.agroproject.view;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.util.Pair;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -10,13 +9,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.androidplot.Plot;
 import com.androidplot.xy.BoundaryMode;
@@ -26,12 +24,13 @@ import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
-import com.example.agroproject.R;
 
 import com.example.agroproject.databinding.ActivityFarmDetailsBinding;
 import com.example.agroproject.model.AreaUtilities;
 import com.example.agroproject.model.DatePicker;
+import com.example.agroproject.model.HistoricalNdviGraphModel;
 import com.example.agroproject.model.Placemark;
+import com.example.agroproject.model.WeatherModel;
 import com.example.agroproject.model.agro_api.HttpRequest;
 import com.example.agroproject.model.agro_api.JsonParser;
 import com.example.agroproject.model.agro_api.StringBuildForRequest;
@@ -47,11 +46,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.Serializable;
-import java.text.DateFormat;
+
 import java.text.FieldPosition;
 import java.text.Format;
-import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -60,14 +57,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-
 import static android.graphics.Color.rgb;
 
-public class FarmDetailsActivity extends AppCompatActivity {
 
-    // Historical NDVI by polygon -> https://agromonitoring.com/api/history-ndvi
+public class FarmDetailsActivity extends AppCompatActivity {
 
     /** Activity view binding */
     private ActivityFarmDetailsBinding activityFarmDetailsBinding;
@@ -77,6 +71,7 @@ public class FarmDetailsActivity extends AppCompatActivity {
 
     /** Adapter for ListView */
     private DetailsListViewAdapter detailsListViewAdapter;
+
     /** KmlLocalStorageProvider */
     private KmlLocalStorageProvider kmlLocalStorageProvider;
 
@@ -89,18 +84,29 @@ public class FarmDetailsActivity extends AppCompatActivity {
      */
     private Map<Placemark, List<Placemark>> placemarkMap =  new HashMap<>();
 
+    /** Has the outer placemarks only */
     private List<Placemark> outerPlacemarks;
 
-    // Response data of agro api
+    /** This JSONArray has the response data of agro api
+     * after HTTP GET request in the polygons entry and */
     private JSONArray jsonArray;
 
-    private String currentDate;
-    private String previousDate;
+    /** Placemark selected by user */
     private Placemark selectedPlacemark;
+
+    /** The id of placemark selected by user */
     private String  selectedPlacemarkID;
 
-    // Historical ndvi plot
+    /** Used for the HTTP GET request
+     * at the sentinel entry of agro api */
+    private String oneDayPreviousDate;
+    private String thirtyDayspreviousDate;
+
+    /** Historical ndvi plot */
     private XYPlot ndviPlot;
+
+    /** Weather image loader */
+    private WeatherModel.WeatherImageLoader weatherImageLoader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,66 +119,44 @@ public class FarmDetailsActivity extends AppCompatActivity {
         kmlFileMap = kmlLocalStorageProvider.loadKmlFileMap();
         // We are registering an observer (responseReceiver) with action name GetRequestData to receive Intents after http Get request in Agro api.
         LocalBroadcastManager.getInstance(this).registerReceiver(agroApiResponseReceiver, new IntentFilter("GetRequestData"));
-        initialize();
-        // Get the current date - time
-        currentDate = getCalculatedDate(0);
-        // Get the previous date -time
-        previousDate = getCalculatedDate(-30);
+        // Get one day previous date - time
+        oneDayPreviousDate = calculateDate(-1);
+        // Get 30 days previous date -time
+        thirtyDayspreviousDate = calculateDate(-30);
         // Get data from intent
         Intent myIntent = getIntent();
         String allPolygonsAgroApi = myIntent.getStringExtra("ALL POLYGONS");
-        if (outerPlacemarks.size() > 0 ){
-            // Get the first placemark from the list
-            selectedPlacemark = outerPlacemarks.get(0);
-            try {
-                jsonArray = new JSONArray(allPolygonsAgroApi);
-                historicalNdviRequest(selectedPlacemark);
-            } catch (JSONException e) {
-                e.printStackTrace();
-                Log.d("FAIL TO INIT JSON ARRAY","FAIL TO INIT JSON ARRAY");
-            }
-        // Get the center LatLng of current outer area
-        LatLng selectedPlacemarkCenter= AreaUtilities.getAreaCenterPoint(selectedPlacemark.getLatLngList());
-        // Get request to receive the weather data of the current placemark from agro api
-        HttpRequest.getRequest(this, StringBuildForRequest.weatherRequestLink(selectedPlacemarkCenter.latitude,selectedPlacemarkCenter.longitude), "Get weather");
-        }
+        initialize(allPolygonsAgroApi);
+        // Initialize weatherImageLoader
+        weatherImageLoader =  new WeatherModel.WeatherImageLoader(this);
     }
 
-
-
-    private void initialize(){
-
-      for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
-          // Get the current KmlFile object
-          KmlFile currentKmlFile = entry.getKey();
-
-            for (Placemark placemark : entry.getValue()) {
-                if ((placemark.getName() + ".kml").equals(currentKmlFile.getName())) {
-                    placemarkMap.put(placemark, entry.getValue());
-                }
-            }
-        }
-        for (Map.Entry<Placemark, List<Placemark>> entry : placemarkMap.entrySet()) {
-
-            Placemark placemark = null;
-            for (Placemark element : entry.getValue()) {
-                if (element.getName().equals(entry.getKey().getName())){
-                    placemark = element;
-                }
-            }
-            if (placemark != null){
-                entry.getValue().remove(placemark);
-            }
-        }
-
+    /**
+     * Initialize ui components
+     *
+     * @param allPolygonsAgroApi has all outer polygons of the application
+     */
+    private void initialize(String allPolygonsAgroApi){
+        placemarkMap = AreaUtilities.placemarkClassification(kmlFileMap);
         // Save the outer placemarks in this list
         outerPlacemarks = new ArrayList<>(placemarkMap.keySet());
-
         // Set data to the listViewAdapter from shared preferences
         detailsListViewAdapter = new DetailsListViewAdapter(new ArrayList<>(placemarkMap.keySet()));
         //----- ListView ----- //
-       listView = activityFarmDetailsBinding.detailsListView;
-       listView.setAdapter(detailsListViewAdapter);
+        listView = activityFarmDetailsBinding.detailsListView;
+        listView.setAdapter(detailsListViewAdapter);
+        listView.setOnItemClickListener(listViewItemClickListener);
+        if (outerPlacemarks.size() > 0 ) {
+            try {
+                jsonArray = new JSONArray(allPolygonsAgroApi);
+                // Select the first item of listview
+                // when activity opens first time
+                listView.setItemChecked(0,true);
+                listViewItemClickListener.onItemClick(listView,listView.getChildAt(0),listView.getSelectedItemPosition(),listView.getSelectedItemId());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
         // Initialize ndvi plot
         ndviPlot = activityFarmDetailsBinding.ndviplot;
         ndviPlot.setRenderMode(Plot.RenderMode.USE_MAIN_THREAD);
@@ -182,13 +166,54 @@ public class FarmDetailsActivity extends AppCompatActivity {
         activityFarmDetailsBinding.chooseDateBtn.setOnClickListener(buttonClickListener);
     }
 
-
+    /**
+     * HTTP Get request to the sentinel entry of agro api
+     * to get the historical ndvi data of selected placemark.
+     *
+     * @param selectedPlacemark has the selected placemark.
+     */
     private void historicalNdviRequest(Placemark selectedPlacemark){
         // Get id of the clicked polygon
         selectedPlacemarkID = JsonParser.getId(selectedPlacemark.getName(), jsonArray);
         //Get request to receive the historical ndvi data of the selected placemark from Agro api
-        HttpRequest.getRequest(FarmDetailsActivity.this, StringBuildForRequest.historicalNdviLink(selectedPlacemarkID,previousDate,currentDate), "Get historical ndvi");
+        HttpRequest.getRequest(FarmDetailsActivity.this,
+                StringBuildForRequest.historicalNdviLink(selectedPlacemarkID,thirtyDayspreviousDate,oneDayPreviousDate), "Get historical ndvi");
     }
+
+    /**
+     * HTTP Get request to the weather entry of agro api
+     * to get the weather data of seleceted placemark.
+     *
+     * @param selectedPlacemark has the selected placemark.
+     */
+    private void weatherRequest(Placemark selectedPlacemark){
+        // Get the center LatLng of current outer area
+        LatLng selectedPlacemarkCenter= AreaUtilities.getAreaCenterPoint(selectedPlacemark.getLatLngList());
+        // Get request to receive the weather data of the current placemark from agro api
+        HttpRequest.getRequest(this, StringBuildForRequest.weatherRequestLink(selectedPlacemarkCenter.latitude,selectedPlacemarkCenter.longitude), "Get weather");
+    }
+
+
+
+    /**
+     * Event handler to handle the item click of list view
+     */
+    private AdapterView.OnItemClickListener listViewItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int index, long l) {
+            if(index == -1){
+                // Default placemark selection from the list view
+                // at first time the activity opens
+                selectedPlacemark = outerPlacemarks.get(0);
+            }else{
+                selectedPlacemark = detailsListViewAdapter.getItem(index);
+            }
+            // Get weather data for the clicked placemark
+            weatherRequest(selectedPlacemark);
+            // Get historical ndvi data for the clicked placemark and refresh the plot
+            historicalNdviRequest(selectedPlacemark);
+        }
+    };
 
 
     /**
@@ -217,13 +242,14 @@ public class FarmDetailsActivity extends AppCompatActivity {
                         @Override
                         public void onPositiveButtonClick(Pair<Long, Long>  selection) {
                             // Edit time before add the time in sentinel url of agro api
-                            // This processing is done only for  time zone of the agro api
+                            // This processing is done only for time zone of the agro api (UnixTimeStamp)
                             int dateFromLength = selection.first.toString().length();
                             int dateToLength = selection.second.toString().length();
                             String dateFrom = selection.first.toString().substring(0, dateFromLength-3);
                             String dateTo = selection.second.toString().substring(0, dateToLength-3);
-                            //Get request to receive the historical ndvi data of the selected placemark from Agro api
-                            HttpRequest.getRequest(FarmDetailsActivity.this, StringBuildForRequest.historicalNdviLink(selectedPlacemarkID,dateFrom,dateTo), "Get historical ndvi");
+                            // Get request to receive the historical ndvi data of the selected placemark from Agro api
+                            HttpRequest.getRequest(FarmDetailsActivity.this,
+                                    StringBuildForRequest.historicalNdviLink(selectedPlacemarkID,dateFrom,dateTo), "Get historical ndvi");
                         }
                     });
                 break;
@@ -231,7 +257,6 @@ public class FarmDetailsActivity extends AppCompatActivity {
 
         }
     };
-
 
 
     /**
@@ -245,11 +270,16 @@ public class FarmDetailsActivity extends AppCompatActivity {
             String responseData = intent.getStringExtra("Response data");
             String requestType = intent.getStringExtra("Request type");
 
-
             if(requestType.equals("Get weather")){
-                /** TODO WEATHER PARSER */
                 Log.d("POLYLGON WEATHER",responseData);
-
+                // Parse the weather response data of agro api
+                // and instantiate a WeatherModel object
+                WeatherModel weatherModel = JsonParser.getWeatherData(responseData);
+                // Set image loader
+                weatherImageLoader.setImageLoader();
+                // Set data in the ui
+                activityFarmDetailsBinding.weatherImage.setImageUrl(WeatherModel.getImage(weatherModel.getIcon()), weatherImageLoader.getmImageLoader());
+                /**TODO ADD all weather data to the ui */
 
             }else if(requestType.equals("Get historical ndvi")){
                 Log.d("HISTORICAL NDVI",responseData);
@@ -258,30 +288,33 @@ public class FarmDetailsActivity extends AppCompatActivity {
                 List<Double> maxValuesOfEachDate = new ArrayList<>();
                 List<Double> meanValuesOfEachDate = new ArrayList<>();
                 List<Double> minValuesOfEachDate = new ArrayList<>();
-
-                // Get only the JSONObject with the sentinel type SENTINEL-2 (s2)
-                List<JSONObject> historicalNdviData =  JsonParser.getHistoricalNdvi(responseData);
+                // Parse the historical ndvi response data of agro api
+                // and instantiate a List with HistoricalNdviGraphModel objects for each value of the historical ndvi
+                List<HistoricalNdviGraphModel> historicalNdviGraphModelList = JsonParser.getHistoricalNdvi(responseData);
 
                 // Reverse iteration
-               for (int i = historicalNdviData.size() - 1; i >= 0; i--) {
-                   try {
-                       dates.add(historicalNdviData.get(i).getString("dt"));
-                       maxValuesOfEachDate.add(Double.parseDouble(historicalNdviData.get(i).getString("max")));
-                       meanValuesOfEachDate.add(Double.parseDouble(historicalNdviData.get(i).getString("mean")));
-                       minValuesOfEachDate.add(Double.parseDouble(historicalNdviData.get(i).getString("min")));
-                   } catch (JSONException e) {
-                       e.printStackTrace();
-                   }
-               }
-               // Redraw plot
-               RefreshHistoricalNdviChart(dates,maxValuesOfEachDate,meanValuesOfEachDate,minValuesOfEachDate);
+                for (int i = historicalNdviGraphModelList.size() - 1; i >= 0; i--) {
+                    dates.add(historicalNdviGraphModelList.get(i).getDt());
+                    maxValuesOfEachDate.add(historicalNdviGraphModelList.get(i).getMax());
+                    meanValuesOfEachDate.add(historicalNdviGraphModelList.get(i).getMean());
+                    minValuesOfEachDate.add(historicalNdviGraphModelList.get(i).getMin());
+                }
+                // Draw plot
+                drawHistoricalNdviGraph(dates,maxValuesOfEachDate,meanValuesOfEachDate,minValuesOfEachDate);
             }
         }
     };
 
 
-
-    private void RefreshHistoricalNdviChart(List<String> dates,List<Double> maxNdviValuesOfEachDate, List<Double> meanNdviValueOfEachDate, List<Double> minNdviValueOfEachDate){
+    /**
+     * Draw historical ndvi plot.
+     *
+     * @param dates at the x-axis of plot.
+     * @param maxNdviValuesOfEachDate the values for the line max vegetation.
+     * @param meanNdviValueOfEachDate the values for the line mean vegetation.
+     * @param minNdviValueOfEachDate the values for the line min vegetation.
+     */
+    private void drawHistoricalNdviGraph(List<String> dates,List<Double> maxNdviValuesOfEachDate, List<Double> meanNdviValueOfEachDate, List<Double> minNdviValueOfEachDate){
 
         ndviPlot.clear();
 
@@ -343,7 +376,6 @@ public class FarmDetailsActivity extends AppCompatActivity {
 
             @Override
             public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition fieldPosition) {
-
                 int i =  (int) Math.round(((Number) obj).floatValue());
                 // Concert date from UnixTimeStamp to simple date
                 long dv = Long.valueOf(dates.get(i))*1000;// its need to be in milisecond
@@ -363,15 +395,15 @@ public class FarmDetailsActivity extends AppCompatActivity {
         ndviPlot.redraw();
     }
 
-
     /**
      * Pass the number of days for minus from current
      * If you want to get previous date then pass days with minus sign
-     * else you can pass as it is for next date
+     * else you can pass as it is for next date.
+     * If you want the current date then give zero to the days param.
      * @param days
-     * @return Calculated Date
+     * @return Date in UnixTimeStamp type
      */
-    public static String getCalculatedDate(int days) {
+    private static String calculateDate(int days) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         String date = dateFormat.format(System.currentTimeMillis());
         Calendar cal = dateFormat.getCalendar();

@@ -8,51 +8,77 @@
     xmlns:ap="http://schemas.android.com/apk/res-auto"
     tools:context=".view.FarmDetailsActivity" >
 
-
-
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!--here is the layout i want to put at the top of the page-->
+        <LinearLayout
+            android:id="@+id/topLayout"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:orientation="horizontal"
+            android:layout_alignParentTop="true"
+            android:layout_gravity="top"
+            android:gravity="top"
+            android:background="@drawable/layout_border">
+
+            <com.android.volley.toolbox.NetworkImageView
+                android:id="@+id/weatherImage"
+                android:layout_width="88dp"
+                android:layout_height="59dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                tools:layout_editor_absoluteX="256dp"
+                tools:layout_editor_absoluteY="526dp"/>
+
         <ListView
             android:id="@+id/detailsListView"
-            android:layout_width="180dp"
-            android:layout_height="250dp"
+            android:layout_width="wrap_content"
+            android:layout_height="190dp"
             android:layout_marginTop="10dp"
-            android:layout_marginLeft="230dp"/>
-
+            android:layout_marginRight="4dp"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:scrollbarSize="10dp"
+            android:scrollbars="vertical"
+            android:layout_marginLeft="110dp"
+            android:layout_gravity="top|right"
+            android:gravity="top|right"
+            android:background="@drawable/layout_border"/>
+        </LinearLayout>
 
 
         <Button
-            android:layout_below="@+id/detailsListView"
             android:id="@+id/chooseDateBtn"
             android:layout_width="wrap_content"
-            android:layout_marginLeft="240dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="200dp"
             app:cornerRadius="100dp"
             android:layout_height="40dp"
             android:textColor="@color/white"
-            android:text="Choose date"/>
+            android:text="Choose date" />
 
 
-<!--        ap:lineLabels="left|bottom"-->
-<!--        ap:lineLabelRotationBottom="-45"-->
-<!--        -->
 
-        <com.androidplot.xy.XYPlot
-            style="@style/APDefacto.Light"
-            ap:title="HISTORICAL NDVI"
-            ap:rangeTitle="NDVI"
-            ap:domainTitle= "DATE"
-            android:layout_below="@+id/detailsListView"
-            android:layout_width="match_parent"
+        <!--here is the layout i want to put at the bottom of the page-->
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="420dp"
-            android:layout_marginTop="50dp"
-            android:id="@+id/ndviplot" >
-        </com.androidplot.xy.XYPlot>
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal"
+            android:layout_gravity="bottom"
+            android:gravity="bottom">
 
-
+            <com.androidplot.xy.XYPlot
+                android:id="@+id/ndviplot"
+                style="@style/APDefacto.Light"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                ap:domainTitle="DATE"
+                ap:rangeTitle="NDVI"
+                ap:title="HISTORICAL NDVI"/>
+        </LinearLayout>
     </RelativeLayout>
-
 
 </LinearLayout>

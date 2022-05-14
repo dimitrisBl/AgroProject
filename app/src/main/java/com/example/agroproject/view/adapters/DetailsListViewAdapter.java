@@ -1,5 +1,6 @@
 package com.example.agroproject.view.adapters;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +47,8 @@ public class DetailsListViewAdapter extends BaseAdapter {
         }else{
             viewResult = convertView;
         }
+
+
         // UI COMPONENTS
         TextView title = viewResult.findViewById(R.id.title);
         title.setText(placemarks.get(position).getName());

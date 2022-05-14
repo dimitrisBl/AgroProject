@@ -92,7 +92,7 @@ public class HttpRequest {
                 intent.putExtra("Response data", r);
                 //Include the device coordinates in intent
                 intent.putExtra("Request type", requestType);
-                // Send broadcast in MapActivity
+                // Send broadcast in Activity
                 LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
             }
             @Override

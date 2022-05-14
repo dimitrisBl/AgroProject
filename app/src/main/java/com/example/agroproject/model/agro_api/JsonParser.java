@@ -2,6 +2,8 @@ package com.example.agroproject.model.agro_api;
 
 import android.util.Log;
 
+import com.example.agroproject.model.HistoricalNdviGraphModel;
+import com.example.agroproject.model.WeatherModel;
 import com.google.gson.JsonArray;
 
 import org.json.JSONArray;
@@ -61,8 +63,6 @@ public class JsonParser {
         return id;
     }
 
-
-
     /**
      * TODO DESCRIPTION
      * @param data
@@ -83,30 +83,16 @@ public class JsonParser {
         return ndvi;
     }
 
-    /**
+
+    /***
      * TODO DESCRIPTION
-     * @param name
-     * @param jsonArray
+     *
+     * @param jsonData
      * @return
      */
-    public static String getDateToAdded(String name, JSONArray jsonArray){
-        String dateToAdded =null;
-        for(int i=0;i<jsonArray.length();i++){
-            try {
-                if (name.equals(jsonArray.getJSONObject(i).getString("name"))){
-                    dateToAdded = jsonArray.getJSONObject(i).getString("created_at");
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        return dateToAdded;
-    }
+    public static  List<HistoricalNdviGraphModel> getHistoricalNdvi(String jsonData){
 
-
-    public static List<JSONObject> getHistoricalNdvi(String jsonData){
-
-        List<JSONObject> historicalNdviData = new ArrayList<>();
+        List<HistoricalNdviGraphModel> historicalNdviGraphModelList = new ArrayList<>();
         try {
             JSONArray jsonArray = new JSONArray(jsonData);
             for (int i = 0; i < jsonArray.length() ; i++) {
@@ -121,29 +107,56 @@ public class JsonParser {
                     JSONObject dataJSONObject = currentJSONObject.getJSONObject("data");
 
                     // Get the max value of ndvi
-                    String max = dataJSONObject.getString("max");
+                    double max = Double.parseDouble(dataJSONObject.getString("max"));
                     // Get the mean value of ndvi
-                    String mean = dataJSONObject.getString("mean");
+                    double mean = Double.parseDouble(dataJSONObject.getString("mean"));
                     // Get the min value of ndvi
-                    String min = dataJSONObject.getString("min");
+                    double min = Double.parseDouble(dataJSONObject.getString("min"));
 
-
-                    // Initialize a new JSONObject and put only the
-                    // important data for historical ndvi on it
-                    JSONObject myJSONObject = new JSONObject();
-                    myJSONObject.put("dt",dateTime);
-                    myJSONObject.put("max",max);
-                    myJSONObject.put("mean",mean);
-                    myJSONObject.put("min",min);
-
-                    historicalNdviData.add(myJSONObject);
+                    // Initialize a new HistoricalNdviGraphModel object
+                    historicalNdviGraphModelList.add(new HistoricalNdviGraphModel(dateTime,max,mean,min));
                 }
             }
         }catch (JSONException e){
             e.printStackTrace();
         }
-        return historicalNdviData;
+       // return historicalNdviData;
+        return historicalNdviGraphModelList;
     }
 
+
+    public static WeatherModel getWeatherData(String jsonData){
+
+        WeatherModel weatherModel = new WeatherModel();
+
+        try {
+            JSONObject jsonObject = new JSONObject(jsonData);
+            JSONObject mainObject = jsonObject.getJSONObject("main");
+            JSONObject weatherObject = jsonObject.getJSONArray("weather").getJSONObject(0);
+            JSONObject windObject =   jsonObject.getJSONObject("wind");
+
+            String description = weatherObject.getString("description");
+            String icon = weatherObject.getString("icon");
+
+            String temp = mainObject.getString("temp");
+            String tempMin = mainObject.getString("temp_min");
+            String tempMax = mainObject.getString("temp_max");
+            String humidity = mainObject.getString("humidity");
+
+            String windSpeed = windObject.getString("speed");
+
+            weatherModel.setDescription(description);
+            weatherModel.setIcon(icon);
+            weatherModel.setTemp(temp);
+            weatherModel.setTempMin(tempMin);
+            weatherModel.setTempMax(tempMax);
+            weatherModel.setHumidity(humidity);
+            weatherModel.setWindSpeed(windSpeed);
+
+        }  catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return weatherModel;
+    }
 
 }

@@ -32,7 +32,6 @@ import com.example.agroproject.model.agro_api.StringBuildForRequest;
 import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.file.KmlFileWriter;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
-import com.example.agroproject.services.LocationService;
 import com.example.agroproject.services.NetworkUtil;
 import com.example.agroproject.view.fragments.FarmAreaClickPopUp;
 import com.example.agroproject.view.fragments.InnerAreaClickPopUp;
@@ -52,7 +51,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.maps.android.ui.IconGenerator;
 import com.nightonke.boommenu.BoomButtons.OnBMClickListener;
 import com.nightonke.boommenu.BoomButtons.TextOutsideCircleButton;
 import com.nightonke.boommenu.BoomMenuButton;
@@ -409,31 +407,31 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private GoogleMap.OnPolygonClickListener polygonClickListener = new GoogleMap.OnPolygonClickListener() {
         @Override
         public void onPolygonClick(Polygon polygon) {
-
-            for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
-
-                // Get the current KmlFile object
-                KmlFile currentKmlFile = entry.getKey();
-
-                for (Placemark placemark : entry.getValue()) {
-                    if (polygon.getTag().equals(placemark.getName())) {
-                        if ((placemark.getName()+".kml").equals(currentKmlFile.getName())){
-                            // Get id of the clicked polygon
-                            String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
-                            // Instantiate a AreaClickFragment object
-                            FarmAreaClickPopUp farmAreaClickPopUp = new FarmAreaClickPopUp(placemark, polygonId);
-                            // Start fragment activity
-                            getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.farm_area_click_popup_container, farmAreaClickPopUp, farmAreaClickPopUp.getClass()
-                                        .getSimpleName()).addToBackStack(null).commit();
-                            // Disable map click
-                            mMap.setOnMapClickListener(null);
-                            // Disable zoom option on touch
-                            mMap.getUiSettings().setZoomGesturesEnabled(false);
-                            // Disable Polygon click listener
-                            mMap.setOnPolygonClickListener(null);
-                            break;
-                        }else {
+            Map<Placemark, List<Placemark>> placemarkMap = AreaUtilities.placemarkClassification(kmlFileMap);
+            for (Map.Entry<Placemark, List<Placemark>> entry : placemarkMap.entrySet()) {
+               // Check if the clicked polygon is a outer placemark
+                if (polygon.getTag().equals(entry.getKey().getName())) {
+                    // Its outer placemark, show FarmAreaClickPopUp
+                    // Get id of the clicked polygon
+                    String polygonId = JsonParser.getId(entry.getKey().getName(), jsonArray);
+                    // Instantiate a AreaClickFragment object
+                    FarmAreaClickPopUp farmAreaClickPopUp = new FarmAreaClickPopUp(entry.getKey(), polygonId);
+                    // Start fragment activity
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.farm_area_click_popup_container, farmAreaClickPopUp, farmAreaClickPopUp.getClass()
+                                    .getSimpleName()).addToBackStack(null).commit();
+                    // Disable map click
+                    mMap.setOnMapClickListener(null);
+                    // Disable zoom option on touch
+                    mMap.getUiSettings().setZoomGesturesEnabled(false);
+                    // Disable Polygon click listener
+                    mMap.setOnPolygonClickListener(null);
+                    break;
+                }else {
+                    for (Placemark placemark : entry.getValue()){
+                        // Check if the clicked polygon is a inner placemark
+                        if(polygon.getTag().equals(placemark.getName())){
+                            // Its inner placemark, show InnerAreaClickPopUp
                             // Instantiate a innerAreaClickPopUp object
                             InnerAreaClickPopUp innerAreaClickPopUp = new InnerAreaClickPopUp(placemark);
                             // Start fragment activity
@@ -450,6 +448,50 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         }
                     }
                 }
+            }
+
+
+
+//            for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
+//
+//                // Get the current KmlFile object
+//                KmlFile currentKmlFile = entry.getKey();
+//
+//                for (Placemark placemark : entry.getValue()) {
+//                    if (polygon.getTag().equals(placemark.getName())) {
+//                        if ((placemark.getName()+".kml").equals(currentKmlFile.getName())){
+//                            // Get id of the clicked polygon
+//                            String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
+//                            // Instantiate a AreaClickFragment object
+//                            FarmAreaClickPopUp farmAreaClickPopUp = new FarmAreaClickPopUp(placemark, polygonId);
+//                            // Start fragment activity
+//                            getSupportFragmentManager().beginTransaction()
+//                                .replace(R.id.farm_area_click_popup_container, farmAreaClickPopUp, farmAreaClickPopUp.getClass()
+//                                        .getSimpleName()).addToBackStack(null).commit();
+//                            // Disable map click
+//                            mMap.setOnMapClickListener(null);
+//                            // Disable zoom option on touch
+//                            mMap.getUiSettings().setZoomGesturesEnabled(false);
+//                            // Disable Polygon click listener
+//                            mMap.setOnPolygonClickListener(null);
+//                            break;
+//                        }else {
+//                            // Instantiate a innerAreaClickPopUp object
+//                            InnerAreaClickPopUp innerAreaClickPopUp = new InnerAreaClickPopUp(placemark);
+//                            // Start fragment activity
+//                            getSupportFragmentManager().beginTransaction()
+//                                    .replace(R.id.inner_area_click_popup_container, innerAreaClickPopUp, innerAreaClickPopUp.getClass()
+//                                            .getSimpleName()).addToBackStack(null).commit();
+//                            // Disable map click
+//                            mMap.setOnMapClickListener(null);
+//                            // Disable zoom option on touch
+//                            mMap.getUiSettings().setZoomGesturesEnabled(false);
+//                            // Disable Polygon click listener
+//                            mMap.setOnPolygonClickListener(null);
+//                            break;
+//                        }
+//                    }
+//                }
 
 
 //                for (Placemark placemark : entry.getValue()) {
@@ -472,7 +514,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 //                    }
 //                }
 
-            }
+//            }
         }
     };
 
@@ -641,25 +683,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Show message
         Toast.makeText(MapActivity.this,"The file "+kmlFile.getName()+" was successfully exported",Toast.LENGTH_LONG).show();
     }
-
-
-//    /**
-//     * TODO COMMENTS
-//     * @param placemark
-//     * @param polygonId
-//     * @param dateToAdded
-//     */
-//    @Override
-//    public void areaDetailsEvent(Placemark placemark, String polygonId, String dateToAdded) {
-//        // Open FarmDetailsActivity Class
-//        Intent mapIntent = new Intent(MapActivity.this, FarmDetailsActivity.class);
-//        mapIntent.putExtra("placemark name",  placemark.getName());
-//        mapIntent.putExtra("polygon id", polygonId);
-//        mapIntent.putExtra("date to added",dateToAdded);
-//        startActivity(mapIntent);
-//    }
-
-
 
     /**
      * CreateAreaEventListener implementation

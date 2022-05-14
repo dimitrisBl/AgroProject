@@ -1,33 +1,34 @@
 package com.example.agroproject.view.adapters;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.example.agroproject.R;
 import com.example.agroproject.model.file.KmlFile;
+import com.example.agroproject.view.fragments.FarmAreaClickPopUp;
 
-import java.io.File;
 import java.util.List;
 
 
 public class FarmListViewAdapter extends BaseAdapter {
 
     private List<KmlFile> kmlFileList;
-  
+
+
+    private DeleteKmlFileEventListener deleteKmlFileEventListener;
+
     /**
      * Instantiate a new ListViewAdapter
      *
      * @param kmlFileList have the KmlFile objects
      */
-    public FarmListViewAdapter(List<KmlFile> kmlFileList) {
-        this.kmlFileList = kmlFileList;
-    }
+    public FarmListViewAdapter(List<KmlFile> kmlFileList) { this.kmlFileList = kmlFileList; }
 
     @Override
     public int getCount() {
@@ -79,15 +80,42 @@ public class FarmListViewAdapter extends BaseAdapter {
         TextView description = viewResult.findViewById(R.id.description);
         description.setText("Farm: "+kmlFileList.get(position).getFarmName());
 
+        // Delete image view
+        ImageView deleteImage = viewResult.findViewById(R.id.deleteBtn);
+        deleteImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Show dialog
+                new AlertDialog.Builder(parent.getContext())
+                        .setTitle("Are you sure?")
+                        .setIcon(R.drawable.ic_baseline_delete_24)
+                        .setMessage("Do you want to delete this item?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                KmlFile kmlFile = getItem(position);
+                                // Remove item from the list of adapter
+                                kmlFileList.remove(position);
+                                // Trigger the notify data changed of adapter
+                                notifyDataSetChanged();
+                                // Attach the DeleteKmlFileEventListener interface
+                                deleteKmlFileEventListener = (DeleteKmlFileEventListener) parent.getContext();
+                                // Trigger the delete kml file event
+                                deleteKmlFileEventListener.deleteKmlFile(kmlFile);
+                            }
+                        })
+                .setNegativeButton("No",null)
+                .show();
+            }
+        });
 
-
-//        TextView description = viewResult.findViewById(R.id.description);
-//        description.setText(placemarkList.get(position).getDescription());
         return viewResult;
     }
 
-    public String getURLForResource (int resourceId) {
-        //use BuildConfig.APPLICATION_ID instead of R.class.getPackage().getName() if both are not same
-        return Uri.parse("android.resource://"+R.class.getPackage().getName()+"/" +resourceId).toString();
+
+    public interface DeleteKmlFileEventListener{
+        void deleteKmlFile(KmlFile kmlFile);
     }
 }
+
+

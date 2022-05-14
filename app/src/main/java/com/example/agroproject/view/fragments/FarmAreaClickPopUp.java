@@ -306,8 +306,6 @@ public class FarmAreaClickPopUp extends Fragment {
         void loadNdviEvent(Placemark placemark, BitmapDescriptor bitmapDescriptor);
         void exportFileEvent(Placemark placemark);
         void editAreaDescription(Placemark placemark,String description);
-
-        //void areaDetailsEvent(Placemark placemark,String polygonId, String dateToAdded);
     }
 
 

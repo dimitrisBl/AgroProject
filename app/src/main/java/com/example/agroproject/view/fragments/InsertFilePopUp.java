@@ -210,6 +210,7 @@ public class InsertFilePopUp extends Fragment implements Executor {
         if(requestCode == FILE_SELECTION_CODE){
             if(resultCode == RESULT_OK){
                 // Get the type of file
+                String kati = data.getDataString();
                 String typeOfFile = data.getDataString().substring(data.getDataString().length()-3);
 
                 if (typeOfFile.toLowerCase().equals("kml")){

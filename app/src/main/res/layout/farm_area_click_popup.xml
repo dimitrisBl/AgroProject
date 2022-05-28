@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:textColor="@color/white"
+        android:textColor="@color/black"
         android:textStyle="bold"
         android:textSize="25sp"
         android:hint="Farm Name"
@@ -34,7 +34,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:textColor="@color/white"
+        android:textColor="@color/black"
         android:id="@+id/areaDescription"
         android:layout_centerHorizontal="true"
         android:background="@drawable/edit_text_border"
@@ -65,7 +65,7 @@
 				app:cornerRadius="100dp"
                 android:layout_height="40dp"
                 android:layout_marginRight="10dp"
-				android:textColor="@color/white"
+				android:textColor="@color/black"
                 android:text="Delete"/>
               <!--  android:id="@+id/detailsBtn"
 
@@ -84,6 +84,7 @@
                 android:layout_width="wrap_content"
                 app:cornerRadius="100dp"
                 android:layout_height="40dp"
+                android:textColor="@color/black"
                 android:layout_marginRight="10dp"
                 android:text="Export"
                 >
@@ -93,6 +94,7 @@
                 android:id="@+id/ndviBtn"
                 android:layout_width="wrap_content"
                 app:cornerRadius="100dp"
+                android:textColor="@color/black"
                 android:layout_marginRight="10dp"
                 android:layout_height="40dp"
                 android:text="Ndvi"/>

@@ -9,62 +9,206 @@
     tools:context=".view.FarmDetailsActivity" >
 
     <RelativeLayout
+        android:id="@+id/relativeLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <!--here is the layout i want to put at the top of the page-->
+
+
         <LinearLayout
             android:id="@+id/topLayout"
             android:layout_width="match_parent"
             android:layout_height="250dp"
-            android:orientation="horizontal"
             android:layout_alignParentTop="true"
             android:layout_gravity="top"
+            android:layout_marginTop="-5dp"
+            android:background="@drawable/weather_image_morning"
             android:gravity="top"
-            android:background="@drawable/layout_border">
+            android:orientation="horizontal">
 
-            <com.android.volley.toolbox.NetworkImageView
-                android:id="@+id/weatherImage"
-                android:layout_width="88dp"
-                android:layout_height="59dp"
-                android:layout_alignParentTop="true"
+            <RelativeLayout
+                android:id="@+id/innerLayout"
+                android:layout_width="200dp"
+                android:layout_marginLeft="15dp"
+                android:layout_height="250dp"
                 android:layout_alignParentLeft="true"
-                tools:layout_editor_absoluteX="256dp"
-                tools:layout_editor_absoluteY="526dp"/>
+                android:layout_alignParentTop="true"
+                android:layout_gravity="top"
 
-        <ListView
-            android:id="@+id/detailsListView"
-            android:layout_width="wrap_content"
-            android:layout_height="190dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="4dp"
-            android:scrollbarAlwaysDrawVerticalTrack="true"
-            android:scrollbarSize="10dp"
-            android:scrollbars="vertical"
-            android:layout_marginLeft="110dp"
-            android:layout_gravity="top|right"
-            android:gravity="top|right"
-            android:background="@drawable/layout_border"/>
+                android:gravity="top"
+                android:orientation="horizontal">
+
+                <com.android.volley.toolbox.NetworkImageView
+                    android:id="@+id/weatherImage"
+                    android:layout_width="88dp"
+                    android:layout_height="59dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    tools:layout_editor_absoluteX="256dp"
+                    tools:layout_editor_absoluteY="526dp" />
+
+                <TextView
+                    android:id="@+id/description"
+                    android:layout_width="90dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="100dp"
+                    android:layout_marginTop="10dp"></TextView>
+
+                <TextView
+                    android:id="@+id/labelTemp"
+                    android:layout_width="40dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/weatherImage"
+                    android:layout_marginTop="10dp"
+                    android:text="Temp:"></TextView>
+
+                <TextView
+                    android:id="@+id/temp"
+                    android:layout_width="50dp"
+                    android:textColor="@color/black"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/weatherImage"
+                    android:layout_marginLeft="40dp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="10dp"></TextView>
+
+                <TextView
+                    android:id="@+id/labelHumidity"
+                    android:layout_width="63dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/weatherImage"
+                    android:layout_marginLeft="105dp"
+                    android:layout_marginTop="10dp"
+                    android:text="Humidity:"></TextView>
+
+                <TextView
+                    android:id="@+id/humidity"
+                    android:layout_width="50dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/weatherImage"
+                    android:layout_marginLeft="170dp"
+                    android:layout_marginTop="10dp"></TextView>
+
+                <TextView
+                    android:id="@+id/labelMin"
+                    android:textStyle="bold"
+                    android:layout_width="40dp"
+                    android:textColor="@color/black"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/humidity"
+                    android:layout_marginTop="10dp"
+                    android:text="Min:"></TextView>
+
+                <TextView
+                    android:id="@+id/min"
+                    android:layout_width="50dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/humidity"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginTop="10dp"></TextView>
+
+                <TextView
+                    android:id="@+id/labelMax"
+                    android:textColor="@color/black"
+                    android:layout_width="40dp"
+                    android:textStyle="bold"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/humidity"
+                    android:layout_marginLeft="105dp"
+                    android:layout_marginTop="10dp"
+                    android:text="Max:"></TextView>
+
+                <TextView
+                    android:id="@+id/max"
+                    android:layout_width="50dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/humidity"
+                    android:layout_marginLeft="140dp"
+                    android:layout_marginTop="10dp"></TextView>
+
+                <TextView
+                    android:id="@+id/labelWind"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/max"
+                    android:layout_marginTop="10dp"
+                    android:text="Wind:"></TextView>
+
+                <TextView
+                    android:id="@+id/wind"
+                    android:textStyle="bold"
+                    android:layout_width="80dp"
+                    android:textColor="@color/black"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/max"
+                    android:layout_marginLeft="40dp"
+                    android:layout_marginTop="10dp"></TextView>
+
+
+            </RelativeLayout>
+
+            <ListView
+                android:id="@+id/detailsListView"
+                android:layout_width="wrap_content"
+                android:layout_height="190dp"
+                android:choiceMode="singleChoice"
+                android:listSelector="@drawable/background_details_list_view_selected"
+                android:layout_gravity="top|right"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="4dp"
+                android:background="@drawable/background_details_list_view"
+                android:gravity="top|right"
+
+                android:scrollbarAlwaysDrawVerticalTrack="true"
+                android:scrollbarSize="10dp"
+                android:scrollbars="vertical" />
+
         </LinearLayout>
-
-
+<!--        <LinearLayout-->
+<!--            android:id="@+id/buttonLayout"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="50dp"-->
+<!--            android:layout_alignParentTop="true"-->
+<!--            android:layout_gravity="top"-->
+<!--            android:layout_marginTop="200dp"-->
+<!--            android:gravity="top"-->
+<!--            android:orientation="horizontal">-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
         <Button
             android:id="@+id/chooseDateBtn"
             android:layout_width="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_marginRight="10dp"
+            android:layout_marginLeft="100dp"
             android:layout_marginTop="200dp"
             app:cornerRadius="100dp"
             android:layout_height="40dp"
             android:textColor="@color/white"
             android:text="Choose date" />
-
-
+      </LinearLayout>
 
         <!--here is the layout i want to put at the bottom of the page-->
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="420dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/topLayout"
             android:layout_alignParentBottom="true"
             android:orientation="horizontal"
             android:layout_gravity="bottom"

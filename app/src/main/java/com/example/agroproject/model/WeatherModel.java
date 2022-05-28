@@ -8,6 +8,8 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
+import java.math.BigDecimal;
+
 public class WeatherModel {
 
     private String humidity;
@@ -32,19 +34,22 @@ public class WeatherModel {
 
 
     public String getHumidity() {
-        return humidity;
+        return humidity+"%";
     }
 
     public String getTemp() {
-        return temp;
+        BigDecimal numberBigDecimal = new BigDecimal(Double.parseDouble(temp)- 273.15);
+        return String.valueOf(numberBigDecimal.setScale(1, BigDecimal.ROUND_HALF_UP))+"°C";
     }
 
     public String getTempMin() {
-        return tempMin;
+        BigDecimal numberBigDecimal = new BigDecimal(Double.parseDouble(tempMin)- 273.15);
+        return String.valueOf(numberBigDecimal.setScale(1, BigDecimal.ROUND_HALF_UP))+"°C";
     }
 
     public String getTempMax() {
-        return tempMax;
+        BigDecimal numberBigDecimal = new BigDecimal(Double.parseDouble(tempMax)- 273.15);
+        return String.valueOf(numberBigDecimal.setScale(1, BigDecimal.ROUND_HALF_UP))+"°C";
     }
 
     public String getDescription() {
@@ -56,7 +61,7 @@ public class WeatherModel {
     }
 
     public String getWindSpeed() {
-        return windSpeed;
+        return windSpeed+" m/sec";
     }
 
     public static String getImage(String icon){

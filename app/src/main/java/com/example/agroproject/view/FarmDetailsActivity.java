@@ -25,6 +25,7 @@ import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 
+import com.example.agroproject.R;
 import com.example.agroproject.databinding.ActivityFarmDetailsBinding;
 import com.example.agroproject.model.AreaUtilities;
 import com.example.agroproject.model.DatePicker;
@@ -277,8 +278,22 @@ public class FarmDetailsActivity extends AppCompatActivity {
                 WeatherModel weatherModel = JsonParser.getWeatherData(responseData);
                 // Set image loader
                 weatherImageLoader.setImageLoader();
+               // int[] imageViews = {R.drawable.weather_image_morning,};
+                Calendar calendar = Calendar.getInstance();
+                int hour24hrs = calendar.get(Calendar.HOUR_OF_DAY);
+                if(hour24hrs <= 24){
+                    activityFarmDetailsBinding.topLayout.setBackgroundResource(R.drawable.weather_image_morning);//ImageView img = (ImageView) findViewById(imageViews[pindex]) ;
+                   // img.setImageResource(R.drawable.progressgreen);
+                }
                 // Set data in the ui
+                activityFarmDetailsBinding.min.setText(weatherModel.getTempMin());
+                activityFarmDetailsBinding.max.setText(weatherModel.getTempMax());
+                activityFarmDetailsBinding.temp.setText(weatherModel.getTemp());
+                activityFarmDetailsBinding.humidity.setText(weatherModel.getHumidity());
+                activityFarmDetailsBinding.description.setText(weatherModel.getDescription());
+                activityFarmDetailsBinding.wind.setText(weatherModel.getWindSpeed());
                 activityFarmDetailsBinding.weatherImage.setImageUrl(WeatherModel.getImage(weatherModel.getIcon()), weatherImageLoader.getmImageLoader());
+
                 /**TODO ADD all weather data to the ui */
 
             }else if(requestType.equals("Get historical ndvi")){

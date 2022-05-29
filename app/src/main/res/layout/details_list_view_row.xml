@@ -20,9 +20,9 @@
             android:textColor="#000"
             android:textStyle="bold"
             android:layout_margin="5dp"
-            android:gravity="center_horizontal"
+            android:gravity="center"
             android:textSize="20sp"
-
+            android:textAlignment="center"
             android:id="@+id/title"/>
 
     </LinearLayout>

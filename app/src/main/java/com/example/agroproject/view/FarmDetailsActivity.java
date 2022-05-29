@@ -151,8 +151,9 @@ public class FarmDetailsActivity extends AppCompatActivity {
         detailsListViewAdapter = new DetailsListViewAdapter(new ArrayList<>(placemarkMap.keySet()));
         //----- ListView ----- //
         listView = activityFarmDetailsBinding.detailsListView;
-        listView.setAdapter(detailsListViewAdapter);
+        listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         listView.setOnItemClickListener(listViewItemClickListener);
+        listView.setAdapter(detailsListViewAdapter);
         if (outerPlacemarks.size() > 0 ) {
             try {
                 jsonArray = new JSONArray(allPolygonsAgroApi);
@@ -201,11 +202,11 @@ public class FarmDetailsActivity extends AppCompatActivity {
     }
 
 
-
     /**
      * Event handler to handle the item click of list view
      */
     private AdapterView.OnItemClickListener listViewItemClickListener = new AdapterView.OnItemClickListener() {
+
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int index, long l) {
             if(index == -1){
@@ -219,6 +220,7 @@ public class FarmDetailsActivity extends AppCompatActivity {
             weatherRequest(selectedPlacemark);
             // Get historical ndvi data for the clicked placemark and refresh the plot
             historicalNdviRequest(selectedPlacemark);
+
         }
     };
 

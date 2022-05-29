@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="350dp"
     android:layout_height="450dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_gravity="center"
     android:padding="10dp"
     android:background="@drawable/insert_file_popup">
@@ -68,6 +68,8 @@
                     android:id="@+id/chooseFileBtn"
                     android:layout_width="wrap_content"
                     android:text="Choose file"
+                    app:cornerRadius="100dp"
+                    android:textColor="@color/black"
                     android:layout_marginLeft="10dp"
                     android:layout_height="wrap_content"/>
             </LinearLayout>
@@ -81,6 +83,8 @@
             android:layout_centerHorizontal="true"
             android:layout_below="@+id/relative"
             android:clickable="true"
+            app:cornerRadius="100dp"
+            android:textColor="@color/black"
             android:layout_marginTop="30dp"
             android:id="@+id/saveFileBtn"
             android:background="@color/purple_500"

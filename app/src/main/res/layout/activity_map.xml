@@ -71,6 +71,7 @@
             android:layout_width="wrap_content"
             app:cornerRadius="100dp"
             android:layout_marginRight="10dp"
+            android:textColor="@color/black"
             android:layout_height="wrap_content"
             android:layout_weight="@integer/default_bmb_showRotateEaseEnum"
             android:text="draw area" />
@@ -79,6 +80,7 @@
             android:id="@+id/clear_map"
             app:cornerRadius="100dp"
             android:layout_marginRight="10dp"
+            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="@integer/default_bmb_showScaleEaseEnum"
@@ -87,6 +89,7 @@
         <Button
             android:id="@+id/close_layout"
             app:cornerRadius="100dp"
+            android:textColor="@color/black"
             android:layout_marginRight="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

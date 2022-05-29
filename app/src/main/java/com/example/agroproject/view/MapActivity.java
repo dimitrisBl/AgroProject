@@ -67,7 +67,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.Inflater;
 
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback,
@@ -225,15 +224,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         binding.linearLayout.setVisibility(View.GONE);
                         // bottom layout is disable
                         bottomLayoutIsEnable = false;
-                        // Disable map click
-                        //mMap.setOnMapClickListener(null);
-                        // Disable zoom option on touch
-                        //mMap.getUiSettings().setZoomGesturesEnabled(false);
-                        // Disable Polygon click listener
-                        //mMap.setOnPolygonClickListener(null);
-
                         // Disable visibility for zoom controls buttons
                         mMap.getUiSettings().setZoomControlsEnabled(false);
+                        // Disable map click
                         mapFragment.getView().setClickable(false);
                         mMap.getUiSettings().setAllGesturesEnabled(false);
                         // Put polygons in the map without click property
@@ -316,21 +309,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-//        // Enable map click
-//        mMap.setOnMapClickListener(mapClickListener);
-//        // Enable zoom option on touch
-//        mMap.getUiSettings().setZoomGesturesEnabled(true);
-//        // Enable Polygon click listener
-//        mMap.setOnPolygonClickListener(polygonClickListener);
-//
-//        Fragment insertFileFragment = getSupportFragmentManager().findFragmentById(R.id.insert_file_popup_container);
-//
-//        if(insertFileFragment != null){
-//            getSupportFragmentManager().beginTransaction().remove(insertFileFragment).commit();
-//        }
-
-        // Put the existing polygon areas in the map with clickable property
+        // Put the existing polygon areas in the map with click property
         addTheExistingAreas(true);
+        // Enable map click
         mMap.getUiSettings().setAllGesturesEnabled(true);
         mapFragment.getView().setClickable(true);
         // Enable the zoom controls buttons

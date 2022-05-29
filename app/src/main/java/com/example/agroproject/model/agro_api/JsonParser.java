@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.example.agroproject.model.HistoricalNdviGraphModel;
 import com.example.agroproject.model.WeatherModel;
-import com.google.gson.JsonArray;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,6 +32,7 @@ public class JsonParser {
                 jsonObject.put("id", jsonArray.getJSONObject(i).getString("id"));
                 jsonObject.put("center", jsonArray.getJSONObject(i).getJSONArray("center"));
                 jsonObject.put("created_at",jsonArray.getJSONObject(i).getString("created_at"));
+                jsonObject.put("area",jsonArray.getJSONObject(i).getString("area"));
                 jsondata.put(jsonObject);
             }
         } catch (JSONException e) {
@@ -54,6 +54,7 @@ public class JsonParser {
             try {
                 if(name.equals(jsonArray.getJSONObject(i).getString("name"))){
                     id = jsonArray.getJSONObject(i).getString("id");
+                    break;
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -62,6 +63,23 @@ public class JsonParser {
 
         return id;
     }
+
+
+    public static String getArea(String name, JSONArray jsonArray){
+        String area = null;
+        for(int i=0;i<jsonArray.length();i++){
+            try {
+                if(name.equals(jsonArray.getJSONObject(i).getString("name"))){
+                    area = jsonArray.getJSONObject(i).getString("area");
+                    break;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return area;
+    }
+
 
     /**
      * TODO DESCRIPTION

@@ -60,13 +60,18 @@
 <!--            android:layout_marginLeft="260dp"-->
 <!--            android:layout_height="200dp"-->
 <!--            android:orientation="vertical">-->
+
+<!--        android:layout_marginTop="20dp"-->
         <ImageView
             android:id="@+id/deleteBtn"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginLeft="270dp"
+            android:layout_marginTop="37dp"
+            android:layout_marginRight="15dp"
+            android:layout_alignParentRight="true"
             android:background="@drawable/ic_baseline_delete_24" />
+
+
 <!--        </LinearLayout>-->
 
 

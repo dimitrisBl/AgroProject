@@ -54,8 +54,8 @@
                     android:textStyle="bold"
                     android:textColor="@color/black"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="100dp"
-                    android:layout_marginTop="10dp"></TextView>
+                    android:layout_marginLeft="82dp"
+                    android:layout_marginTop="16dp"/>
 
                 <TextView
                     android:id="@+id/labelTemp"
@@ -65,7 +65,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/weatherImage"
                     android:layout_marginTop="10dp"
-                    android:text="Temp:"></TextView>
+                    android:text="Temp:"/>
 
                 <TextView
                     android:id="@+id/temp"
@@ -75,7 +75,7 @@
                     android:layout_below="@+id/weatherImage"
                     android:layout_marginLeft="40dp"
                     android:textStyle="bold"
-                    android:layout_marginTop="10dp"></TextView>
+                    android:layout_marginTop="10dp"/>
 
                 <TextView
                     android:id="@+id/labelHumidity"
@@ -86,7 +86,7 @@
                     android:layout_below="@+id/weatherImage"
                     android:layout_marginLeft="105dp"
                     android:layout_marginTop="10dp"
-                    android:text="Humidity:"></TextView>
+                    android:text="Humidity:"/>
 
                 <TextView
                     android:id="@+id/humidity"
@@ -96,7 +96,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/weatherImage"
                     android:layout_marginLeft="170dp"
-                    android:layout_marginTop="10dp"></TextView>
+                    android:layout_marginTop="10dp"/>
 
                 <TextView
                     android:id="@+id/labelMin"
@@ -106,7 +106,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/humidity"
                     android:layout_marginTop="10dp"
-                    android:text="Min:"></TextView>
+                    android:text="Min:"/>
 
                 <TextView
                     android:id="@+id/min"
@@ -116,7 +116,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/humidity"
                     android:layout_marginLeft="30dp"
-                    android:layout_marginTop="10dp"></TextView>
+                    android:layout_marginTop="10dp"/>
 
                 <TextView
                     android:id="@+id/labelMax"
@@ -127,7 +127,7 @@
                     android:layout_below="@+id/humidity"
                     android:layout_marginLeft="105dp"
                     android:layout_marginTop="10dp"
-                    android:text="Max:"></TextView>
+                    android:text="Max:"/>
 
                 <TextView
                     android:id="@+id/max"
@@ -137,7 +137,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/humidity"
                     android:layout_marginLeft="140dp"
-                    android:layout_marginTop="10dp"></TextView>
+                    android:layout_marginTop="10dp"/>
 
                 <TextView
                     android:id="@+id/labelWind"
@@ -147,7 +147,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/max"
                     android:layout_marginTop="10dp"
-                    android:text="Wind:"></TextView>
+                    android:text="Wind:"/>
 
                 <TextView
                     android:id="@+id/wind"
@@ -157,7 +157,27 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/max"
                     android:layout_marginLeft="40dp"
-                    android:layout_marginTop="10dp"></TextView>
+                    android:layout_marginTop="10dp"/>
+
+                <TextView
+                    android:id="@+id/labelArea"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:text="Area:"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    android:layout_marginTop="10dp"
+                    android:layout_below="@+id/labelWind"/>
+
+                <TextView
+                    android:id="@+id/area"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/wind"
+                    android:layout_marginLeft="40dp"
+                    android:layout_marginTop="10dp"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"/>
 
 
             </RelativeLayout>
@@ -173,8 +193,6 @@
                 android:layout_marginRight="4dp"
                 android:background="@drawable/background_details_list_view"
                 android:gravity="top|right"
-
-                android:scrollbarAlwaysDrawVerticalTrack="true"
                 android:scrollbarSize="10dp"
                 android:scrollbars="vertical" />
 
@@ -191,12 +209,12 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
+<!--            android:layout_alignParentRight="true" android:layout_marginRight="10dp"-->
         <Button
             android:id="@+id/chooseDateBtn"
             android:layout_width="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="10dp"
-            android:layout_marginLeft="100dp"
+            android:layout_marginLeft="123dp"
             android:layout_marginTop="200dp"
             app:cornerRadius="100dp"
             android:layout_height="40dp"

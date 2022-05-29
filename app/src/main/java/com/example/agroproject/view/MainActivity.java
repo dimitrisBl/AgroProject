@@ -33,6 +33,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONArray;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -84,6 +88,8 @@ public class MainActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(agroApiResponseReceiver, new IntentFilter("GetRequestData"));
     }
 
+
+
     /**
      *  Our handler for received Intents. This will be called whenever an Intent
      *  with an action named "GetRequestData".
@@ -97,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
             String requestType = intent.getStringExtra("Request type");
 
             if(requestType.equals("Get all polygons")){
+                Log.d("Edwwww",responseData);
                 // Parse response data
                 jsonArray = JsonParser.parseResponse(responseData);
                 Log.d(TAG,"response data "+responseData);

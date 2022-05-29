@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -37,6 +38,7 @@ import com.example.agroproject.model.agro_api.JsonParser;
 import com.example.agroproject.model.agro_api.StringBuildForRequest;
 import com.example.agroproject.model.file.KmlFile;
 import com.example.agroproject.model.file.KmlLocalStorageProvider;
+import com.example.agroproject.services.NetworkUtil;
 import com.example.agroproject.view.adapters.DetailsListViewAdapter;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.datepicker.MaterialDatePicker;
@@ -45,7 +47,6 @@ import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClic
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 
 import java.text.FieldPosition;
@@ -109,6 +110,9 @@ public class FarmDetailsActivity extends AppCompatActivity {
     /** Weather image loader */
     private WeatherModel.WeatherImageLoader weatherImageLoader;
 
+    /** NetworkUtil */
+    private NetworkUtil networkUtil;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,6 +134,8 @@ public class FarmDetailsActivity extends AppCompatActivity {
         initialize(allPolygonsAgroApi);
         // Initialize weatherImageLoader
         weatherImageLoader =  new WeatherModel.WeatherImageLoader(this);
+        // Instantiate a NetworkUtil object
+        networkUtil = new NetworkUtil(this);
     }
 
     /**
@@ -292,9 +298,8 @@ public class FarmDetailsActivity extends AppCompatActivity {
                 activityFarmDetailsBinding.humidity.setText(weatherModel.getHumidity());
                 activityFarmDetailsBinding.description.setText(weatherModel.getDescription());
                 activityFarmDetailsBinding.wind.setText(weatherModel.getWindSpeed());
+                activityFarmDetailsBinding.area.setText(JsonParser.getArea(selectedPlacemark.getName(),jsonArray)+" ha");
                 activityFarmDetailsBinding.weatherImage.setImageUrl(WeatherModel.getImage(weatherModel.getIcon()), weatherImageLoader.getmImageLoader());
-
-                /**TODO ADD all weather data to the ui */
 
             }else if(requestType.equals("Get historical ndvi")){
                 Log.d("HISTORICAL NDVI",responseData);
@@ -425,5 +430,21 @@ public class FarmDetailsActivity extends AppCompatActivity {
         cal.add(Calendar.DATE,days);
         // Return date as UnixTimeStamp type
         return String.valueOf(cal.getTimeInMillis()/1000);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Receive messages about Network status.
+        // We are registering an observer from NetworkUtil class which extends BroadCast Receiver class
+        // to receive intents with action name "CONNECTIVITY_ACTION".
+         registerReceiver(networkUtil, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Unregister since the activity is about to be closed.
+        unregisterReceiver(networkUtil);
     }
 }

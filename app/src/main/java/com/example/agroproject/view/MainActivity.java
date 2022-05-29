@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
     private double longitude;
 
 
-
     /** JSON data from GET request in agro api */
     private JSONArray jsonArray;
 
@@ -88,8 +87,6 @@ public class MainActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(agroApiResponseReceiver, new IntentFilter("GetRequestData"));
     }
 
-
-
     /**
      *  Our handler for received Intents. This will be called whenever an Intent
      *  with an action named "GetRequestData".
@@ -103,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
             String requestType = intent.getStringExtra("Request type");
 
             if(requestType.equals("Get all polygons")){
-                Log.d("Edwwww",responseData);
                 // Parse response data
                 jsonArray = JsonParser.parseResponse(responseData);
                 Log.d(TAG,"response data "+responseData);

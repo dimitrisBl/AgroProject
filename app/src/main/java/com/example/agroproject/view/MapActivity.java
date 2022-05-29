@@ -20,6 +20,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.agroproject.R;
@@ -134,8 +135,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /** Bitmap Decriptor that will be used to load the ndvi image for every placemark
      * using the "GetImageAsync"
      */
-    public BitmapDescriptor bitmapDescriptor;
+    private BitmapDescriptor bitmapDescriptor;
 
+    private  SupportMapFragment mapFragment;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -165,7 +167,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         boomButton = binding.bmb;
         CreateBoomMenu();
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapV2);
         mapFragment.getMapAsync(this);
     }
@@ -183,11 +185,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     .listener(new OnBMClickListener() {
                         @Override
                         public void onBoomButtonClick(int index) {
+                            // Close the open pop ups
+                            closeExistingPopUp();
                             // Disable visibility for zoom controls buttons
                             mMap.getUiSettings().setZoomControlsEnabled(false);
+                            // Disable map click
+                            mapFragment.getView().setClickable(true);
+                            mMap.getUiSettings().setAllGesturesEnabled(true);
                             // Set bottom menu visibility true
                             binding.linearLayout.setVisibility(View.VISIBLE);
-                            // Set the property clickable false for each polygon
+                            // Put polygons in the map without click property
                             addTheExistingAreas(false);
                             //
                             currentOuterArea = null;
@@ -203,20 +210,27 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .listener(new OnBMClickListener() {
                     @Override
                     public void onBoomButtonClick(int index) {
+
+                        // Close the open pop ups
+                        closeExistingPopUp();
+
                         // Instantiate a InsertFileFragment object
                         InsertFilePopUp insertFilePopUp = new InsertFilePopUp();
                         // Start fragment activity
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.insert_file_popup_container, insertFilePopUp, insertFilePopUp.getClass()
                                         .getSimpleName()).addToBackStack(null).commit();
-                        // Set bottom menu visibility true
+                        // Set bottom menu visibility false
                         binding.linearLayout.setVisibility(View.GONE);
+                        // bottom layout is disable
+                        bottomLayoutIsEnable = false;
+                        // Disable visibility for zoom controls buttons
+                        mMap.getUiSettings().setZoomControlsEnabled(false);
                         // Disable map click
-                        mMap.setOnMapClickListener(null);
-                        // Disable zoom option on touch
-                        mMap.getUiSettings().setZoomGesturesEnabled(false);
-                        // Disable Polygon click listener
-                        mMap.setOnPolygonClickListener(null);
+                        mapFragment.getView().setClickable(false);
+                        mMap.getUiSettings().setAllGesturesEnabled(false);
+                        // Put polygons in the map without click property
+                        addTheExistingAreas(false);
                     }
                 });
         boomButton.addBuilder(builder2);
@@ -268,10 +282,26 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMap.setOnMapClickListener(mapClickListener);
         // Polygon click listener
         mMap.setOnPolygonClickListener(polygonClickListener);
-        // Put the existing monitoring areas in the map
+        // Put polygons in the map with click property
         addTheExistingAreas(true);
     }
 
+    /**
+     * Close the previous existing pop up.
+     */
+    private void closeExistingPopUp(){
+        Fragment farmAreaPopUp = getSupportFragmentManager().findFragmentById(R.id.farm_area_click_popup_container);
+        if(farmAreaPopUp != null){ getSupportFragmentManager().beginTransaction().remove(farmAreaPopUp).commit(); }
+
+        Fragment innerFarmAreaPopUp = getSupportFragmentManager().findFragmentById(R.id.inner_area_click_popup_container);
+        if(innerFarmAreaPopUp != null){ getSupportFragmentManager().beginTransaction().remove(innerFarmAreaPopUp).commit(); }
+
+        Fragment inertFilePopUp = getSupportFragmentManager().findFragmentById(R.id.insert_file_popup_container);
+        if(inertFilePopUp != null){ getSupportFragmentManager().beginTransaction().remove(inertFilePopUp).commit(); }
+
+        Fragment saveAreaPopUp = getSupportFragmentManager().findFragmentById(R.id.save_inner_area_popup_container);
+        if(saveAreaPopUp != null){ getSupportFragmentManager().beginTransaction().remove(saveAreaPopUp).commit(); }
+    }
 
     /**
      * Calling after closed a pop up fragment
@@ -279,12 +309,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        // Put the existing polygon areas in the map with click property
+        addTheExistingAreas(true);
         // Enable map click
-        mMap.setOnMapClickListener(mapClickListener);
-        // Enable zoom option on touch
-        mMap.getUiSettings().setZoomGesturesEnabled(true);
-        // Enable Polygon click listener
-        mMap.setOnPolygonClickListener(polygonClickListener);
+        mMap.getUiSettings().setAllGesturesEnabled(true);
+        mapFragment.getView().setClickable(true);
+        // Enable the zoom controls buttons
+        mMap.getUiSettings().setZoomControlsEnabled(true);
     }
 
     /**
@@ -330,11 +361,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 break;
 
                 case "clear":
-                    currentOuterArea = null;
                     latLngList.clear();
                     markerList.clear();
                     mMap.clear();
                     currentOuterArea = null;
+                    // Put the existing polygon areas in the map without click property
                     addTheExistingAreas(false);
                 break;
 
@@ -350,6 +381,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     markerList.clear();
                     mMap.clear();
                     currentOuterArea = null;
+                    // Put the existing polygon areas in the map with click property
                     addTheExistingAreas(true);
                  break;
             }
@@ -375,25 +407,22 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.save_inner_area_popup_container, saveInnerAreaPopUp, saveInnerAreaPopUp.getClass()
                                         .getSimpleName()).addToBackStack(null).commit();
-                        // Close bottom layout
+                        // Close the bottom layout
                         binding.linearLayout.setVisibility(View.GONE);
                         // bottom layout is disable
                         bottomLayoutIsEnable = false;
-                        // Enable visibility for zoom controls buttons
-                        mMap.getUiSettings().setZoomControlsEnabled(true);
-                        //
+                        // Put polygons in the map without click property
                         addTheExistingAreas(false);
                         // Disable map click
-                        mMap.setOnMapClickListener(null);
-                        // Disable zoom option on touch
-                        mMap.getUiSettings().setZoomGesturesEnabled(false);
-                        // Disable Polygon click listener
-                        mMap.setOnPolygonClickListener(null);
+                        mapFragment.getView().setClickable(false);
+                        mMap.getUiSettings().setAllGesturesEnabled(false);
+                        // Disable the zoom control buttons
+                        mMap.getUiSettings().setZoomControlsEnabled(false);
                     }
                 }).setNegativeButton("No", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        //Add the existing polygons in the map
+                        // Put polygons in the map without click property
                         addTheExistingAreas(false);
                     }
                 })
@@ -411,6 +440,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             for (Map.Entry<Placemark, List<Placemark>> entry : placemarkMap.entrySet()) {
                // Check if the clicked polygon is a outer placemark
                 if (polygon.getTag().equals(entry.getKey().getName())) {
+                    // Close the open pop ups
+                    closeExistingPopUp();
                     // Its outer placemark, show FarmAreaClickPopUp
                     // Get id of the clicked polygon
                     String polygonId = JsonParser.getId(entry.getKey().getName(), jsonArray);
@@ -421,16 +452,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             .replace(R.id.farm_area_click_popup_container, farmAreaClickPopUp, farmAreaClickPopUp.getClass()
                                     .getSimpleName()).addToBackStack(null).commit();
                     // Disable map click
-                    mMap.setOnMapClickListener(null);
-                    // Disable zoom option on touch
-                    mMap.getUiSettings().setZoomGesturesEnabled(false);
-                    // Disable Polygon click listener
-                    mMap.setOnPolygonClickListener(null);
+                    mapFragment.getView().setClickable(false);
+                    mMap.getUiSettings().setAllGesturesEnabled(false);
+                    // Disable the zoom control buttons
+                    mMap.getUiSettings().setZoomControlsEnabled(false);
                     break;
                 }else {
                     for (Placemark placemark : entry.getValue()){
                         // Check if the clicked polygon is a inner placemark
                         if(polygon.getTag().equals(placemark.getName())){
+                            // Close the open pop ups
+                            closeExistingPopUp();
                             // Its inner placemark, show InnerAreaClickPopUp
                             // Instantiate a innerAreaClickPopUp object
                             InnerAreaClickPopUp innerAreaClickPopUp = new InnerAreaClickPopUp(placemark);
@@ -439,82 +471,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                     .replace(R.id.inner_area_click_popup_container, innerAreaClickPopUp, innerAreaClickPopUp.getClass()
                                             .getSimpleName()).addToBackStack(null).commit();
                             // Disable map click
-                            mMap.setOnMapClickListener(null);
-                            // Disable zoom option on touch
-                            mMap.getUiSettings().setZoomGesturesEnabled(false);
-                            // Disable Polygon click listener
-                            mMap.setOnPolygonClickListener(null);
+                            mapFragment.getView().setClickable(false);
+                            mMap.getUiSettings().setAllGesturesEnabled(false);
+                            // Disable the zoom control buttons
+                            mMap.getUiSettings().setZoomControlsEnabled(false);
                             break;
                         }
                     }
                 }
             }
-
-
-
-//            for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
-//
-//                // Get the current KmlFile object
-//                KmlFile currentKmlFile = entry.getKey();
-//
-//                for (Placemark placemark : entry.getValue()) {
-//                    if (polygon.getTag().equals(placemark.getName())) {
-//                        if ((placemark.getName()+".kml").equals(currentKmlFile.getName())){
-//                            // Get id of the clicked polygon
-//                            String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
-//                            // Instantiate a AreaClickFragment object
-//                            FarmAreaClickPopUp farmAreaClickPopUp = new FarmAreaClickPopUp(placemark, polygonId);
-//                            // Start fragment activity
-//                            getSupportFragmentManager().beginTransaction()
-//                                .replace(R.id.farm_area_click_popup_container, farmAreaClickPopUp, farmAreaClickPopUp.getClass()
-//                                        .getSimpleName()).addToBackStack(null).commit();
-//                            // Disable map click
-//                            mMap.setOnMapClickListener(null);
-//                            // Disable zoom option on touch
-//                            mMap.getUiSettings().setZoomGesturesEnabled(false);
-//                            // Disable Polygon click listener
-//                            mMap.setOnPolygonClickListener(null);
-//                            break;
-//                        }else {
-//                            // Instantiate a innerAreaClickPopUp object
-//                            InnerAreaClickPopUp innerAreaClickPopUp = new InnerAreaClickPopUp(placemark);
-//                            // Start fragment activity
-//                            getSupportFragmentManager().beginTransaction()
-//                                    .replace(R.id.inner_area_click_popup_container, innerAreaClickPopUp, innerAreaClickPopUp.getClass()
-//                                            .getSimpleName()).addToBackStack(null).commit();
-//                            // Disable map click
-//                            mMap.setOnMapClickListener(null);
-//                            // Disable zoom option on touch
-//                            mMap.getUiSettings().setZoomGesturesEnabled(false);
-//                            // Disable Polygon click listener
-//                            mMap.setOnPolygonClickListener(null);
-//                            break;
-//                        }
-//                    }
-//                }
-
-
-//                for (Placemark placemark : entry.getValue()) {
-//                    if (polygon.getTag().equals(placemark.getName())) {
-//                        // Get id for the clicked polygon
-//                        String polygonId = JsonParser.getId(placemark.getName(), jsonArray);
-//                        // Instantiate a AreaClickFragment object
-//                        AreaClickFragment areaClickFragment = new AreaClickFragment(placemark, polygonId);
-//                        // Start fragment activity
-//                        getSupportFragmentManager().beginTransaction()
-//                                .replace(R.id.area_click_fragment_container, areaClickFragment, areaClickFragment.getClass()
-//                                        .getSimpleName()).addToBackStack(null).commit();
-//                        // Disable map click
-//                        mMap.setOnMapClickListener(null);
-//                        // Disable zoom option on touch
-//                        mMap.getUiSettings().setZoomGesturesEnabled(false);
-//                        // Disable Polygon click listener
-//                        mMap.setOnPolygonClickListener(null);
-//                        break;
-//                    }
-//                }
-
-//            }
         }
     };
 
@@ -572,10 +537,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     Toast.makeText(MapActivity.this,
                             "You can not create a mark outside from areas ",Toast.LENGTH_LONG).show();
                 }
-            }else{
-                // Show message
-                Toast.makeText(MapActivity.this,
-                        "If you want to create area click create area option in the menu on top right first",Toast.LENGTH_LONG).show();
             }
         }
     };
@@ -587,6 +548,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * @param isClickable declares the property clickable for each polygon
      */
     private void addTheExistingAreas(boolean isClickable) {
+        latLngList.clear();
+        markerList.clear();
         mMap.clear();
         for (Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()) {
             for (Placemark placemark : entry.getValue()) {
@@ -651,7 +614,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         kmlFileMap.put(kmlFile, placemarks);
         // Save changes on shared preferences storage
         kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
-        // Add areas in the map
+        // Put polygons in the map with click property
         addTheExistingAreas(true);
         // Move the camera in center location
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 14f));
@@ -708,7 +671,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
             }
         }
-        // Add areas in the map  set property clickable  true
+        // Put polygons in the map with click property
         addTheExistingAreas(true);
     }
 
@@ -731,23 +694,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
                 break;
             }
-
-
-//            if(entry.getValue().remove(placemark)){
-//                // If this entry don't have values
-//                if(entry.getValue().size() == 0){
-//                    // Remove all record
-//                    kmlFileMap.remove(entry.getKey());
-//                }
-//                // Save the changes
-//                kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
-//                break;
-//            }
         }
-
         // Remove ground overlay from groundOverlaysList
         groundOverlaysMap.remove(placemark);
-        // Add areas in the map  set property clickable  true
+        // Put polygons in the map with click property
         addTheExistingAreas(true);
     }
 
@@ -779,10 +729,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      */
     @Override
     public void editAreaDescription(Placemark placemark, String description) {
-        // Show message
-        //Toast.makeText(MapActivity.this,
-               // "Edit area function triggered",Toast.LENGTH_LONG).show();
-
         for(Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()){
             for (Placemark element :entry.getValue()){
                 if (element.getName().equals(placemark.getName())){

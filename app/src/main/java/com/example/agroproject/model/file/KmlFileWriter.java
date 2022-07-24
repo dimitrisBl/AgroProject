@@ -23,55 +23,26 @@ public class KmlFileWriter {
     /** Context */
     private Context context;
 
-    private final String kmlstartBeforeName = "<?xml version=1.0 encoding=UTF-8?> /**" +
+    private final String kmlstart = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
             "<kml xmlns=\"http://www.opengis.net/kml/2.2\" xmlns:gx=\"http://www.google.com/kml/ext/2.2\" xmlns:kml=\"http://www.opengis.net/kml/2.2\" xmlns:atom=\"http://www.w3.org/2005/Atom\">\n" +
-            "<Document>\n" +
-            "\t<name>";
-    private final String kmlstartAfterName = "</name>\n" +
-            "\t<StyleMap id=\"m_ylw-pushpin\">\n" +
-            "\t\t<Pair>\n" +
-            "\t\t\t<key>normal</key>\n" +
-            "\t\t\t<styleUrl>#s_ylw-pushpin</styleUrl>\n" +
-            "\t\t</Pair>\n" +
-            "\t\t<Pair>\n" +
-            "\t\t\t<key>highlight</key>\n" +
-            "\t\t\t<styleUrl>#s_ylw-pushpin_hl</styleUrl>\n" +
-            "\t\t</Pair>\n" +
-            "\t</StyleMap>\n" +
-            "\t<Style id=\"s_ylw-pushpin_hl\">\n" +
-            "\t\t<IconStyle>\n" +
-            "\t\t\t<scale>1.3</scale>\n" +
-            "\t\t\t<Icon>\n" +
-            "\t\t\t\t<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>\n" +
-            "\t\t\t</Icon>\n" +
-            "\t\t\t<hotSpot x=\"20\" y=\"2\" xunits=\"pixels\" yunits=\"pixels\"/>\n" +
-            "\t\t</IconStyle>\n" +
-            "\t</Style>\n" +
-            "\t<Style id=\"s_ylw-pushpin\">\n" +
-            "\t\t<IconStyle>\n" +
-            "\t\t\t<scale>1.1</scale>\n" +
-            "\t\t\t<Icon>\n" +
-            "\t\t\t\t<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>\n" +
-            "\t\t\t</Icon>\n" +
-            "\t\t\t<hotSpot x=\"20\" y=\"2\" xunits=\"pixels\" yunits=\"pixels\"/>\n" +
-            "\t\t</IconStyle>\n" +
-            "\t</Style>\n";
+            "<Document>\n";
 
-    private final String end = "</Document>\n" + "</kml>";
+    private final String styleTag =
+                "\t<Style id=\"placemarkStyle\">\n" +
+                "      <LineStyle>\n" +
+                "\t   <width>2</width>\n" +
+                "        <color>ff0000ff</color>\n" +
+                "      </LineStyle>\n" +
+                "      <PolyStyle>\n" +
+                "        <color>7f00ff00</color>\n" +
+                "\t\t<opacity>0</opacity>\n" +
+                "      </PolyStyle>\n" +
+                "\t</Style>\n";
 
-    private final String overlayTagBeforeIcon = "<GroundOverlay>\n" +
-            "      <name>Large-scale overlay on terrain</name>\n" +
-            "    <description>Overlay shows Mount Etna erupting\n" +
-            "    on July 13th, 2001.</description>\n" +
-            "      <Icon>\n" +
-            "        <href>";
-    private final String overlayTagAftericon = "</href>\n" +
-            "      </Icon>\n" +"<gx:LatLonQuad>\n"+
-                        "<coordinates>";
-    private final String overlayTagAfterCoords=
-            "        </coordinates>\n" +
-            "       </gx:LatLonQuad>\n" +
-            "    </GroundOverlay>";
+
+    private final String kmlEnd = "</Document>\n"+"</kml>";
+
+
 
     /**
      * Constructor
@@ -79,10 +50,10 @@ public class KmlFileWriter {
      *
      * @param context the current context of application
      */
-
     public KmlFileWriter(Context context) {
         this.context = context;
     }
+
 
     /** Create the kml filedata using StringBuilder. It sends the data to the createFile() method where
      * the kml file is exported
@@ -91,23 +62,24 @@ public class KmlFileWriter {
      * @param placemark    The placemark that the fround overlay is going to be displayed on
      */
     public void fileToWrite(KmlFile kmlFile, List<Placemark> placemarks,Placemark placemark){
-
-            StringBuilder builder = new StringBuilder(kmlstartBeforeName);
-            builder.append(String.format(kmlFile.getName()));
-            builder.append(String.format(kmlstartAfterName));
+            StringBuilder builder = new StringBuilder(kmlstart);
+            builder.append(String.format(addFileName(kmlFile.getName())));
+            builder.append(String.format(styleTag));
             builder.append(String.format(addPlacemarks(placemarks)));
-            builder.append(String.format(getOverlay(placemark)));
-            builder.append(String.format(end));
-            createFile(builder.toString(), kmlFile.getName());
-
+            if (placemark.getImageUrl()!=null){
+                builder.append(String.format(addGroundOverlay(placemark)));
+            }
+            builder.append(String.format(kmlEnd));
+            exportKmlFile(builder.toString(), kmlFile.getName());
     }
+
 
     /** Export file with the specified data and name
      *
      * @param fileData Data of the file
      * @param filename Name of the file
      */
-    private void createFile(String fileData, String filename){
+    private void exportKmlFile(String fileData, String filename){
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         try {
             // catches IOException below
@@ -138,20 +110,57 @@ public class KmlFileWriter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
-    /** Create the Overlay Tag
+    private String addFileName(String fileName){
+        return "\t<name>"+fileName+"</name>\n";
+    }
+
+    /**
+     * Create the Overlay Tag
      *
-     * @param placemark Placemark that the overlay is going to be displayed on
+     * @param placemark of Placemark that the overlay is going to be displayed on
      * @return Overlay Tag
      */
-    private String getOverlay(Placemark placemark){
-      String OverlayTag=overlayTagBeforeIcon;
-      String coords = getStringCoords(placemark.getLatLngList());
-      OverlayTag += placemark.getImageUrl() + overlayTagAftericon + coords + overlayTagAfterCoords;
-      return OverlayTag;
+    private String addGroundOverlay(Placemark placemark){
+        double north = 0;
+        double south = 99.9999999999999999999;
+        double east = 0;
+        double west = 99.99999999999999999999;
+
+        for (LatLng latLng : placemark.getLatLngList()) {
+            if (north < latLng.latitude){ north = latLng.latitude; }
+            if (south > latLng.latitude ){ south = latLng.latitude; }
+
+            if (east< latLng.longitude) {east = latLng.longitude; }
+            if (west>latLng.longitude) {west = latLng.longitude; }
+        }
+
+        String OverlayTag=
+                "\t<GroundOverlay>\n" +
+                          "    \t<name>NDVI Overlay</name>\n" +
+                          "    \t<description>\n" +
+                                "\t\t\tNormalized Difference Vegetation Index\n" +
+                          "     \t</description>";
+
+        String iconTag =
+                " \n\t\t<Icon>\n" +
+                "    \t\t<href>"+placemark.getImageUrl()+"</href>"+"\n" +
+                " \t\t</Icon>";
+
+        String latLonBoxtag =
+                "   \t\t<LatLonBox>\n" +
+                "        \t<north>"+north+"</north>\n" +
+                "        \t<south>"+south+"</south>\n" +
+                "        \t<east>"+east+"</east>\n" +
+                "        \t<west>"+west+"</west>\n" +
+                "        \t<rotation>-0.1556640799496235</rotation>\n" +
+                "   \t\t</LatLonBox>";
+
+
+        return OverlayTag + iconTag+"\n"+latLonBoxtag+"\n"+"\t</GroundOverlay>\n";
     }
+
 
     /**
      * Create the Placemark tag
@@ -165,7 +174,6 @@ public class KmlFileWriter {
            placemarkTag +=   "\t<Placemark>\n" +
                     "\t\t<name>"+placemark.getName()+"</name>\n" +
                     "\t\t<description>"+placemark.getDescription()+"</description>\n" +
-                    "\t\t<styleUrl>#m_ylw-pushpin</styleUrl>\n" +
                     "\t\t<Polygon>\n" +
                     "\t\t\t<tessellate>1</tessellate>\n" +
                     "\t\t\t<outerBoundaryIs>\n" +
@@ -176,7 +184,8 @@ public class KmlFileWriter {
                     "\t\t\t\t</LinearRing>\n" +
                     "\t\t\t</outerBoundaryIs>\n" +
                     "\t\t</Polygon>\n" +
-                    "\t</Placemark>\n";
+                    "\t<styleUrl>#placemarkStyle</styleUrl>"+
+                    "\n\t</Placemark>\n";
         }
         return placemarkTag;
     }
@@ -187,7 +196,7 @@ public class KmlFileWriter {
      * @param coords coordinates for a placemark
      * @return coordinates tag
      */
-    public String getStringCoords(List<LatLng> coords){
+    private String getStringCoords(List<LatLng> coords){
         List<String> stringCoords = new ArrayList<>();
 
         for(LatLng latLng : coords){
@@ -198,6 +207,7 @@ public class KmlFileWriter {
         for(int i=0;i<stringCoords.size();i++){
             placemarkCoordinates +=stringCoords.get(i);
         }
+
        return  placemarkCoordinates;
     }
 }

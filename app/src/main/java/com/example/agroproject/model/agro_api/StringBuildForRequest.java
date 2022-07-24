@@ -1,7 +1,5 @@
 package com.example.agroproject.model.agro_api;
 
-import android.util.Log;
-
 public class StringBuildForRequest {
 
     // key apo -> 6285cde775f088c749b4f1201829658a

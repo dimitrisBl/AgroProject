@@ -80,19 +80,9 @@ public class AreaUtilities {
         }
 
         for (Placemark placemark : placemarks){
-            // Its try if the current placemark located inside in other
-            boolean isInnerArea = true;
-            for (LatLng latLng : placemark.getLatLngList()){
-                if (detectInnerArea(latLng,placemarks) == false){
-                    // ALl LatLng points of a placemark
-                    // must be inside in some other placemark to be inner area
-                    isInnerArea = false;
-                    break;
-                }else if(placemark.getName().equals(outsiderArea.getName())){
-                    isInnerArea = false;
-                    break;
-                }
-            }
+
+            // Check if the current placemark located inside in other placemark
+            boolean isInnerArea = isInnerArea(placemark,placemarks);
 
             if (isInnerArea){
                 for (Map.Entry<Placemark, List<Placemark>> entry : placemarkMap.entrySet()){
@@ -107,5 +97,41 @@ public class AreaUtilities {
             }
         }
         return placemarkMap;
+    }
+
+
+    public static boolean isInnerArea(Placemark currentPlacemark, List<Placemark> placemarkList){
+        // Its try if the current placemark located inside in other
+        boolean isInnerArea = true;
+        for (LatLng latLng : currentPlacemark.getLatLngList()){
+            if (detectInnerArea(latLng,placemarkList) == false){
+                // ALl LatLng points of a placemark
+                // must be inside in some other placemark to be inner area
+                isInnerArea = false;
+                break;
+            }
+
+//            boolean firstCondition = getAreaCenterPoint(currentPlacemark.getLatLngList()).latitude==getAreaCenterPoint(getOutsiderArea().getLatLngList()).latitude;
+//            boolean secondCondition = getAreaCenterPoint(currentPlacemark.getLatLngList()).longitude==getAreaCenterPoint(getOutsiderArea().getLatLngList()).longitude;
+//
+//            if (firstCondition && secondCondition){
+//                isInnerArea = false;
+//                break;
+//            }
+
+
+            if (currentPlacemark.getLatLngList().size() == getOutsiderArea().getLatLngList().size()){
+
+                for (int i =0;i < currentPlacemark.getLatLngList().size();i++){
+
+                    boolean firstCondition = currentPlacemark.getLatLngList().get(i).latitude == getOutsiderArea().getLatLngList().get(i).latitude;
+                    boolean secondCondition =  currentPlacemark.getLatLngList().get(i).longitude == getOutsiderArea().getLatLngList().get(i).longitude;
+
+                    if (firstCondition && secondCondition){ isInnerArea = false; }
+                }
+            }
+
+        }
+        return isInnerArea;
     }
 }

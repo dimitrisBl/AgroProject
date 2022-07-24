@@ -1,5 +1,8 @@
 package com.example.agroproject.model.agro_api;
 
+import android.util.Log;
+
+import com.example.agroproject.model.AreaUtilities;
 import com.example.agroproject.model.Placemark;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -26,6 +29,14 @@ public class JsonBuilder {
         List<JSONObject> jsonObjectList = new ArrayList<>();
 
         for(Placemark placemark : placemarkList){
+
+            // Check if the current placemark located inside in other
+            boolean isInnerArea = AreaUtilities.isInnerArea(placemark,placemarkList);
+
+            // if the placemark located inside in other then skip it
+            if (isInnerArea) { Log.d("JsonBuilder","Skip placememark "+placemark.getName()); continue; }
+
+
             // Initialize the Json Objects - Json Arrays for each placemark
             JSONObject jsonObject = new JSONObject();
             JSONObject geometryObject = new JSONObject();

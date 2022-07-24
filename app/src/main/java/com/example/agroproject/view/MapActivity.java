@@ -52,6 +52,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.data.kml.KmlLayer;
 import com.nightonke.boommenu.BoomButtons.OnBMClickListener;
 import com.nightonke.boommenu.BoomButtons.TextOutsideCircleButton;
 import com.nightonke.boommenu.BoomMenuButton;
@@ -243,14 +244,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMap.getUiSettings().setZoomControlsEnabled(true);
         // Setup satellite map
         mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
-        /** TODO: den douleuei giati amesos meta kaleitai h addTheExistingAreas kai kanei clear to map
-         */
-//        // Create MarkerOption for current location
-//        MarkerOptions markerOptions = new MarkerOptions()
-//                .position(currentLocation).title("Your location: "+latitude+"  "+longitude);
-//        // Add Marker in the map
-//        mMap.addMarker(markerOptions);
-
         // Get intent
         Intent intent = getIntent();
         // Handling an intent from Main Activity
@@ -334,6 +327,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     if(!latLngList.isEmpty() && markerList.size() >= 3 ) {
                         // Do null the currentOuterArea after area creation
                         currentOuterArea = null;
+                        // This using to make closed area
+                        latLngList.add(latLngList.get(0));
                         // Create PolygonOptions
                         polygonOptions = new PolygonOptions()
                                 .strokeWidth(5f).addAll(latLngList).strokeColor(Color.RED)
@@ -562,19 +557,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 polygon.setTag(placemark.getName());
                 // Fill the placemarkList
                 placemarkList.add(placemark);
-                /** TODO AN ENA POLUGONO EXEI GROUND OVERLAY APO PRIN NA TO FORTWNEI KATHE FORA POU ANOIGEI TO MAP ;; */
-//                if(placemark.getImageUrl() != ""){
-//                    new GetImageAsync(placemark).execute(placemark.getImageUrl());
-//                }
+
+                if(placemark.getImageUrl() != null){
+                    // Add NDVI Overlay in the map
+                    new GetImageAsync(placemark).execute(placemark.getImageUrl());
+                }
             }
         }
-        // Add overlays in the map
+
+        // Add overlays in the map \\
         for(Map.Entry<Placemark,GroundOverlayOptions> entry : groundOverlaysMap.entrySet()){
             // Add overlay in the map
             mMap.addGroundOverlay(entry.getValue());
         }
     }
-
 
 
     /**
@@ -609,7 +605,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      */
     @Override
     public void insertKmlFileEvent(LatLng center, KmlFile kmlFile, List<Placemark> placemarks) {
-        Log.d(TAG,"num of placemarks "+placemarks.size());
         // Add a new record in the kmlFileMap
         kmlFileMap.put(kmlFile, placemarks);
         // Save changes on shared preferences storage
@@ -618,13 +613,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         addTheExistingAreas(true);
         // Move the camera in center location
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 14f));
-        //Get and load ndvi image from every placemark that has an imageURL
-        for(Placemark placemark : placemarks){
-            if(placemark.getImageUrl() != ""){
-                //new GetImageAsync(placemark).execute(placemark.getImageUrl());
-                break;
-            }
-        }
     }
 
     /**
@@ -644,7 +632,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         KmlFileWriter kmlFileWriter = new KmlFileWriter(MapActivity.this);
         kmlFileWriter.fileToWrite(kmlFile, kmlFileMap.get(kmlFile), placemark);
         // Show message
-        Toast.makeText(MapActivity.this,"The file "+kmlFile.getName()+" was successfully exported",Toast.LENGTH_LONG).show();
+        Toast.makeText(MapActivity.this,"The file "+
+                kmlFile.getName()+" was successfully exported",Toast.LENGTH_LONG).show();
     }
 
     /**
@@ -664,7 +653,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 if(placemark.getName().equals(outsiderArea.getName())){
                     // add new value on this entry
                     entry.getValue().add(new Placemark
-                            (areaName, areaDescription, polygonOptions.getPoints(), ""));
+                            (areaName, areaDescription, polygonOptions.getPoints(), null));
                     // Save the kmlFileMap in shared preferences.
                     kmlLocalStorageProvider.saveKmlFileMap(kmlFileMap);
                     break;
@@ -682,11 +671,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void deleteAreaEvent(Placemark placemark) {
         for(Map.Entry<KmlFile, List<Placemark>> entry : kmlFileMap.entrySet()){
-
             if(entry.getValue().remove(placemark)){
-                String placemarkName = placemark.getName()+".kml";
-                KmlFile currentKmlFile = entry.getKey();
-                if (placemarkName.equals(currentKmlFile.getName())){
+                if (AreaUtilities.isInnerArea(placemark,entry.getValue())==false){
                     // Remove all record
                     kmlFileMap.remove(entry.getKey());
                 }
@@ -752,7 +738,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
 
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -762,8 +747,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Unregister since the activity is about to be closed.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(responseReceiver);
     }
-
-
 
 
     private class GetImageAsync extends AsyncTask<String, Void, BitmapDescriptor> {

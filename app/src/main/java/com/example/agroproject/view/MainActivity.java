@@ -295,11 +295,6 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver locationReceiver  = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Toast.makeText(MainActivity.this,
-                    "Receive coordinates in main activity: "
-                            +intent.getDoubleExtra("latitude",0.0),
-                    Toast.LENGTH_SHORT).show();
-
             // Get extra data included in the Intent
             latitude = intent.getDoubleExtra("latitude",0.0);
             longitude = intent.getDoubleExtra("longitude",0.0);

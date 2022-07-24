@@ -65,9 +65,6 @@ public class SaveInnerAreaPopUp extends Fragment {
                     // Close pop up and trigger onBackPressed function of MapActivityV2
                     getActivity().onBackPressed();
                 }else{
-                    // Show message
-//                    Toast.makeText(getActivity(),
-//                            "Fill all the fields of form please", Toast.LENGTH_LONG).show();
                     Toast.makeText(getActivity(),
                             "Please type a name of area", Toast.LENGTH_LONG).show();
                 }

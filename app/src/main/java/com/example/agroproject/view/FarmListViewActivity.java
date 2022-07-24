@@ -73,17 +73,6 @@ public class FarmListViewActivity extends AppCompatActivity implements FarmListV
         listView.setAdapter(farmListViewAdapter);
         // ListView item click listener
         listView.setOnItemClickListener(listViewItemClickListener);
-
-//        recyclerView = binding.recyclerView;
-//        layoutManager = new LinearLayoutManager(this);
-//        layoutManager.setOrientation(RecyclerView.HORIZONTAL);
-//        recyclerView.setLayoutManager(layoutManager);
-//
-//        listAdapter = new NearbyStopsAdapter(new ArrayList<>(kmlFileMap.keySet()),this,kmlFileMap);
-//        recyclerView.setAdapter(listAdapter);
-//        listAdapter.notifyDataSetChanged();
-
-
         //---- AutoCompleteTextView ----- //
         // Add data in the AutoCompleteTextView dropDown
         fillDropDownData(kmlFileMap.keySet());
@@ -134,9 +123,6 @@ public class FarmListViewActivity extends AppCompatActivity implements FarmListV
             // Refresh the ui
             farmListViewAdapter = new FarmListViewAdapter(kmlFiles);
             listView.setAdapter(farmListViewAdapter);
-            //listAdapter = new NearbyStopsAdapter(new ArrayList<>(kmlFileMap.keySet()),FarmListViewActivity.this,kmlFileMap);
-            //recyclerView.setAdapter(listAdapter);
-            //listAdapter.notifyDataSetChanged();
         }
     };
 

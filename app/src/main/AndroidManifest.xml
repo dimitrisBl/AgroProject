@@ -61,7 +61,8 @@
 
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
-        </activity> <!-- Location  Service -->
+        </activity>
+        <!-- Location  Service -->
         <service android:name=".services.LocationService" />
     </application>
 

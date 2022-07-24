@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
@@ -162,7 +164,6 @@ public class InsertFilePopUp extends Fragment implements Executor {
                         List<JSONObject> jsonObjectList = JsonBuilder.build(placemarks);
                         // Post data in Agro Api TODO EINAI SXOLIO TO POST GIA NA MHN TREXEI SUNEXEIA
                         //HttpRequest.postRequest(jsonObjectList);
-                        Log.d("ETREKSE TO POST","ETREKSE TO POST");
                         // Get the current date
                         long currentDateAndTime = Calendar.getInstance().getTimeInMillis();
                         // Create a new KmlFile object

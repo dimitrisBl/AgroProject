@@ -4,9 +4,11 @@ import android.content.Context;
 
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 
 import com.example.agroproject.model.Placemark;
+import com.example.agroproject.view.MapActivity;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.jsoup.Jsoup;
@@ -85,10 +87,12 @@ public class KmlFileParser {
             // Convert List type from string to LatLng
             List<LatLng> convertedLatLngList = convertToLatLng(coordinates);
 
+            // Get the GroundOverlay of placemark
            String imageUrl = String.valueOf(document.select("GroundOverlay").select("Icon").select("href")).replace("<href>","").replace("</href>","").trim();
+
+            if (imageUrl.equals("")){imageUrl = null; }
             // Create a new Placemark object and put it in placemarkList
             placemarkList.add(new Placemark(areaName, areaDescription, convertedLatLngList,imageUrl));
-
         }
         // return the List
         return placemarkList;

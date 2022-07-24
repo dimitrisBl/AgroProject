@@ -129,7 +129,7 @@ public class JsonParser {
                     // Get the mean value of ndvi
                     double mean = Double.parseDouble(dataJSONObject.getString("mean"));
                     // Get the min value of ndvi
-                    double min = Double.parseDouble(dataJSONObject.getString("min"));
+                    double min = Math.abs(Double.parseDouble(dataJSONObject.getString("min")));
 
                     // Initialize a new HistoricalNdviGraphModel object
                     historicalNdviGraphModelList.add(new HistoricalNdviGraphModel(dateTime,max,mean,min));

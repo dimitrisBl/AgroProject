@@ -127,7 +127,7 @@ public class FarmDetailsActivity extends AppCompatActivity {
         // Get one day previous date - time
         oneDayPreviousDate = calculateDate(-1);
         // Get 30 days previous date -time
-        thirtyDayspreviousDate = calculateDate(-30);
+        thirtyDayspreviousDate = calculateDate(-31);
         // Get data from intent
         Intent myIntent = getIntent();
         String allPolygonsAgroApi = myIntent.getStringExtra("ALL POLYGONS");
@@ -340,16 +340,11 @@ public class FarmDetailsActivity extends AppCompatActivity {
 
         ndviPlot.clear();
 
-        double minVegetationIndex  = 999999999;
         double maxVegetetaionIndex = 0;
 
         // Find the max vegetation index
         for (Double element : maxNdviValuesOfEachDate){
             if (element > maxVegetetaionIndex){ maxVegetetaionIndex = element;  }
-        }
-        // Find The min vegetation index
-        for (Double element : minNdviValueOfEachDate){
-            if (element < minVegetationIndex){ minVegetationIndex = element;  }
         }
 
         final Number[] maxVegetationValues = maxNdviValuesOfEachDate.toArray(new Double[maxNdviValuesOfEachDate.size()]);
@@ -366,7 +361,7 @@ public class FarmDetailsActivity extends AppCompatActivity {
         }
 
         // ~~~~~~~~~~ LINE FOR THE MAX VEGETATION ~~~~~~~~~~~~~~ //
-        XYSeries maxVegetationSeries = new SimpleXYSeries(Arrays.asList(maxVegetationValues),SimpleXYSeries.ArrayFormat.Y_VALS_ONLY,"MAX"); //Arrays.asList(series1Numbers)
+        XYSeries maxVegetationSeries = new SimpleXYSeries(Arrays.asList(maxVegetationValues),SimpleXYSeries.ArrayFormat.Y_VALS_ONLY,"MAX");
         LineAndPointFormatter maxVegetationLine = new LineAndPointFormatter(rgb(0,128,0),Color.BLACK,null,null);
         // just for fun, add some smoothing to the lines:
         // see: http://androidplot.com/smooth-curves-and-androidplot/
@@ -384,14 +379,13 @@ public class FarmDetailsActivity extends AppCompatActivity {
         LineAndPointFormatter minVegetationLine = new LineAndPointFormatter(rgb(144, 238, 144),Color.BLACK,null,null);
         minVegetationLine.setInterpolationParams(new CatmullRomInterpolator.Params(10, CatmullRomInterpolator.Type.Centripetal));
 
-
         // ADD LINES TO THE PLOT
         ndviPlot.addSeries(minVegetationSeries,minVegetationLine);
         ndviPlot.addSeries(meanVegetationSeries,meanVegetationLine);
         ndviPlot.addSeries(maxVegetationSeries,maxVegetationLine);
 
         // Set the minimum and maximum range of Y axis
-        ndviPlot.setRangeBoundaries(minVegetationIndex,BoundaryMode.FIXED ,maxVegetetaionIndex+0.1, BoundaryMode.FIXED);
+        ndviPlot.setRangeBoundaries(0,BoundaryMode.FIXED ,maxVegetetaionIndex+0.1, BoundaryMode.FIXED);
 
         ndviPlot.getGraph().getLineLabelStyle(XYGraphWidget.Edge.BOTTOM).setFormat(new Format() {
             private final SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd");
